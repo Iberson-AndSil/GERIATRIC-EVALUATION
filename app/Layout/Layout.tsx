@@ -11,6 +11,8 @@ import {
   PieChartOutlined,
   BarChartOutlined,
   LineChartOutlined,
+  UserOutlined,
+  FormOutlined,
 } from "@ant-design/icons";
 
 const { Header, Sider, Content } = AntLayout;
@@ -20,9 +22,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
 
   const items = [
-    { key: "/family", icon: <PieChartOutlined />, label: "Socio Familiar", 
+    { key: "/family", icon: <UserOutlined />, label: "Socio Familiar", 
       children:[
-        { key: "/dashboard/reports", icon: <BarChartOutlined />, label: "Datos", onClick: () => router.push("/family/personals") },
+        { key: "/dashboard/reports", icon: <FormOutlined />, label: "Datos", onClick: () => router.push("/family/personals") },
         { key: "/dashboard/gijon", icon: <BarChartOutlined />, label: "Escala de Gijon", onClick: () => router.push("/family/gijon") },
       ],
     },
