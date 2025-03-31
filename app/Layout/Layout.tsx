@@ -8,7 +8,6 @@ import {
   ContainerOutlined,
   DesktopOutlined,
   MailOutlined,
-  PieChartOutlined,
   BarChartOutlined,
   LineChartOutlined,
   UserOutlined,

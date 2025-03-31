@@ -1,7 +1,3 @@
-import Image from "next/image";
-import AppLayout from "./Layout/Layout";
-
-
 export default function Home() {
   return (
     <div>

@@ -1,5 +1,5 @@
 "use client";
-import { Form, Space, Input, DatePicker, InputNumber, Radio, Checkbox, Row, Col, Typography, Button, message, Upload, NotificationArgsProps, notification } from "antd";
+import { Form, Space, Input, DatePicker, InputNumber, Radio, Checkbox, Row, Col, Typography, Button, Upload, NotificationArgsProps, notification } from "antd";
 import { useEffect, useState } from "react";
 import { utils, writeFileXLSX } from 'xlsx';
 import * as XLSX from "xlsx";
@@ -11,9 +11,8 @@ import { useGlobalContext } from "@/app/context/GlobalContext";
 
 const { Title } = Typography;
 type NotificationPlacement = NotificationArgsProps['placement'];
-const Context = React.createContext({ name: 'Default' });
 
-const form = () => {
+const PatientForm = () => {
 
   const [active, setActive] = useState(false);
   const [api, contextHolder] = notification.useNotification();
@@ -88,7 +87,6 @@ const form = () => {
   ];
 
   useEffect(() => {
-    console.log("📂 Archivo seleccionado:", setFilePath);
   }, [setFilePath]);
 
   const handleFileUpload = (file: File) => {
@@ -263,9 +261,7 @@ const form = () => {
                 onClick={handleExportExcel}
               >
                 Guardar en Excel
-              </Button>
-              :
-              <Button
+              </Button>:<Button
                 type="primary"
                 onClick={() => setActive(false)}
               >
@@ -282,4 +278,4 @@ const form = () => {
   );
 };
 
-export default form;
+export default PatientForm;
