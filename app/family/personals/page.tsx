@@ -1,17 +1,16 @@
 "use client";
 import { Form, Space, Input, DatePicker, InputNumber, Radio, Checkbox, Row, Col, Typography, Button, message, Upload, NotificationArgsProps, notification } from "antd";
-import { useState } from "react";
-import { utils, writeFile, writeFileXLSX } from 'xlsx';
-const { Title, Text } = Typography;
+import { useEffect, useState } from "react";
+import { utils, writeFileXLSX } from 'xlsx';
 import * as XLSX from "xlsx";
 import {
   UploadOutlined
 } from "@ant-design/icons";
-import warning from "antd/es/_util/warning";
 import React from "react";
+import { useGlobalContext } from "@/app/context/GlobalContext";
 
+const { Title } = Typography;
 type NotificationPlacement = NotificationArgsProps['placement'];
-
 const Context = React.createContext({ name: 'Default' });
 
 const form = () => {
@@ -19,6 +18,7 @@ const form = () => {
   const [active, setActive] = useState(false);
   const [api, contextHolder] = notification.useNotification();
   const [form] = Form.useForm();
+  const { setFilePath } = useGlobalContext();
 
   const handleExportExcel = async () => {
     try {
@@ -87,6 +87,10 @@ const form = () => {
     'relacion'
   ];
 
+  useEffect(() => {
+    console.log("📂 Archivo seleccionado:", setFilePath);
+  }, [setFilePath]);
+
   const handleFileUpload = (file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -98,6 +102,7 @@ const form = () => {
       const headers = jsonData[0] as string[];
       const isValidFile = requiredColumns.every((col) => headers.includes(col));
       if (isValidFile) {
+        setFilePath(file.name);
         openNotification("success", "Operación exitosa", "El archivo se ha validado correctamente.", "topRight");
       } else {
         openNotification("error", "Error en la validación", "Las columnas del archivo no coinciden.", "topRight");

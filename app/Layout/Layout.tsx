@@ -14,6 +14,7 @@ import {
   UserOutlined,
   FormOutlined,
 } from "@ant-design/icons";
+import { GlobalProvider } from "../context/GlobalContext";
 
 const { Header, Sider, Content } = AntLayout;
 
@@ -42,6 +43,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   ];
 
   return (
+    <GlobalProvider>
     <AntLayout style={{ minHeight: "100vh" }}>
       <Header style={{ background: "#001529", padding: "0 20px", display: "flex", alignItems: "center", justifyContent: "space-between", color: "white" }}>
         <Button
@@ -68,6 +70,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </AntLayout>
       </AntLayout>
     </AntLayout>
+    </GlobalProvider>
   );
 };
 
