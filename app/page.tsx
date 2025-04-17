@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect} from 'react';
 import { ConfigProvider } from 'antd';
-import { Button, Table, Upload, notification, Card, Space, Row, Col, Typography, Divider, Tag } from 'antd';
+import { Button, Table, notification, Card, Space, Row, Col, Typography, Divider, Tag } from 'antd';
 import { UploadOutlined, DownloadOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import * as XLSX from 'xlsx';
 import { useGlobalContext } from '@/app/context/GlobalContext';
@@ -29,12 +29,16 @@ interface Paciente {
 
 interface PacienteWithStatus extends Paciente {
   isNew?: boolean;
-  requiresCompletion?: boolean;
+  requiresCompletion: boolean;
 }
 
 const Home = () => {
-  const { excelData, setExcelData, filePath, setFilePath } = useGlobalContext();
+  const { excelData, setExcelData, filePath, setFilePath, setFileHandle } = useGlobalContext();
   const [api, contextHolder] = notification.useNotification();
+
+  useEffect(() => {
+    console.log(excelData);
+  }, [excelData]);
 
   const columns = [
     {
@@ -69,69 +73,87 @@ const Home = () => {
   ];
 
   const requiredColumns = [
-    'nombre', 'dni', 'fecha_nacimiento', 'edad', 'sexo',
+    'codigo', 'nombre', 'dni', 'fecha_nacimiento', 'edad', 'sexo',
     'zona_residencia', 'domicilio', 'nivel_educativo',
     'ocupacion', 'sistema_pension', 'ingreso_economico',
     'con_quien_vive', 'relacion'
   ];
 
   const generateTemplate = () => {
-    const headers = ['codigo', ...requiredColumns]; // Añade campo código primero
-    const ws = XLSX.utils.json_to_sheet([
-    ], { header: headers });
-
+    const ws = XLSX.utils.json_to_sheet([{}], { header: requiredColumns });
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Pacientes');
     XLSX.writeFile(wb, 'plantilla_valoracion_geriatrica.xlsx');
   };
 
-  const handleFileUpload = (file: File) => {
-    setFilePath(file.name);
-    const reader = new FileReader();
+  const handleFileUpload = async () => {
+    try {
+      const [fileHandle] = await window.showOpenFilePicker({
+        types: [{
+          description: "Excel Files",
+          accept: { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"] }
+        }],
+        multiple: false,
+      });
 
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target?.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
+      const file = await fileHandle.getFile();
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: "array" });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-      const headers = jsonData[0] as string[];
-      const requiredColumnsWithCode = ['codigo', ...requiredColumns];
-      const isValidFile = requiredColumnsWithCode.every((col, index) => headers[index] === col);
-
-      if (!isValidFile) {
-        openNotification("error", "Error", "Las columnas no coinciden con la plantilla requerida. Asegúrese de incluir el campo 'codigo'.", "topRight");
+      if (jsonData.length === 0) {
+        openNotification("error", "Error", "El archivo está vacío.", "topRight");
         return;
       }
 
-      // Procesamiento de datos
+      const headers = (jsonData[0] as string[]).map(h => String(h).trim());
+      const normalizedHeaders = headers.map(h => h.toLowerCase());
+      
+      const missingColumns = requiredColumns.filter(
+        col => !normalizedHeaders.includes(col.toLowerCase())
+      );
+
+      if (missingColumns.length > 0) {
+        openNotification(
+          "error",
+          "Error",
+          `Faltan columnas requeridas: ${missingColumns.join(", ")}`,
+          "topRight"
+        );
+        return;
+      }
+
+      const columnIndexMap: Record<string, number> = {};
+      headers.forEach((header, index) => {
+        columnIndexMap[header.toLowerCase()] = index;
+      });
+
       const formattedData = jsonData.slice(1)
         .map((row: unknown, index) => {
           if (!Array.isArray(row)) return null;
 
-          // Extraer datos
-          const codigo = String(row[headers.indexOf('codigo')] || `P${(index + 1).toString().padStart(4, '0')}`).trim();
-          const nombre = String(row[headers.indexOf('nombre')] || '').trim();
-          const dni = String(row[headers.indexOf('dni')] || '').trim();
-          const edad = Number(row[headers.indexOf('edad')]) || 0; // Con valor por defecto 0 si no existe
-          const sexo = row[headers.indexOf('sexo')] === 'M' ? 'M' : 'F'; // Default 'F' si no es 'M'
-          const fecha_nacimiento = String(row[headers.indexOf('fecha_nacimiento')] || '').trim();
-          const zona_residencia = String(row[headers.indexOf('zona_residencia')] || '').trim();
-          const domicilio = String(row[headers.indexOf('domicilio')] || '').trim();
-          const nivel_educativo = String(row[headers.indexOf('nivel_educativo')] || '').trim();
-          const ocupacion = String(row[headers.indexOf('ocupacion')] || '').trim();
-          const sistema_pension = String(row[headers.indexOf('sistema_pension')] || '').trim();
-          const ingreso_economico = Number(row[headers.indexOf('ingreso_economico')]) || 0; // Default 0
-          const con_quien_vive = String(row[headers.indexOf('con_quien_vive')] || '').trim();
-          const relacion = String(row[headers.indexOf('relacion')] || '').trim();
+          const getValue = (col: string) => 
+            row[columnIndexMap[col.toLowerCase()]] !== undefined 
+              ? row[columnIndexMap[col.toLowerCase()]] 
+              : null;
 
-          // Validar si es la última fila
-          const isLastRow = index === jsonData.length - 2;
+          const codigo = String(getValue('codigo') || `P${(index + 1).toString().padStart(4, '0')}`).trim();
+          const nombre = String(getValue('nombre') || '').trim();
+          const dni = String(getValue('dni') || '').trim();
+          const edad = Number(getValue('edad')) || 0;
+          const sexo = getValue('sexo') === 'M' ? 'M' : 'F';
+          const fecha_nacimiento = String(getValue('fecha_nacimiento') || '').trim();
+          const zona_residencia = String(getValue('zona_residencia') || '').trim();
+          const domicilio = String(getValue('domicilio') || '').trim();
+          const nivel_educativo = String(getValue('nivel_educativo') || '').trim();
+          const ocupacion = String(getValue('ocupacion') || '').trim();
+          const sistema_pension = String(getValue('sistema_pension') || '').trim();
+          const ingreso_economico = Number(getValue('ingreso_economico')) || 0;
+          const con_quien_vive = String(getValue('con_quien_vive') || '').trim();
+          const relacion = String(getValue('relacion') || '').trim();
+
           const isEmptyRow = !codigo && !nombre && !dni && isNaN(edad);
-          const isIncomplete = isLastRow && !isEmptyRow && (!codigo || !nombre || !dni || isNaN(edad));
-
-          // Omitir filas vacías
           if (isEmptyRow) return null;
 
           return {
@@ -149,29 +171,27 @@ const Home = () => {
             ingreso_economico,
             con_quien_vive,
             relacion,
-            ...(isIncomplete ? { requiresCompletion: true } : {})
-          } as PacienteWithStatus;
+            requiresCompletion: !codigo || !nombre || !dni || isNaN(edad)
+          };
         })
         .filter((item): item is PacienteWithStatus => item !== null);
 
-      // Verificar última fila incompleta
-      const lastRow = formattedData[formattedData.length - 1];
-      if (lastRow?.requiresCompletion) {
-        openNotification("warning", "Atención", "Complete los datos de la última fila antes de continuar.", "topRight");
-        setExcelData(formattedData);
-      } else {
-        setExcelData(formattedData);
-        openNotification("success", "Éxito",
-          `Datos cargados: ${formattedData.length} pacientes`,
-          "topRight");
-      }
-    };
-
-    reader.readAsArrayBuffer(file);
-    return false;
+      setExcelData(formattedData);
+      setFilePath(file.name);
+      setFileHandle(fileHandle);
+      openNotification("success", "Éxito", `Datos cargados: ${formattedData.length} pacientes`, "topRight");
+    } catch (err) {
+      console.error("Error al cargar el archivo:", err);
+      openNotification("error", "Error", "Hubo un problema al cargar el archivo.", "topRight");
+    }
   };
 
-  const openNotification = (type: "success" | "error" | "warning", message: string, description: string, placement: NotificationPlacement) => {
+  const openNotification = (
+    type: "success" | "error" | "warning",
+    message: string,
+    description: string,
+    placement: NotificationPlacement
+  ) => {
     api[type]({
       message,
       description,
@@ -180,25 +200,13 @@ const Home = () => {
   };
 
   return (
-    <ConfigProvider
-      theme={{
-        cssVar: true,
-        hashed: false,
-      }}
-    >
+    <ConfigProvider theme={{ cssVar: true, hashed: false }}>
       <div style={{ padding: '24px' }}>
         {contextHolder}
 
         <Row justify="center" style={{ marginBottom: '24px' }}>
           <Col span={24}>
-            <Title
-              level={2}
-              style={{
-                textAlign: 'center',
-                color: '#1890ff',
-                marginBottom: '8px'
-              }}
-            >
+            <Title level={2} style={{ textAlign: 'center', color: '#1890ff', marginBottom: '8px' }}>
               VALORACIÓN GERIÁTRICA INTEGRAL
             </Title>
             <Text type="secondary" style={{ textAlign: 'center', display: 'block' }}>
@@ -213,7 +221,7 @@ const Home = () => {
 
         <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
           <Col span={24}>
-            <Card bordered={false} style={{ backgroundColor: '#fafafa' }}>
+            <Card style={{ backgroundColor: '#fafafa' }}>
               <Space direction="vertical">
                 <Text>
                   <Text strong>1.</Text> Descarga la plantilla si no cuentas con un archivo Excel con el formato requerido.
@@ -235,25 +243,14 @@ const Home = () => {
 
         <Row gutter={16} style={{ marginBottom: '24px' }} className='flex justify-start'>
           <Col>
-            <Button
-              icon={<DownloadOutlined />}
-              onClick={generateTemplate}
-              // size="large"
-              type="dashed"
-            >
+            <Button icon={<DownloadOutlined />} onClick={generateTemplate} type="dashed">
               Descargar Plantilla
             </Button>
           </Col>
           <Col>
-            <Upload beforeUpload={handleFileUpload} showUploadList={false}>
-              <Button
-                icon={<UploadOutlined />}
-                type="primary"
-              // size="large"
-              >
-                Cargar Archivo Excel
-              </Button>
-            </Upload>
+            <Button icon={<UploadOutlined />} type="primary" onClick={handleFileUpload}>
+              Cargar Archivo Excel
+            </Button>
           </Col>
         </Row>
 

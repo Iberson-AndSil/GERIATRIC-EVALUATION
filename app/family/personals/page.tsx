@@ -1,9 +1,10 @@
 "use client";
 import { Form, Input, DatePicker, InputNumber, Radio, Row, Col, Typography, Button, Divider, Select } from "antd";
-import { DollarOutlined, RiseOutlined, HeartOutlined, HomeOutlined, IdcardOutlined, ManOutlined, TeamOutlined, UserOutlined, WomanOutlined, ArrowRightOutlined, ArrowLeftOutlined } from "@ant-design/icons";
-import React from "react";
+import { RiseOutlined, HeartOutlined, HomeOutlined, IdcardOutlined, ManOutlined, TeamOutlined, UserOutlined, WomanOutlined, ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
+import React, { useEffect } from "react";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import Link from "next/link";
+import * as XLSX from "xlsx";
 
 const { Title, Text } = Typography;
 
@@ -36,45 +37,134 @@ declare global {
   }
 }
 
+interface Paciente {
+  codigo: string;
+  nombre: string;
+  dni: string;
+  edad: number;
+  sexo: 'M' | 'F';
+  fecha_nacimiento: string;
+  zona_residencia: string;
+  domicilio: string;
+  nivel_educativo: string;
+  ocupacion: string;
+  sistema_pension: string;
+  ingreso_economico: number;
+  con_quien_vive: string;
+  relacion: string;
+}
+
 const PatientForm = () => {
-  
-  const { excelData } = useGlobalContext(); // Asumiendo que excelData es el contenido del archivo Excel
+  const [form] = Form.useForm();
+
+  const { excelData, filePath, fileHandle } = useGlobalContext();
+
+  const generarCodigoUnico = (dni: string, existingCodes: Set<string>): string => {
+    const baseCodigo = `PAC-${dni}-${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
+    let codigo = baseCodigo;
+    let counter = 1;
+
+    while (existingCodes.has(codigo)) {
+      codigo = `${baseCodigo}-${counter.toString().padStart(2, '0')}`;
+      counter++;
+    }
+
+    return codigo;
+  };
 
   const saveFile = async () => {
     try {
-      // Mostrar cuadro de diálogo para guardar el archivo
-      const handle = await window.showSaveFilePicker({
-        suggestedName: "data.xlsx", // Sugerir un nombre para el archivo
-        types: [
-          {
-            description: "Excel Files",
-            accept: {
-              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
-            },
-          },
-        ],
+      if (!fileHandle) {
+        alert("Por favor seleccione un archivo primero");
+        return;
+      }
+
+      const formData = await form.validateFields();
+      const file = await fileHandle.getFile();
+      const arrayBuffer = await file.arrayBuffer();
+      const existingWb = XLSX.read(arrayBuffer, { type: "array" });
+      const wsName = existingWb.SheetNames[0];
+      const ws = existingWb.Sheets[wsName];
+
+      const existingData: Paciente[][] = XLSX.utils.sheet_to_json(ws, {
+        header: 1,
+        defval: ""
       });
 
-      // Crear un archivo escribible
-      const writable = await handle.createWritable();
+      const existingCodes = new Set(
+        existingData.slice(1).map(row => row[0]?.toString().trim())
+      );
 
-      // Escribir el contenido de excelData en el archivo
-      // await writable.write(excelData);
-      
-      // Cerrar el archivo
+      const nuevoCodigo = generarCodigoUnico(formData.dni, existingCodes);
+      const nuevoPaciente: Paciente = {
+        codigo: nuevoCodigo,
+        nombre: formData.nombre.trim(),
+        dni: formData.dni,
+        edad: formData.edad,
+        sexo: formData.sexo,
+        fecha_nacimiento: formData.fecha_nacimiento.format("DD/MM/YYYY"),
+        zona_residencia: formData.zona_residencia,
+        domicilio: formData.domicilio.trim(),
+        nivel_educativo: Array.isArray(formData.nivel_educativo)
+          ? formData.nivel_educativo.join(', ')
+          : formData.nivel_educativo,
+        ocupacion: formData.ocupacion.trim(),
+        sistema_pension: Array.isArray(formData.sistema_pension)
+          ? formData.sistema_pension.join(', ')
+          : formData.sistema_pension,
+        ingreso_economico: formData.ingreso_economico,
+        con_quien_vive: formData.con_quien_vive.trim(),
+        relacion: formData.relacion.trim()
+      };
+
+      const nuevosDatos = [
+        Object.values(nuevoPaciente)
+      ];
+
+      if (existingData.length === 0) {
+        const headers = Object.keys(nuevoPaciente);
+        nuevosDatos.unshift(headers);
+      }
+
+      const writable = await fileHandle.createWritable();
+      const updatedWs = existingData.length === 0
+        ? XLSX.utils.aoa_to_sheet(nuevosDatos)
+        : XLSX.utils.sheet_add_aoa(ws, nuevosDatos, { origin: -1 });
+
+      const updatedWb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(updatedWb, updatedWs, wsName);
+
+      await writable.write(XLSX.write(updatedWb, {
+        bookType: "xlsx",
+        type: "buffer",
+        bookSST: true
+      }));
+
       await writable.close();
 
-      alert("El archivo ha sido guardado exitosamente.");
-    } catch (err) {
-      console.error("Error al guardar el archivo:", err);
+      form.resetFields();
+      alert("Paciente guardado exitosamente con código: " + nuevoCodigo);
+
+    } catch (err: any) {
+      console.error("Error detallado:", err);
+      alert(`Error al guardar: ${err.message || 'Verifique la consola para más detalles'}`);
     }
   };
-  
+
+
+  useEffect(() => {
+    if (excelData.length > 0) {
+      console.log("Pacientes cargados:", excelData);
+      console.log("filePath", filePath);
+      console.log("fileHandle", fileHandle);
+
+    }
+  }, [excelData]);
 
   return (
     <>
       <Form
-        // form={form}
+        form={form}
         layout="vertical"
       >
         <Title
@@ -276,9 +366,6 @@ const PatientForm = () => {
                 min={0}
                 style={{ width: '100%' }}
                 size="large"
-                formatter={value => `S/. ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                // parser={value => value!.replace(/S\/\.\s?|(,*)/g, '')}
-                prefix={<DollarOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
               />
             </Form.Item>
           </Col>
@@ -327,22 +414,22 @@ const PatientForm = () => {
             </Link>
           </Col>
           <Col>
-            <Link href="family/personals" passHref>
-              <Button
-                type="primary"
-                size="large"
-                onClick={saveFile}
-                style={{
-                  minWidth: '120px',
-                  display: 'flex',
-                  // alignItems: 'center',
-                  // justifyContent: 'space-between'
-                }}
-              >
-                Continuar
-                <ArrowRightOutlined style={{ marginLeft: 8 }} />
-              </Button>
-            </Link>
+            <Button
+              type="primary"
+              size="large"
+              onClick={saveFile}
+              style={{ minWidth: '120px' }}
+              disabled={!fileHandle}
+            >
+              {fileHandle ? (
+                <>
+                  Guardar Paciente
+                  <SaveOutlined style={{ marginLeft: 8 }} />
+                </>
+              ) : (
+                "Seleccione archivo primero"
+              )}
+            </Button>
           </Col>
         </Row>
       </Form>
