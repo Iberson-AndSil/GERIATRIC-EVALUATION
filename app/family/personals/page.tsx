@@ -57,7 +57,7 @@ interface Paciente {
 const PatientForm = () => {
   const [form] = Form.useForm();
 
-  const { excelData, filePath, fileHandle } = useGlobalContext();
+  const { excelData, fileHandle } = useGlobalContext();
 
   const generarCodigoUnico = (dni: string, existingCodes: Set<string>): string => {
     const baseCodigo = `PAC-${dni}-${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
@@ -145,9 +145,14 @@ const PatientForm = () => {
       form.resetFields();
       alert("Paciente guardado exitosamente con código: " + nuevoCodigo);
 
-    } catch (err: any) {
-      console.error("Error detallado:", err);
-      alert(`Error al guardar: ${err.message || 'Verifique la consola para más detalles'}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Error detallado:", err);
+        alert(`Error al guardar: ${err.message}`);
+      } else {
+        console.error("Error desconocido:", err);
+        alert("Error al guardar: Verifique la consola para más detalles");
+      }
     }
   };
 
@@ -155,9 +160,6 @@ const PatientForm = () => {
   useEffect(() => {
     if (excelData.length > 0) {
       console.log("Pacientes cargados:", excelData);
-      console.log("filePath", filePath);
-      console.log("fileHandle", fileHandle);
-
     }
   }, [excelData]);
 
