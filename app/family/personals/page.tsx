@@ -1,279 +1,440 @@
 "use client";
-import { Form, Space, Input, DatePicker, InputNumber, Radio, Checkbox, Row, Col, Typography, Button, Upload, NotificationArgsProps, notification } from "antd";
-import { useEffect, useState } from "react";
-import { utils, writeFileXLSX } from 'xlsx';
-import * as XLSX from "xlsx";
-import {
-  UploadOutlined
-} from "@ant-design/icons";
-import React from "react";
+import { Form, Input, DatePicker, InputNumber, Radio, Row, Col, Typography, Button, Divider, Select } from "antd";
+import { RiseOutlined, HeartOutlined, HomeOutlined, IdcardOutlined, ManOutlined, TeamOutlined, UserOutlined, WomanOutlined, ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
+import React, { useEffect } from "react";
 import { useGlobalContext } from "@/app/context/GlobalContext";
+import Link from "next/link";
+import * as XLSX from "xlsx";
 
-const { Title } = Typography;
-type NotificationPlacement = NotificationArgsProps['placement'];
+const { Title, Text } = Typography;
+
+declare global {
+  interface Window {
+    showSaveFilePicker: (options?: {
+      suggestedName?: string;
+      types?: Array<{
+        description?: string;
+        accept: Record<string, string[]>;
+      }>;
+    }) => Promise<FileSystemFileHandle>;
+  }
+}
+
+interface FilePickerOptions {
+  multiple?: boolean;
+  excludeAcceptAllOption?: boolean;
+  types?: Array<{
+    description?: string;
+    accept: Record<string, string[]>;
+  }>;
+  startIn?: 'desktop' | 'documents' | 'downloads' | 'music' | 'pictures' | 'videos';
+  id?: string;
+}
+
+declare global {
+  interface Window {
+    showOpenFilePicker: (options?: FilePickerOptions) => Promise<FileSystemFileHandle[]>;
+  }
+}
+
+interface Paciente {
+  codigo: string;
+  nombre: string;
+  dni: string;
+  edad: number;
+  sexo: 'M' | 'F';
+  fecha_nacimiento: string;
+  zona_residencia: string;
+  domicilio: string;
+  nivel_educativo: string;
+  ocupacion: string;
+  sistema_pension: string;
+  ingreso_economico: number;
+  con_quien_vive: string;
+  relacion: string;
+}
 
 const PatientForm = () => {
-
-  const [active, setActive] = useState(false);
-  const [api, contextHolder] = notification.useNotification();
   const [form] = Form.useForm();
-  const { setFilePath } = useGlobalContext();
 
-  const handleExportExcel = async () => {
+  const { excelData, fileHandle } = useGlobalContext();
+
+  const generarCodigoUnico = (dni: string, existingCodes: Set<string>): string => {
+    const baseCodigo = `PAC-${dni}-${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
+    let codigo = baseCodigo;
+    let counter = 1;
+
+    while (existingCodes.has(codigo)) {
+      codigo = `${baseCodigo}-${counter.toString().padStart(2, '0')}`;
+      counter++;
+    }
+
+    return codigo;
+  };
+
+  const saveFile = async () => {
     try {
-      const values = await form.validateFields();
+      if (!fileHandle) {
+        alert("Por favor seleccione un archivo primero");
+        return;
+      }
 
-      values.nivel_educativo = values.nivel_educativo?.join(', ') || '';
-      values.sistema_pension = values.sistema_pension?.join(', ') || '';
-      values.fecha_nacimiento = values.fecha_nacimiento?.format('DD/MM/YYYY') || '';
-      values.zona_residencia = values.zona_residencia?.join(', ') || '';
+      const formData = await form.validateFields();
+      const file = await fileHandle.getFile();
+      const arrayBuffer = await file.arrayBuffer();
+      const existingWb = XLSX.read(arrayBuffer, { type: "array" });
+      const wsName = existingWb.SheetNames[0];
+      const ws = existingWb.Sheets[wsName];
 
-      const existingData = JSON.parse(localStorage.getItem('clientes') || '[]');
-
-      const newData = [...existingData, values];
-      console.log(newData);
-
-      localStorage.setItem('clientes', JSON.stringify(newData));
-
-      const worksheet = utils.json_to_sheet(newData, {
-        header: [
-          'nombre',
-          'dni',
-          'fecha_nacimiento',
-          'edad',
-          'sexo',
-          'zona_residencia',
-          'domicilio',
-          'nivel_educativo',
-          'ocupacion',
-          'sistema_pension',
-          'ingreso_economico',
-          'con_quien_vive',
-          'relacion'
-        ]
+      const existingData: Paciente[][] = XLSX.utils.sheet_to_json(ws, {
+        header: 1,
+        defval: ""
       });
 
-      const workbook = utils.book_new();
-      utils.book_append_sheet(workbook, worksheet, 'Clientes');
+      const existingCodes = new Set(
+        existingData.slice(1).map(row => row[0]?.toString().trim())
+      );
 
-      writeFileXLSX(workbook, 'clientes.xlsx', {
-        compression: true,
-        bookType: 'xlsx',
-        type: 'buffer'
-      });
+      const nuevoCodigo = generarCodigoUnico(formData.dni, existingCodes);
+      const nuevoPaciente: Paciente = {
+        codigo: nuevoCodigo,
+        nombre: formData.nombre.trim(),
+        dni: formData.dni,
+        edad: formData.edad,
+        sexo: formData.sexo,
+        fecha_nacimiento: formData.fecha_nacimiento.format("DD/MM/YYYY"),
+        zona_residencia: formData.zona_residencia,
+        domicilio: formData.domicilio.trim(),
+        nivel_educativo: Array.isArray(formData.nivel_educativo)
+          ? formData.nivel_educativo.join(', ')
+          : formData.nivel_educativo,
+        ocupacion: formData.ocupacion.trim(),
+        sistema_pension: Array.isArray(formData.sistema_pension)
+          ? formData.sistema_pension.join(', ')
+          : formData.sistema_pension,
+        ingreso_economico: formData.ingreso_economico,
+        con_quien_vive: formData.con_quien_vive.trim(),
+        relacion: formData.relacion.trim()
+      };
 
-      setActive(true);
+      const nuevosDatos = [
+        Object.values(nuevoPaciente)
+      ];
+
+      if (existingData.length === 0) {
+        const headers = Object.keys(nuevoPaciente);
+        nuevosDatos.unshift(headers);
+      }
+
+      const writable = await fileHandle.createWritable();
+      const updatedWs = existingData.length === 0
+        ? XLSX.utils.aoa_to_sheet(nuevosDatos)
+        : XLSX.utils.sheet_add_aoa(ws, nuevosDatos, { origin: -1 });
+
+      const updatedWb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(updatedWb, updatedWs, wsName);
+
+      await writable.write(XLSX.write(updatedWb, {
+        bookType: "xlsx",
+        type: "buffer",
+        bookSST: true
+      }));
+
+      await writable.close();
+
       form.resetFields();
+      alert("Paciente guardado exitosamente con código: " + nuevoCodigo);
 
-    } catch (error) {
-      console.error('Error:', error);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Error detallado:", err);
+        alert(`Error al guardar: ${err.message}`);
+      } else {
+        console.error("Error desconocido:", err);
+        alert("Error al guardar: Verifique la consola para más detalles");
+      }
     }
   };
 
-  const requiredColumns = [
-    'nombre',
-    'dni',
-    'fecha_nacimiento',
-    'edad',
-    'sexo',
-    'zona_residencia',
-    'domicilio',
-    'nivel_educativo',
-    'ocupacion',
-    'sistema_pension',
-    'ingreso_economico',
-    'con_quien_vive',
-    'relacion'
-  ];
 
   useEffect(() => {
-  }, [setFilePath]);
-
-  const handleFileUpload = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target?.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      const headers = jsonData[0] as string[];
-      const isValidFile = requiredColumns.every((col) => headers.includes(col));
-      if (isValidFile) {
-        setFilePath(file.name);
-        openNotification("success", "Operación exitosa", "El archivo se ha validado correctamente.", "topRight");
-      } else {
-        openNotification("error", "Error en la validación", "Las columnas del archivo no coinciden.", "topRight");
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  };
-
-  const openNotification = (type: "success" | "error", message: string, description: string, placement: NotificationPlacement) => {
-    api[type]({
-      message,
-      description,
-      placement,
-    });
-  };
+    if (excelData.length > 0) {
+      console.log("Pacientes cargados:", excelData);
+    }
+  }, [excelData]);
 
   return (
     <>
-
-      <Form form={form} layout="vertical">
-        <Title level={3} className="text-center font-bold mb-6">
+      <Form
+        form={form}
+        layout="vertical"
+      >
+        <Title
+          level={3}
+          style={{
+            textAlign: 'center',
+            marginBottom: '24px',
+            color: '#1890ff',
+            fontWeight: 500
+          }}
+        >
           DATOS PERSONALES
         </Title>
 
-        <Row gutter={16}>
-          <Col span={16}>
-            <Form.Item label="Apellidos y Nombres" name="nombre">
-              <Input placeholder="Ingrese su nombre completo" />
+        <Divider orientation="left" orientationMargin={0} style={{ color: '#1890ff' }}>
+          Información Básica
+        </Divider>
+
+        <Row gutter={[16, 16]}>
+          <Col xs={24} md={16}>
+            <Form.Item
+              label={<Text strong>Apellidos y Nombres</Text>}
+              name="nombre"
+              rules={[{ required: true, message: 'Por favor ingrese su nombre completo' }]}
+            >
+              <Input
+                placeholder="Ingrese su nombre completo"
+                size="large"
+                prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+              />
             </Form.Item>
           </Col>
-          <Col span={8}>
-            <Form.Item label="DNI" name="dni">
-              <Input placeholder="Ingrese su DNI" />
+          <Col xs={24} md={8}>
+            <Form.Item
+              label={<Text strong>DNI</Text>}
+              name="dni"
+              rules={[
+                { required: true, message: 'Por favor ingrese su DNI' },
+                { pattern: /^\d{8}$/, message: 'El DNI debe tener 8 dígitos' }
+              ]}
+            >
+              <Input
+                placeholder="Ingrese su DNI"
+                size="large"
+                prefix={<IdcardOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+              />
             </Form.Item>
           </Col>
         </Row>
 
-        <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item label="Fecha de Nacimiento" name="fecha_nacimiento">
-              <DatePicker format="DD/MM/YYYY" style={{ width: "100%" }} />
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={6}>
+            <Form.Item
+              label={<Text strong>Fecha de Nacimiento</Text>}
+              name="fecha_nacimiento"
+              rules={[{ required: true, message: 'Por favor seleccione su fecha de nacimiento' }]}
+            >
+              <DatePicker
+                format="DD/MM/YYYY"
+                style={{ width: "100%" }}
+                size="large"
+              />
             </Form.Item>
           </Col>
-          <Col span={8}>
-            <Form.Item label="Edad" name="edad">
-              <InputNumber min={0} style={{ width: "100%" }} />
+          <Col xs={24} sm={12} md={4}>
+            <Form.Item
+              label={<Text strong>Edad</Text>}
+              name="edad"
+              rules={[{ required: true, message: 'Por favor ingrese su edad' }]}
+            >
+              <InputNumber
+                min={0}
+                max={120}
+                style={{ width: "100%" }}
+                size="large"
+              />
             </Form.Item>
           </Col>
-          <Col span={4}>
-            <Form.Item label="Sexo" name="sexo">
-              <Radio.Group>
-                <Radio value="F">F</Radio>
-                <Radio value="M">M</Radio>
+          <Col xs={24} sm={12} md={6}>
+            <Form.Item
+              label={<Text strong>Sexo</Text>}
+              name="sexo"
+              rules={[{ required: true, message: 'Por favor seleccione su sexo' }]}
+            >
+              <Radio.Group size="large">
+                <Radio.Button value="F">
+                  <WomanOutlined /> Femenino
+                </Radio.Button>
+                <Radio.Button value="M">
+                  <ManOutlined /> Masculino
+                </Radio.Button>
               </Radio.Group>
             </Form.Item>
           </Col>
-          <Col span={4}>
-            <Form.Item label="Zona Residencia" name="zona_residencia">
-              <Checkbox.Group>
-                <Checkbox value="rural">Rural</Checkbox>
-                <Checkbox value="urbano">Urbano</Checkbox>
-              </Checkbox.Group>
+          <Col xs={24} sm={12} md={8}>
+            <Form.Item
+              label={<Text strong>Zona Residencia</Text>}
+              name="zona_residencia"
+              rules={[{ required: true, message: 'Por favor seleccione su zona de residencia' }]}
+            >
+              <Select
+                placeholder="Seleccione zona"
+                size="large"
+                options={[
+                  { value: 'rural', label: 'Rural' },
+                  { value: 'urbano', label: 'Urbano' }
+                ]}
+              />
             </Form.Item>
           </Col>
         </Row>
 
-        <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item label="Domicilio" name="domicilio">
-              <Input placeholder="Ingrese su domicilio" />
-            </Form.Item>
-          </Col>
-          <Col span={16}>
-            <Form.Item label="Nivel Educativo" name="nivel_educativo">
-              <Checkbox.Group style={{ width: '100%' }}>
-                <Row className="w-full flex justify-between px-4 py-2">
-                  <Col className="flex-1 text-start">
-                    <Checkbox value="sin_np" className="whitespace-nowrap">Sin N/P</Checkbox>
-                  </Col>
-                  <Col className="flex-1 text-start">
-                    <Checkbox value="p" className="whitespace-nowrap">P</Checkbox>
-                  </Col>
-                  <Col className="flex-1 text-start">
-                    <Checkbox value="s" className="whitespace-nowrap">S</Checkbox>
-                  </Col>
-                  <Col className="flex-1 text-start">
-                    <Checkbox value="tecnica" className="whitespace-nowrap">Técnica</Checkbox>
-                  </Col>
-                  <Col className="flex-1 text-start">
-                    <Checkbox value="universitaria" className="whitespace-nowrap">Universitaria</Checkbox>
-                  </Col>
-                </Row>
-              </Checkbox.Group>
+        <Divider orientation="left" orientationMargin={0} style={{ color: '#1890ff' }}>
+          Información Adicional
+        </Divider>
+
+        <Row gutter={[16, 16]}>
+          <Col span={24}>
+            <Form.Item
+              label={<Text strong>Domicilio</Text>}
+              name="domicilio"
+              rules={[{ required: true, message: 'Por favor ingrese su domicilio' }]}
+            >
+              <Input
+                placeholder="Ingrese su domicilio completo"
+                size="large"
+                prefix={<HomeOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+              />
             </Form.Item>
           </Col>
         </Row>
 
-        <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item label="Ocupación Actual" name="ocupacion">
-              <Input placeholder="Ingrese su ocupación" />
+        <Row gutter={[16, 16]}>
+          <Col span={12}>
+            <Form.Item
+              label={<Text strong>Nivel Educativo</Text>}
+              name="nivel_educativo"
+              rules={[{ required: true, message: 'Por favor seleccione su nivel educativo' }]}
+            >
+              <Select
+                mode="multiple"
+                size="large"
+                placeholder="Seleccione su nivel educativo"
+                style={{ width: '100%' }}
+                options={[
+                  { value: 'sin_np', label: 'Sin Nivel/Incial' },
+                  { value: 'p', label: 'Primaria' },
+                  { value: 's', label: 'Secundaria' },
+                  { value: 'tecnica', label: 'Técnica (SNU)' },
+                  { value: 'universitaria', label: 'Universitaria' }
+                ]}
+              />
             </Form.Item>
           </Col>
-          <Col span={16}>
-            <Form.Item label="Sistema de Pensión" name="sistema_pension">
-              <Checkbox.Group style={{ width: '100%' }}>
-                <Row className="w-full flex justify-between px-4 py-2">
-                  <Col className="flex-1 text-start justify-start">
-                    <Checkbox value="onp" className="whitespace-nowrap">ONP</Checkbox>
-                  </Col>
-                  <Col className="flex-1 text-start justify-start">
-                    <Checkbox value="afp" className="whitespace-nowrap">AFP</Checkbox>
-                  </Col>
-                  <Col className="flex-1 text-start justify-start">
-                    <Checkbox value="cedula_viva" className="whitespace-nowrap">Cédula Viva</Checkbox>
-                  </Col>
-                  <Col className="flex-1 text-start justify-start">
-                    <Checkbox value="reja" className="whitespace-nowrap">REJA</Checkbox>
-                  </Col>
-                  <Col className="flex-1 text-start justify-start">
-                    <Checkbox value="dependiente" className="whitespace-nowrap">Dependiente</Checkbox>
-                  </Col>
-                </Row>
-              </Checkbox.Group>
+          <Col md={12}>
+            <Form.Item
+              label={<Text strong>Sistema de Pensión</Text>}
+              name="sistema_pension"
+              rules={[{ required: true, message: 'Por favor seleccione su sistema de pensión' }]}
+            >
+              <Select
+                mode="multiple"
+                size="large"
+                placeholder="Seleccione sistema de pensión"
+                style={{ width: '100%' }}
+                options={[
+                  { value: 'onp', label: 'ONP' },
+                  { value: 'afp', label: 'AFP' },
+                  { value: 'cedula_viva', label: 'Cédula Viva (20530)' },
+                  { value: 'reja', label: 'REJA (30425)' },
+                  { value: 'dependiente', label: 'Dependiente' }
+                ]}
+              />
             </Form.Item>
           </Col>
         </Row>
 
-        <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item label="Ingreso Económico" name="ingreso_economico">
-              <Input placeholder="Ingrese su ingreso económico" />
+        <Row gutter={[16, 16]}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              label={<Text strong>Ocupación Actual</Text>}
+              name="ocupacion"
+              rules={[{ required: true, message: 'Por favor ingrese su ocupación' }]}
+            >
+              <Input
+                placeholder="Ingrese su ocupación actual"
+                size="large"
+                prefix={<RiseOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+              />
             </Form.Item>
           </Col>
-          <Col span={8}>
-            <Form.Item label="Con quién vive" name="con_quien_vive">
-              <Input placeholder="Ingrese con quién vive" />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="Relación" name="relacion">
-              <Input placeholder="Ingrese la relación" />
+          <Col xs={24} md={12}>
+            <Form.Item
+              label={<Text strong>Ingreso Económico (S/.)</Text>}
+              name="ingreso_economico"
+              rules={[{ required: true, message: 'Por favor ingrese su ingreso económico' }]}
+            >
+              <InputNumber
+                min={0}
+                style={{ width: '100%' }}
+                size="large"
+              />
             </Form.Item>
           </Col>
         </Row>
-        <Row className="flex justify-between items-center">
+
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={12}>
+            <Form.Item
+              label={<Text strong>Con quién vive</Text>}
+              name="con_quien_vive"
+              rules={[{ required: true, message: 'Por favor ingrese con quién vive' }]}
+            >
+              <Input
+                placeholder="Ej: Familia, solo, etc."
+                size="large"
+                prefix={<TeamOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12} md={12}>
+            <Form.Item
+              label={<Text strong>Relación</Text>}
+              name="relacion"
+              rules={[{ required: true, message: 'Por favor ingrese la relación' }]}
+            >
+              <Input
+                placeholder="Ej: Hijos, cónyuge, etc."
+                size="large"
+                prefix={<HeartOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row className="flex justify-end gap-4">
           <Col>
-            <Upload beforeUpload={handleFileUpload} showUploadList={false}>
-              <Button icon={<UploadOutlined />} type="primary">
-                Seleccionar Archivo Excel
-              </Button>
-            </Upload>
-          </Col>
-          <Col>
-            {!active ?
+            <Link href="/" passHref>
               <Button
-                color="cyan" variant="solid"
-                onClick={handleExportExcel}
+                type="default"
+                icon={<ArrowLeftOutlined />}
+                size="large"
+                style={{ minWidth: '120px' }}
               >
-                Guardar en Excel
-              </Button>:<Button
-                type="primary"
-                onClick={() => setActive(false)}
-              >
-                Siguiente
+                Atrás
               </Button>
-            }
+            </Link>
+          </Col>
+          <Col>
+            <Button
+              type="primary"
+              size="large"
+              onClick={saveFile}
+              style={{ minWidth: '120px' }}
+              disabled={!fileHandle}
+            >
+              {fileHandle ? (
+                <>
+                  Guardar Paciente
+                  <SaveOutlined style={{ marginLeft: 8 }} />
+                </>
+              ) : (
+                "Seleccione archivo primero"
+              )}
+            </Button>
           </Col>
         </Row>
       </Form>
-      <Space>
-        {contextHolder}
-      </Space>
     </>
   );
 };

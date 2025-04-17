@@ -1,20 +1,40 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
+interface Paciente {
+  codigo: string;
+  nombre: string;
+  dni: string;
+  edad: number;
+  fecha_nacimiento:string;
+  sexo: 'M' | 'F';
+  zona_residencia:string;
+  domicilio:string;
+  nivel_educativo:string
+  ocupacion:string;
+  sistema_pension:string;
+  ingreso_economico:number;
+  con_quien_vive:string;
+  relacion:string;
+}
+
 interface GlobalContextType {
-  globalString: string;
-  setGlobalString: (value: string) => void;
   filePath: string;
+  excelData: Paciente[]; 
   setFilePath: (value: string) => void;
+  setExcelData: (data: Paciente[]) => void;
+  fileHandle: FileSystemFileHandle | null;
+  setFileHandle: (handle: FileSystemFileHandle | null) => void;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
 export const GlobalProvider = ({ children }: { children: ReactNode }) => {
-  const [globalString, setGlobalString] = useState<string>("");
   const [filePath, setFilePath] = useState<string>("");
+  const [excelData, setExcelData] = useState<Paciente[]>([]);
+  const [fileHandle, setFileHandle] = useState<FileSystemFileHandle | null>(null); 
 
   return (
-    <GlobalContext.Provider value={{ globalString, setGlobalString, filePath, setFilePath }}>
+    <GlobalContext.Provider value={{ filePath, excelData, setFilePath, setExcelData, fileHandle, setFileHandle }}>
       {children}
     </GlobalContext.Provider>
   );
