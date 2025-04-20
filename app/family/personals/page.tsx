@@ -37,23 +37,6 @@ declare global {
   }
 }
 
-interface Paciente {
-  codigo: string;
-  nombre: string;
-  dni: string;
-  edad: number;
-  sexo: 'M' | 'F';
-  fecha_nacimiento: string;
-  zona_residencia: string;
-  domicilio: string;
-  nivel_educativo: string;
-  ocupacion: string;
-  sistema_pension: string;
-  ingreso_economico: number;
-  con_quien_vive: string;
-  relacion: string;
-}
-
 const PatientForm = () => {
   const [form] = Form.useForm();
 
@@ -114,7 +97,8 @@ const PatientForm = () => {
           : formData.sistema_pension,
         ingreso_economico: formData.ingreso_economico,
         con_quien_vive: formData.con_quien_vive.trim(),
-        relacion: formData.relacion.trim()
+        relacion: formData.relacion.trim(),
+        gijon:0,
       };
 
       const nuevosDatos = [

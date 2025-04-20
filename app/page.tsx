@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect} from 'react';
+import React, { useEffect } from 'react';
 import { ConfigProvider } from 'antd';
 import { Button, Table, notification, Card, Space, Row, Col, Typography, Divider, Tag } from 'antd';
 import { UploadOutlined, DownloadOutlined, ArrowRightOutlined } from '@ant-design/icons';
@@ -9,23 +9,6 @@ import { NotificationPlacement } from 'antd/es/notification/interface';
 import Link from 'next/link';
 
 const { Title, Text } = Typography;
-
-interface Paciente {
-  codigo: string;
-  nombre: string;
-  dni: string;
-  edad: number;
-  sexo: 'M' | 'F';
-  fecha_nacimiento: string;
-  zona_residencia: string;
-  domicilio: string;
-  nivel_educativo: string;
-  ocupacion: string;
-  sistema_pension: string;
-  ingreso_economico: number;
-  con_quien_vive: string;
-  relacion: string;
-}
 
 interface PacienteWithStatus extends Paciente {
   isNew?: boolean;
@@ -76,7 +59,7 @@ const Home = () => {
     'codigo', 'nombre', 'dni', 'fecha_nacimiento', 'edad', 'sexo',
     'zona_residencia', 'domicilio', 'nivel_educativo',
     'ocupacion', 'sistema_pension', 'ingreso_economico',
-    'con_quien_vive', 'relacion'
+    'con_quien_vive', 'relacion', 'gijon'
   ];
 
   const generateTemplate = () => {
@@ -109,7 +92,7 @@ const Home = () => {
 
       const headers = (jsonData[0] as string[]).map(h => String(h).trim());
       const normalizedHeaders = headers.map(h => h.toLowerCase());
-      
+
       const missingColumns = requiredColumns.filter(
         col => !normalizedHeaders.includes(col.toLowerCase())
       );
@@ -133,9 +116,9 @@ const Home = () => {
         .map((row: unknown, index) => {
           if (!Array.isArray(row)) return null;
 
-          const getValue = (col: string) => 
-            row[columnIndexMap[col.toLowerCase()]] !== undefined 
-              ? row[columnIndexMap[col.toLowerCase()]] 
+          const getValue = (col: string) =>
+            row[columnIndexMap[col.toLowerCase()]] !== undefined
+              ? row[columnIndexMap[col.toLowerCase()]]
               : null;
 
           const codigo = String(getValue('codigo') || `P${(index + 1).toString().padStart(4, '0')}`).trim();
@@ -152,6 +135,7 @@ const Home = () => {
           const ingreso_economico = Number(getValue('ingreso_economico')) || 0;
           const con_quien_vive = String(getValue('con_quien_vive') || '').trim();
           const relacion = String(getValue('relacion') || '').trim();
+          const gijon = Number(getValue('valor_gijon')) || 0;
 
           const isEmptyRow = !codigo && !nombre && !dni && isNaN(edad);
           if (isEmptyRow) return null;
@@ -273,7 +257,7 @@ const Home = () => {
         <Row justify="end">
           <Col>
             <Link
-              href={(excelData as PacienteWithStatus[]).some(p => p.requiresCompletion) ? '#' : 'family/personals'}
+              href={(excelData as PacienteWithStatus[]).some(p => p.requiresCompletion) ? 'family/personals' : 'family/personals'}
               passHref
             >
               <Button
