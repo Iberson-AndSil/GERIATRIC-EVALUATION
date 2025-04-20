@@ -1,7 +1,10 @@
 "use client";
 
-import { Form, Row, Col, Typography, Radio } from "antd";
+import { useGlobalContext } from "@/app/context/GlobalContext";
+import { Form, Row, Col, Typography, Radio, Button } from "antd";
+import Link from "next/link";
 import { useState } from "react";
+import * as XLSX from "xlsx";
 
 const { Title, Text } = Typography;
 
@@ -13,6 +16,9 @@ const EscalaGijon = () => {
     sociales: 0,
     apoyo: 0,
   });
+
+  const [form] = Form.useForm();
+  const { fileHandle } = useGlobalContext();
 
   const handleChange = (categoria: keyof typeof puntajes, valor: number) => {
     setPuntajes((prev) => ({
@@ -33,6 +39,61 @@ const EscalaGijon = () => {
     "Vive solo y carece de hijos o viven alejados",
   ];
 
+  const saveFile = async () => {
+    try {
+      if (!fileHandle) {
+        alert("Por favor seleccione un archivo primero");
+        return;
+      }
+  
+      const file = await fileHandle.getFile();
+      const arrayBuffer = await file.arrayBuffer();
+      const existingWb = XLSX.read(arrayBuffer, { type: "array" });
+      const wsName = existingWb.SheetNames[0];
+      const ws = existingWb.Sheets[wsName];
+  
+      const existingData: string[][] = XLSX.utils.sheet_to_json(ws, {
+        header: 1,
+        defval: ""
+      });
+  
+      const lastRowIndex = existingData.length - 1;
+  
+      if (lastRowIndex >= 0) {
+        while (existingData[lastRowIndex].length < 14) {
+          existingData[lastRowIndex].push("");
+        }
+  
+        existingData[lastRowIndex][14] = "Nuevo valor actualizado";
+      }
+  
+      const updatedWs = XLSX.utils.aoa_to_sheet(existingData);
+  
+      const updatedWb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(updatedWb, updatedWs, wsName);
+  
+      const writable = await fileHandle.createWritable();
+      await writable.write(XLSX.write(updatedWb, {
+        bookType: "xlsx",
+        type: "buffer",
+        bookSST: true
+      }));
+      await writable.close();
+  
+      form.resetFields();
+      alert("Paciente guardado exitosamente y última fila actualizada");
+  
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Error detallado:", err);
+        alert(`Error al guardar: ${err.message}`);
+      } else {
+        console.error("Error desconocido:", err);
+        alert("Error al guardar: Verifique la consola para más detalles");
+      }
+    }
+  };
+
   return (
     <Form className="p-4 w-full flex flex-col items-center">
       <Title level={3} className="text-center font-bold mb-6">
@@ -40,7 +101,6 @@ const EscalaGijon = () => {
       </Title>
 
       <div className="w-3/4">
-        {/** Sección SITUACIÓN FAMILIAR */}
         <Col span={24} className="mb-6">
           <Row>
             <Col span={18}>
@@ -67,8 +127,6 @@ const EscalaGijon = () => {
             ))}
           </Radio.Group>
         </Col>
-
-        {/** Sección SITUACIÓN ECONÓMICA */}
         <Col span={24} className="mb-6">
           <Row>
             <Col span={18}>
@@ -95,8 +153,6 @@ const EscalaGijon = () => {
             ))}
           </Radio.Group>
         </Col>
-
-        {/** Sección VIVIENDA */}
         <Col span={24} className="mb-6">
           <Row>
             <Col span={18}>
@@ -123,8 +179,6 @@ const EscalaGijon = () => {
             ))}
           </Radio.Group>
         </Col>
-
-        {/** Sección RELACIONES SOCIALES */}
         <Col span={24} className="mb-6">
           <Row>
             <Col span={18}>
@@ -151,8 +205,6 @@ const EscalaGijon = () => {
             ))}
           </Radio.Group>
         </Col>
-
-        {/** Sección APOYO A LA RED SOCIAL */}
         <Col span={24} className="mb-6">
           <Row>
             <Col span={18}>
@@ -179,8 +231,6 @@ const EscalaGijon = () => {
             ))}
           </Radio.Group>
         </Col>
-
-        {/** Puntaje Total */}
         <Row gutter={16} className="mt-6">
           <Col span={18} className="text-right pr-4">
             <Text strong className="text-lg">PUNTAJE TOTAL</Text>
@@ -189,6 +239,38 @@ const EscalaGijon = () => {
             <Text className="text-lg font-mono bg-gray-100 px-4 py-2">
               {obtenerPuntajeTotal()}
             </Text>
+          </Col>
+        </Row>
+        <Row className="flex justify-end gap-4">
+          <Col>
+            <Link href="/" passHref>
+              <Button
+                type="default"
+                // icon={<ArrowLeftOutlined />}
+                size="large"
+                style={{ minWidth: '120px' }}
+              >
+                Atrás
+              </Button>
+            </Link>
+          </Col>
+          <Col>
+            <Button
+              type="primary"
+              size="large"
+              onClick={saveFile}
+              style={{ minWidth: '120px' }}
+              disabled={!fileHandle}
+            >
+              {fileHandle ? (
+                <>
+                  Guardar Paciente
+                  {/* <SaveOutlined style={{ marginLeft: 8 }} /> */}
+                </>
+              ) : (
+                "Seleccione archivo primero"
+              )}
+            </Button>
           </Col>
         </Row>
       </div>
