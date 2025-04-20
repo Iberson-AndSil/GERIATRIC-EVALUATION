@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from "react";
+import { Paciente } from "../interfaces";
 
 interface GlobalContextType {
   filePath: string;

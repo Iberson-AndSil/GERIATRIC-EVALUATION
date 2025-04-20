@@ -18,7 +18,7 @@ const EscalaGijon = () => {
   });
 
   const [form] = Form.useForm();
-  const { excelData, fileHandle } = useGlobalContext();
+  const { fileHandle } = useGlobalContext();
 
   const handleChange = (categoria: keyof typeof puntajes, valor: number) => {
     setPuntajes((prev) => ({
@@ -46,7 +46,6 @@ const EscalaGijon = () => {
         return;
       }
   
-      const formData = await form.validateFields();
       const file = await fileHandle.getFile();
       const arrayBuffer = await file.arrayBuffer();
       const existingWb = XLSX.read(arrayBuffer, { type: "array" });

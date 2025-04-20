@@ -5,6 +5,7 @@ import React, { useEffect } from "react";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import Link from "next/link";
 import * as XLSX from "xlsx";
+import { Paciente } from "@/app/interfaces";
 
 const { Title, Text } = Typography;
 

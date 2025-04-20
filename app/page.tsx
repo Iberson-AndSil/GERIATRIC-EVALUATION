@@ -7,6 +7,7 @@ import * as XLSX from 'xlsx';
 import { useGlobalContext } from '@/app/context/GlobalContext';
 import { NotificationPlacement } from 'antd/es/notification/interface';
 import Link from 'next/link';
+import { Paciente } from './interfaces';
 
 const { Title, Text } = Typography;
 
@@ -135,7 +136,6 @@ const Home = () => {
           const ingreso_economico = Number(getValue('ingreso_economico')) || 0;
           const con_quien_vive = String(getValue('con_quien_vive') || '').trim();
           const relacion = String(getValue('relacion') || '').trim();
-          const gijon = Number(getValue('valor_gijon')) || 0;
 
           const isEmptyRow = !codigo && !nombre && !dni && isNaN(edad);
           if (isEmptyRow) return null;

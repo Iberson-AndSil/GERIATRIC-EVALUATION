@@ -1,4 +1,4 @@
-interface Paciente {
+export interface Paciente {
   codigo: string;
   nombre: string;
   dni: string;
