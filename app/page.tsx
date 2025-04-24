@@ -1,13 +1,16 @@
 "use client";
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ConfigProvider } from 'antd';
-import { Button, Table, notification, Card, Space, Row, Col, Typography, Divider, Tag } from 'antd';
-import { UploadOutlined, DownloadOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { Button, Table, notification, Card, Space, Row, Col, Typography, Divider, Tag, Input } from 'antd';
+import { UploadOutlined, DownloadOutlined, ArrowRightOutlined, SearchOutlined } from '@ant-design/icons';
 import * as XLSX from 'xlsx';
 import { useGlobalContext } from '@/app/context/GlobalContext';
 import { NotificationPlacement } from 'antd/es/notification/interface';
 import Link from 'next/link';
 import { Paciente } from './interfaces';
+import type { ColumnType} from 'antd/es/table/interface';
+import type { FilterDropdownProps } from 'antd/es/table/interface';
+import Highlighter from 'react-highlight-words';
 
 const { Title, Text } = Typography;
 
@@ -19,29 +22,112 @@ interface PacienteWithStatus extends Paciente {
 const Home = () => {
   const { excelData, setExcelData, filePath, setFilePath, setFileHandle } = useGlobalContext();
   const [api, contextHolder] = notification.useNotification();
+  const [searchText, setSearchText] = useState('');
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const searchInput = useRef<any>(null);
 
   useEffect(() => {
     console.log(excelData);
   }, [excelData]);
 
-  const columns = [
+  const handleSearch = (
+    selectedKeys: string[],
+    confirm: FilterDropdownProps['confirm'],
+    dataIndex: keyof Paciente,
+  ) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = (clearFilters: () => void) => {
+    clearFilters();
+    setSearchText('');
+  };
+
+  const getColumnSearchProps = (dataIndex: keyof Paciente) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }: FilterDropdownProps) => (
+      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+        <Input
+          ref={searchInput}
+          placeholder={`Buscar ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Buscar
+          </Button>
+          <Button
+            onClick={() => clearFilters && handleReset(clearFilters)}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Reiniciar
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              close();
+            }}
+          >
+            Cerrar
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered: boolean) => (
+      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+    ),
+    onFilter: (value: any, record: any) =>
+      record[dataIndex]
+        .toString()
+        .toLowerCase()
+        .includes((value as string).toLowerCase()),
+    render: (text: string) =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      ),
+  });
+
+  const columns: ColumnType<Paciente>[]= [
     {
       title: 'Nombre',
       dataIndex: 'nombre',
       key: 'nombre',
+      ...getColumnSearchProps('nombre'),
       render: (text: string) => <Text strong>{text}</Text>
     },
     {
       title: 'DNI',
       dataIndex: 'dni',
       key: 'dni',
+      ...getColumnSearchProps('dni'),
       render: (text: string) => <Text code>{text}</Text>
     },
     {
       title: 'Edad',
       dataIndex: 'edad',
       key: 'edad',
-      align: 'center' as const
+      align: 'center' as const,
+      sorter: (a: Paciente, b: Paciente) => a.edad - b.edad,
+      sortDirections: ['descend', 'ascend'],
     },
     {
       title: 'Sexo',
@@ -50,9 +136,14 @@ const Home = () => {
       align: 'center' as const,
       render: (text: string) => (
         <Tag color={text === 'M' ? 'blue' : 'pink'}>
-          {text === 'M' ? 'Masculino' : 'Femenino'}
+          {text}
         </Tag>
-      )
+      ),
+      filters: [
+        { text: 'Masculino', value: 'M' },
+        { text: 'Femenino', value: 'F' },
+      ],
+      onFilter: (value: any, record: Paciente) => record.sexo === value,
     },
   ];
 
@@ -113,20 +204,25 @@ const Home = () => {
         columnIndexMap[header.toLowerCase()] = index;
       });
 
-      const formattedData = jsonData.slice(1)
-        .map((row: unknown, index) => {
-          if (!Array.isArray(row)) return null;
+      const isRowArray = (row: unknown): row is any[] => Array.isArray(row);
 
+      const isRowEmpty = (row: any[]) =>
+        !row || row.every(cell => cell === null || cell === undefined || String(cell).trim() === "");
+
+      const formattedData = jsonData.slice(1)
+        .filter(isRowArray)
+        .filter(row => !isRowEmpty(row))
+        .map((row) => {
           const getValue = (col: string) =>
             row[columnIndexMap[col.toLowerCase()]] !== undefined
               ? row[columnIndexMap[col.toLowerCase()]]
               : null;
 
-          const codigo = String(getValue('codigo') || `P${(index + 1).toString().padStart(4, '0')}`).trim();
+          const codigo = String(getValue('codigo') || '').trim();
           const nombre = String(getValue('nombre') || '').trim();
           const dni = String(getValue('dni') || '').trim();
           const edad = Number(getValue('edad')) || 0;
-          const sexo = getValue('sexo') === 'M' ? 'M' : 'F';
+          const sexo = String(getValue('sexo') || '').trim();
           const fecha_nacimiento = String(getValue('fecha_nacimiento') || '').trim();
           const zona_residencia = String(getValue('zona_residencia') || '').trim();
           const domicilio = String(getValue('domicilio') || '').trim();
@@ -155,7 +251,7 @@ const Home = () => {
             ingreso_economico,
             con_quien_vive,
             relacion,
-            requiresCompletion: !codigo || !nombre || !dni || isNaN(edad)
+            requiresCompletion: !codigo || !nombre || !dni || isNaN(edad),
           };
         })
         .filter((item): item is PacienteWithStatus => item !== null);
