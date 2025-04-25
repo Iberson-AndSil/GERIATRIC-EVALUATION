@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
-import { Layout as AntLayout, Menu, Button } from "antd";
+import 'antd/dist/reset.css';
+import { Layout as AntLayout, Menu, Button,ConfigProvider  } from "antd";
+import { StyleProvider } from '@ant-design/cssinjs';
 import { useRouter } from "next/navigation";
 import {
   MenuFoldOutlined,
@@ -38,7 +40,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     {
       key: "/assessment", icon: <AuditOutlined />, label: "Valoración Funcional",
       children: [
-        { key: "/abvd", icon: <HeartOutlined />, label: "ABVD", onClick: () => router.push("/family/abvd") },
+        { key: "/abvd", icon: <HeartOutlined />, label: "ABVD", onClick: () => router.push("/funtional/abvd") },
         { key: "/aivd", icon: <MedicineBoxOutlined />, label: "AIVD", onClick: () => router.push("/family/aivd") },
       ],
     },
@@ -63,6 +65,14 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   ];
 
   return (
+    <StyleProvider hashPriority="high">
+      <ConfigProvider
+        theme={{
+          token: {
+            colorPrimary: '#1890ff',
+          },
+        }}
+      >
     <GlobalProvider>
       <AntLayout style={{ minHeight: "100vh" }}>
         <Header style={{ background: "#001529", padding: "0 20px", display: "flex", alignItems: "center", justifyContent: "space-between", color: "white" }}>
@@ -71,7 +81,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
           />
-          <h1 style={{ color: "white", margin: 0 }}>My App</h1>
+          <h1 style={{ color: "white", margin: 0 }}>Test Geriatric</h1>
         </Header>
 
         <AntLayout>
@@ -91,6 +101,8 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </AntLayout>
       </AntLayout>
     </GlobalProvider>
+      </ConfigProvider>
+    </StyleProvider>
   );
 };
 

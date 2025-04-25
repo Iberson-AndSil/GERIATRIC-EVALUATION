@@ -2,9 +2,11 @@
 
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { Form, Row, Col, Typography, Radio, Button } from "antd";
+import { ArrowLeftOutlined, SaveOutlined} from "@ant-design/icons";
 import Link from "next/link";
 import { useState } from "react";
 import * as XLSX from "xlsx";
+import { useRouter } from 'next/navigation';
 
 const { Title, Text } = Typography;
 
@@ -16,7 +18,7 @@ const EscalaGijon = () => {
     sociales: 0,
     apoyo: 0,
   });
-
+  const router = useRouter();
   const [form] = Form.useForm();
   const { fileHandle } = useGlobalContext();
 
@@ -31,7 +33,7 @@ const EscalaGijon = () => {
     return Object.values(puntajes).reduce((acc, curr) => acc + curr, 0);
   };
 
-  const oraciones = [
+  const family = [
     "Vive con familia, sin conflicto familiar",
     "Vive con familia y presenta algún tipo de dependencia física/psíquica",
     "Vive con cónyuge de similar edad",
@@ -39,39 +41,72 @@ const EscalaGijon = () => {
     "Vive solo y carece de hijos o viven alejados",
   ];
 
+  const economic = [
+    "Dos veces el salario mínimo vital",
+    "1 + 1/2 veces el salario mínimo vital",
+    "Un salario mínimo vital",
+    "Sin pensión",
+    "Sin otros ingresos"
+  ];
+
+  const dwelling = [
+    "Adecuada a necesidades",
+    "Barreras arquitectónicas: peldaños, puertas estrechas, daños.",
+    "Mala higiene, baño incompleto, ausencia de agua caliente, calefacción.",
+    "Ausencia de ascensor, teléfono",
+    "Vivienda inadecuada (esteras, ruinas, no equipos mínimos)"
+  ];
+
+  const socials = [
+    "Buenas relaciones sociales",
+    "Relación social solo con familia y vecinos",
+    "Relación social solo con familia",
+    "No sale del domicilio, recibe familia",
+    "No sale y no recibe visitas"
+  ];
+
+  const socialsNetwork = [
+    "No necesita apoyo",
+    "Con apoyo familiar o vecinal",
+    "Voluntariado social, ayuda domiciliaria",
+    "Pendiente de ingreso a residencia geriátrica",
+    "Necesita cuidados permanentes"
+  ]
+
   const saveFile = async () => {
     try {
       if (!fileHandle) {
         alert("Por favor seleccione un archivo primero");
         return;
       }
-  
+
       const file = await fileHandle.getFile();
       const arrayBuffer = await file.arrayBuffer();
       const existingWb = XLSX.read(arrayBuffer, { type: "array" });
       const wsName = existingWb.SheetNames[0];
       const ws = existingWb.Sheets[wsName];
-  
-      const existingData: string[][] = XLSX.utils.sheet_to_json(ws, {
+
+      const existingData: any[][] = XLSX.utils.sheet_to_json(ws, {
         header: 1,
         defval: ""
       });
-  
+
       const lastRowIndex = existingData.length - 1;
-  
+
       if (lastRowIndex >= 0) {
         while (existingData[lastRowIndex].length < 14) {
           existingData[lastRowIndex].push("");
         }
-  
-        existingData[lastRowIndex][14] = "Nuevo valor actualizado";
+
+        const score = obtenerPuntajeTotal();
+        existingData[lastRowIndex][14] = score;
       }
-  
+
       const updatedWs = XLSX.utils.aoa_to_sheet(existingData);
-  
+
       const updatedWb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(updatedWb, updatedWs, wsName);
-  
+
       const writable = await fileHandle.createWritable();
       await writable.write(XLSX.write(updatedWb, {
         bookType: "xlsx",
@@ -79,10 +114,11 @@ const EscalaGijon = () => {
         bookSST: true
       }));
       await writable.close();
-  
+
       form.resetFields();
       alert("Paciente guardado exitosamente y última fila actualizada");
-  
+      router.push('/funtional/abvd');
+
     } catch (err: unknown) {
       if (err instanceof Error) {
         console.error("Error detallado:", err);
@@ -97,7 +133,7 @@ const EscalaGijon = () => {
   return (
     <Form className="p-4 w-full flex flex-col items-center">
       <Title level={3} className="text-center font-bold mb-6">
-        ESCALA DE GIJÓN
+        ESCALA DE GIJON
       </Title>
 
       <div className="w-3/4">
@@ -115,7 +151,7 @@ const EscalaGijon = () => {
             value={puntajes.familiar}
             className="w-full"
           >
-            {oraciones.map((oracion, index) => (
+            {family.map((oracion, index) => (
               <Row key={`fam-${index}`} className="border-b py-2 items-center">
                 <Col span={18}>
                   <Text className="text-gray-700">{oracion}</Text>
@@ -141,7 +177,7 @@ const EscalaGijon = () => {
             value={puntajes.economica}
             className="w-full"
           >
-            {oraciones.map((oracion, index) => (
+            {economic.map((oracion, index) => (
               <Row key={`eco-${index}`} className="border-b py-2 items-center">
                 <Col span={18}>
                   <Text className="text-gray-700">{oracion}</Text>
@@ -167,7 +203,7 @@ const EscalaGijon = () => {
             value={puntajes.vivienda}
             className="w-full"
           >
-            {oraciones.map((oracion, index) => (
+            {dwelling.map((oracion, index) => (
               <Row key={`viv-${index}`} className="border-b py-2 items-center">
                 <Col span={18}>
                   <Text className="text-gray-700">{oracion}</Text>
@@ -193,7 +229,7 @@ const EscalaGijon = () => {
             value={puntajes.sociales}
             className="w-full"
           >
-            {oraciones.map((oracion, index) => (
+            {socials.map((oracion, index) => (
               <Row key={`soc-${index}`} className="border-b py-2 items-center">
                 <Col span={18}>
                   <Text className="text-gray-700">{oracion}</Text>
@@ -219,7 +255,7 @@ const EscalaGijon = () => {
             value={puntajes.apoyo}
             className="w-full"
           >
-            {oraciones.map((oracion, index) => (
+            {socialsNetwork.map((oracion, index) => (
               <Row key={`apo-${index}`} className="border-b py-2 items-center">
                 <Col span={18}>
                   <Text className="text-gray-700">{oracion}</Text>
@@ -241,12 +277,12 @@ const EscalaGijon = () => {
             </Text>
           </Col>
         </Row>
-        <Row className="flex justify-end gap-4">
+        <Row className="flex justify-end gap-4 mt-6">
           <Col>
-            <Link href="/" passHref>
+            <Link href="/family/personals" passHref>
               <Button
                 type="default"
-                // icon={<ArrowLeftOutlined />}
+                icon={<ArrowLeftOutlined />}
                 size="large"
                 style={{ minWidth: '120px' }}
               >
@@ -265,7 +301,7 @@ const EscalaGijon = () => {
               {fileHandle ? (
                 <>
                   Guardar Paciente
-                  {/* <SaveOutlined style={{ marginLeft: 8 }} /> */}
+                  <SaveOutlined style={{ marginLeft: 8 }} />
                 </>
               ) : (
                 "Seleccione archivo primero"

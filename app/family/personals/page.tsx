@@ -1,11 +1,13 @@
 "use client";
-import { Form, Input, DatePicker, InputNumber, Radio, Row, Col, Typography, Button, Divider, Select } from "antd";
+import { Form, Input, InputNumber, Radio, Row, Col, Typography, Button, Divider, Select } from "antd";
 import { RiseOutlined, HeartOutlined, HomeOutlined, IdcardOutlined, ManOutlined, TeamOutlined, UserOutlined, WomanOutlined, ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 import React, { useEffect } from "react";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import Link from "next/link";
 import * as XLSX from "xlsx";
 import { Paciente } from "@/app/interfaces";
+import dayjs from 'dayjs';
+import { useRouter } from 'next/navigation';
 
 const { Title, Text } = Typography;
 
@@ -40,8 +42,32 @@ declare global {
 
 const PatientForm = () => {
   const [form] = Form.useForm();
-
+  const router = useRouter();
   const { excelData, fileHandle } = useGlobalContext();
+
+  const updateBirthDate = () => {
+    const day = form.getFieldValue('birth_day');
+    const month = form.getFieldValue('birth_month');
+    const year = form.getFieldValue('birth_year');
+
+    if (day && month && year) {
+      try {
+        const formattedDate = `${day.toString().padStart(2, '0')}/${month}/${year}`;
+        const birthDate = dayjs(formattedDate, 'DD/MM/YYYY');
+        const today = dayjs();
+        const calculatedAge = today.diff(birthDate, 'year');
+        form.setFieldsValue({
+          fecha_nacimiento: formattedDate,
+          edad: calculatedAge
+        });
+      } catch (error) {
+        console.error("Fecha inválida", error);
+      }
+    }
+  };
+  const handleDayChange = () => updateBirthDate();
+  const handleMonthChange = () => updateBirthDate();
+  const handleYearChange = () => updateBirthDate();
 
   const generarCodigoUnico = (dni: string, existingCodes: Set<string>): string => {
     const baseCodigo = `PAC-${dni}-${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
@@ -84,9 +110,9 @@ const PatientForm = () => {
         codigo: nuevoCodigo,
         nombre: formData.nombre.trim(),
         dni: formData.dni,
+        fecha_nacimiento: formData.fecha_nacimiento,
         edad: formData.edad,
         sexo: formData.sexo,
-        fecha_nacimiento: formData.fecha_nacimiento.format("DD/MM/YYYY"),
         zona_residencia: formData.zona_residencia,
         domicilio: formData.domicilio.trim(),
         nivel_educativo: Array.isArray(formData.nivel_educativo)
@@ -99,7 +125,9 @@ const PatientForm = () => {
         ingreso_economico: formData.ingreso_economico,
         con_quien_vive: formData.con_quien_vive.trim(),
         relacion: formData.relacion.trim(),
-        gijon:0,
+        gijon: 0,
+        abvdScore:0,
+        abvdDescription:""
       };
 
       const nuevosDatos = [
@@ -129,6 +157,7 @@ const PatientForm = () => {
 
       form.resetFields();
       alert("Paciente guardado exitosamente con código: " + nuevoCodigo);
+      router.push('/family/gijon');
 
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -203,30 +232,87 @@ const PatientForm = () => {
         </Row>
 
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} md={6}>
+          <Form.Item name="fecha_nacimiento" hidden>
+            <Input />
+          </Form.Item>
+
+          <Col xs={24} sm={8} md={2}>
             <Form.Item
-              label={<Text strong>Fecha de Nacimiento</Text>}
-              name="fecha_nacimiento"
-              rules={[{ required: true, message: 'Por favor seleccione su fecha de nacimiento' }]}
+              label={<Text strong>Día</Text>}
+              name="birth_day"
+              rules={[
+                { required: true, message: 'Requerido' },
+                { type: 'number', min: 1, max: 31, message: 'Día inválido' }
+              ]}
             >
-              <DatePicker
-                format="DD/MM/YYYY"
+              <InputNumber
+                min={1}
+                max={31}
                 style={{ width: "100%" }}
                 size="large"
+                onChange={handleDayChange}
+                placeholder="Día"
               />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12} md={4}>
+
+          <Col xs={24} sm={8} md={3}>
+            <Form.Item
+              label={<Text strong>Mes</Text>}
+              name="birth_month"
+              rules={[{ required: true, message: 'Requerido' }]}
+            >
+              <Select
+                size="large"
+                placeholder="Mes"
+                onChange={handleMonthChange}
+                options={[
+                  { value: '01', label: 'Enero' },
+                  { value: '02', label: 'Febrero' },
+                  { value: '03', label: 'Marzo' },
+                  { value: '04', label: 'Abril' },
+                  { value: '05', label: 'Mayo' },
+                  { value: '06', label: 'Junio' },
+                  { value: '07', label: 'Julio' },
+                  { value: '08', label: 'Agosto' },
+                  { value: '09', label: 'Setiembre' },
+                  { value: '10', label: 'Octubre' },
+                  { value: '11', label: 'Noviembre' },
+                  { value: '12', label: 'Diciembre' },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} sm={8} md={3}>
+            <Form.Item
+              label={<Text strong>Año</Text>}
+              name="birth_year"
+              rules={[
+                { required: true, message: 'Requerido' },
+                { type: 'number', min: 1900, max: new Date().getFullYear(), message: 'Año inválido' }
+              ]}
+            >
+              <InputNumber
+                min={1900}
+                max={new Date().getFullYear()}
+                style={{ width: "100%" }}
+                size="large"
+                onChange={handleYearChange}
+                placeholder="Año"
+              />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} sm={12} md={2}>
             <Form.Item
               label={<Text strong>Edad</Text>}
               name="edad"
-              rules={[{ required: true, message: 'Por favor ingrese su edad' }]}
             >
               <InputNumber
-                min={0}
-                max={120}
                 style={{ width: "100%" }}
                 size="large"
+                disabled
               />
             </Form.Item>
           </Col>
@@ -386,7 +472,6 @@ const PatientForm = () => {
             </Form.Item>
           </Col>
         </Row>
-
         <Row className="flex justify-end gap-4">
           <Col>
             <Link href="/" passHref>
