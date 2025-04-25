@@ -14,4 +14,6 @@ export interface Paciente {
   con_quien_vive:string;
   relacion:string;
   gijon:number;
+  abvdScore:number;
+  abvdDescription:string;
 }

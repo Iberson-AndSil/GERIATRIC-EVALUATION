@@ -26,8 +26,10 @@ const Home = () => {
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef<any>(null);
 
+  
   useEffect(() => {
     console.log(excelData);
+    
   }, [excelData]);
 
   const handleSearch = (
@@ -151,7 +153,8 @@ const Home = () => {
     'codigo', 'nombre', 'dni', 'fecha_nacimiento', 'edad', 'sexo',
     'zona_residencia', 'domicilio', 'nivel_educativo',
     'ocupacion', 'sistema_pension', 'ingreso_economico',
-    'con_quien_vive', 'relacion', 'gijon'
+    'con_quien_vive', 'relacion', 'gijon',  'abvdScore',
+    'abvdDescription'
   ];
 
   const generateTemplate = () => {
