@@ -41,7 +41,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       key: "/assessment", icon: <AuditOutlined />, label: "Valoración Funcional",
       children: [
         { key: "/abvd", icon: <HeartOutlined />, label: "ABVD", onClick: () => router.push("/funtional/abvd") },
-        { key: "/aivd", icon: <MedicineBoxOutlined />, label: "AIVD", onClick: () => router.push("/family/aivd") },
+        { key: "/aivd", icon: <MedicineBoxOutlined />, label: "AIVD", onClick: () => router.push("/funtional/aivd") },
       ],
     },
     {

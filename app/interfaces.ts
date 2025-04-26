@@ -16,4 +16,6 @@ export interface Paciente {
   gijon:number;
   abvdScore:number;
   abvdDescription:string;
+  aivdScore:number;
+  aivdDescription:string;
 }

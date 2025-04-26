@@ -6,6 +6,7 @@ import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useState } from "react";
 import * as XLSX from "xlsx";
+import { useRouter } from 'next/navigation';
 
 const { Title, Text } = Typography;
 
@@ -23,6 +24,7 @@ const IndiceBarthel = () => {
   });
 
   const [form] = Form.useForm();
+  const router = useRouter();
   const { fileHandle } = useGlobalContext();
 
   const handleChange = (categoria: keyof typeof puntajes, valor: number) => {
@@ -183,6 +185,7 @@ const IndiceBarthel = () => {
         orina: null,
       });
       alert("Paciente guardado exitosamente y última fila actualizada");
+      router.push('/funtional/aivd');
 
     } catch (err: unknown) {
       if (err instanceof Error) {

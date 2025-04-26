@@ -154,7 +154,7 @@ const Home = () => {
     'zona_residencia', 'domicilio', 'nivel_educativo',
     'ocupacion', 'sistema_pension', 'ingreso_economico',
     'con_quien_vive', 'relacion', 'gijon',  'abvdScore',
-    'abvdDescription'
+    'abvdDescription','aivdScore','aivdDescription'
   ];
 
   const generateTemplate = () => {
