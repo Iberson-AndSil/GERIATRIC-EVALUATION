@@ -127,7 +127,9 @@ const PatientForm = () => {
         relacion: formData.relacion.trim(),
         gijon: 0,
         abvdScore:0,
-        abvdDescription:""
+        abvdDescription:"",
+        aivdScore:0,
+        aivdDescription:""
       };
 
       const nuevosDatos = [
