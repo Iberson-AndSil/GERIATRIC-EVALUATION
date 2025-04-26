@@ -96,7 +96,7 @@ const FAQPfeffer = () => {
         form.resetFields();
         setRespuestas({});
         alert("Paciente guardado exitosamente y última fila actualizada");
-        router.push('');
+        router.push('/syndromes/first');
   
       } catch (err: unknown) {
         if (err instanceof Error) {
