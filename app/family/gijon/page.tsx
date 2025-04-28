@@ -94,7 +94,7 @@ const EscalaGijon = () => {
       const lastRowIndex = existingData.length - 1;
 
       if (lastRowIndex >= 0) {
-        while (existingData[lastRowIndex].length < 14) {
+        while (existingData[lastRowIndex].length < 16) {
           existingData[lastRowIndex].push("");
         }
 

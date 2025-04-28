@@ -154,7 +154,7 @@ const Home = () => {
     'zona_residencia', 'domicilio', 'nivel_educativo',
     'ocupacion', 'sistema_pension', 'ingreso_economico',
     'con_quien_vive', 'relacion', 'gijon',  'abvdScore',
-    'abvdDescription','aivdScore','aivdDescription'
+    'aivdScore', 'sarcopenia', 'caida', 'deterioro', 'incontinencia'
   ];
 
   const generateTemplate = () => {
@@ -314,6 +314,9 @@ const Home = () => {
                 </Text>
                 <Text>
                   <Text strong>3.</Text> Revisa que los datos se muestren correctamente y continúa con el proceso.
+                </Text>
+                <Text>
+                  <Text strong>4.</Text> Por favor mantener cerrado el archivo excel mientras se interactúa con el sistema.
                 </Text>
               </Space>
             </Card>

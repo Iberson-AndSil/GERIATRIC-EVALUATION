@@ -151,12 +151,11 @@ const IndiceBarthel = () => {
       const lastRowIndex = existingData.length - 1;
 
       if (lastRowIndex >= 0) {
-        while (existingData[lastRowIndex].length < 15) {
+        while (existingData[lastRowIndex].length < 17) {
           existingData[lastRowIndex].push("");
         }
 
         existingData[lastRowIndex][15] = obtenerPuntajeTotal().toString();
-        existingData[lastRowIndex][16] = obtenerInterpretacion();
       }
 
       const updatedWs = XLSX.utils.aoa_to_sheet(existingData);

@@ -72,12 +72,10 @@ const FAQPfeffer = () => {
         const lastRowIndex = existingData.length - 1;
   
         if (lastRowIndex >= 0) {
-          while (existingData[lastRowIndex].length < 19) {
+          while (existingData[lastRowIndex].length < 18) {
             existingData[lastRowIndex].push("");
           }
-  
-          existingData[lastRowIndex][17] = puntajeTotal().toString();
-          existingData[lastRowIndex][18] = obtenerInterpretacion();
+          existingData[lastRowIndex][16] = puntajeTotal().toString();
         }
   
         const updatedWs = XLSX.utils.aoa_to_sheet(existingData);

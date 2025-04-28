@@ -45,7 +45,6 @@ interface Respuestas {
     incontinencia: IncontinenciaRespuestas;
 }
 
-// Tipo para las preguntas de sarcopenia
 type PreguntaSarcopenia = {
     key: keyof SarcopeniaRespuestas;
     texto: string;
@@ -141,7 +140,25 @@ const SARCFTest = () => {
         "De forma continua"
     ];
 
-    // Manejadores para cada sección
+    const calcularPuntuacionCaidas = () => {
+        let puntaje = 0;
+        if (respuestas.caidas.neededMedicalAssistance) puntaje += 1;
+        if (respuestas.caidas.couldNotGetUp) puntaje += 1;
+        if (respuestas.caidas.fearOfFalling) puntaje += 1;
+        console.log(puntaje);
+
+        return puntaje;
+    };
+
+    const calcularPuntuacionCognitivo = () => {
+        let puntaje = 0;
+        if (respuestas.cognitivo.rememberQuickly) puntaje += 1;
+        if (respuestas.cognitivo.rememberSlowly) puntaje += 1;
+        if (respuestas.cognitivo.affectsDailyActivities) puntaje += 1;
+        console.log(puntaje);
+        return puntaje;
+    };
+
     const handleSarcopeniaChange = (key: string, value: number) => {
         setRespuestas(prev => ({
             ...prev,
@@ -182,7 +199,6 @@ const SARCFTest = () => {
         }));
     };
 
-    // Cálculos de puntuaciones
     const calcularPuntuacionSarcopenia = () => {
         return Object.values(respuestas.sarcopenia).reduce((acc, curr) => acc + (curr || 0), 0);
     };
@@ -200,37 +216,6 @@ const SARCFTest = () => {
         if (puntaje <= 5) return "Incontinencia leve";
         if (puntaje <= 12) return "Incontinencia moderada";
         return "Incontinencia severa";
-    };
-
-    // Verificar si todas las secciones están completas
-    const todasLasSeccionesCompletas = () => {
-        // SARC-F
-        const sarcopeniaCompleta = preguntasSarcopenia.every(p =>
-            respuestas.sarcopenia[p.key] !== undefined
-        );
-
-        // Caídas (solo si marcó que ha tenido caídas)
-        const caidasCompleta = !respuestas.caidas.hasFallen || (
-            respuestas.caidas.neededMedicalAssistance !== undefined &&
-            respuestas.caidas.couldNotGetUp !== undefined &&
-            respuestas.caidas.fearOfFalling !== undefined
-        );
-
-        // Cognitivo (solo si marcó que tiene problemas)
-        const cognitivoCompleto = !respuestas.cognitivo.forgetsRecentEvents || (
-            respuestas.cognitivo.rememberQuickly !== undefined &&
-            respuestas.cognitivo.rememberSlowly !== undefined &&
-            respuestas.cognitivo.affectsDailyActivities !== undefined
-        );
-
-        // ICIQ-SF
-        const incontinenciaCompleta = (
-            respuestas.incontinencia.icqFrequency !== undefined &&
-            respuestas.incontinencia.icqAmount !== undefined &&
-            respuestas.incontinencia.icqImpact !== undefined
-        );
-
-        return sarcopeniaCompleta && caidasCompleta && cognitivoCompleto && incontinenciaCompleta;
     };
 
     const saveFile = async () => {
@@ -254,33 +239,25 @@ const SARCFTest = () => {
             const lastRowIndex = existingData.length - 1;
 
             if (lastRowIndex >= 0) {
-                // Asegurar suficientes columnas
-                while (existingData[lastRowIndex].length < 27) {
+                while (existingData[lastRowIndex].length < 22) {
                     existingData[lastRowIndex].push("");
                 }
 
-                // Guardar datos de SARC-F
-                preguntasSarcopenia.forEach((pregunta, index) => {
-                    existingData[lastRowIndex][13 + index] = respuestas.sarcopenia[pregunta.key]?.toString() || "";
-                });
+                // preguntasSarcopenia.forEach((pregunta, index) => {
+                //     existingData[lastRowIndex][13 + index] = respuestas.sarcopenia[pregunta.key]?.toString() || "";
+                // });
 
-                // Puntaje e interpretación SARC-F
                 const puntajeSarcopenia = calcularPuntuacionSarcopenia();
-                existingData[lastRowIndex][19] = puntajeSarcopenia.toString();
-                existingData[lastRowIndex][20] = interpretarSarcopenia(puntajeSarcopenia);
+                existingData[lastRowIndex][17] = puntajeSarcopenia.toString();
 
-                // Datos de incontinencia
-                existingData[lastRowIndex][21] = respuestas.incontinencia.icqFrequency?.toString() || "";
-                existingData[lastRowIndex][22] = respuestas.incontinencia.icqAmount?.toString() || "";
-                existingData[lastRowIndex][23] = respuestas.incontinencia.icqImpact?.toString() || "";
-                existingData[lastRowIndex][24] = Array.isArray(respuestas.incontinencia.icqSituations)
-                    ? respuestas.incontinencia.icqSituations.join(", ")
-                    : "";
+                const puntajeCaida = calcularPuntuacionCaidas();
+                existingData[lastRowIndex][18] = puntajeCaida.toString();
 
-                // Puntaje e interpretación ICIQ
+                const puntajeDeterioro = calcularPuntuacionCognitivo();
+                existingData[lastRowIndex][19] = puntajeDeterioro.toString();
+
                 const puntajeICIQ = calcularPuntuacionICIQ();
-                existingData[lastRowIndex][25] = puntajeICIQ.toString();
-                existingData[lastRowIndex][26] = interpretarICIQ(puntajeICIQ);
+                existingData[lastRowIndex][20] = puntajeICIQ.toString();
             }
 
             const updatedWs = XLSX.utils.aoa_to_sheet(existingData);
@@ -296,12 +273,6 @@ const SARCFTest = () => {
             await writable.close();
 
             form.resetFields();
-            setRespuestas({
-                sarcopenia: {},
-                caidas: {},
-                cognitivo: {},
-                incontinencia: {}
-            });
             alert("Resultados guardados exitosamente");
             router.push('');
 
@@ -323,7 +294,6 @@ const SARCFTest = () => {
             </Title>
 
             <Row gutter={[16, 16]}>
-                {/* Columna izquierda - SARC-F */}
                 <Col xs={24} md={8}>
                     <Card title="SARCOPENIA (SARC-F)" className="mb-4">
                         <Form layout="vertical">
@@ -387,9 +357,7 @@ const SARCFTest = () => {
                     </Card>
                 </Col>
 
-                {/* Columna derecha - Otras evaluaciones */}
                 <Col xs={24} md={8}>
-                    {/* Card de Caídas */}
                     <Card title="CAÍDAS" className="mb-4">
                         <Form form={form} layout="vertical">
                             <Form.Item name="hasFallen" valuePropName="checked">
@@ -412,7 +380,7 @@ const SARCFTest = () => {
                                             onChange={(e) => handleCaidasChange("neededMedicalAssistance", e.target.checked)}
                                             checked={respuestas.caidas.neededMedicalAssistance}
                                         >
-                                            ¿Necesitó asistencia médica?
+                                            ¿Necesitó asistencia médica? (+1)
                                         </Checkbox>
                                     </Form.Item>
                                     <Form.Item name="couldNotGetUp" valuePropName="checked">
@@ -420,7 +388,7 @@ const SARCFTest = () => {
                                             onChange={(e) => handleCaidasChange("couldNotGetUp", e.target.checked)}
                                             checked={respuestas.caidas.couldNotGetUp}
                                         >
-                                            ¿No pudo levantarse después de 15 minutos?
+                                            ¿No pudo levantarse después de 15 minutos? (+1)
                                         </Checkbox>
                                     </Form.Item>
                                     <Form.Item name="fearOfFalling" valuePropName="checked">
@@ -428,15 +396,20 @@ const SARCFTest = () => {
                                             onChange={(e) => handleCaidasChange("fearOfFalling", e.target.checked)}
                                             checked={respuestas.caidas.fearOfFalling}
                                         >
-                                            ¿Tiene miedo a volverse a caer?
+                                            ¿Tiene miedo a volverse a caer? (+1)
                                         </Checkbox>
                                     </Form.Item>
+                                    <Divider />
+                                    <div style={{ textAlign: 'center', marginTop: 16 }}>
+                                        <Text strong>Puntaje de Riesgo de Caídas: </Text>
+                                        <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                                            {calcularPuntuacionCaidas()} / 3
+                                        </Text>
+                                    </div>
                                 </>
                             )}
                         </Form>
                     </Card>
-
-                    {/* Card de Deterioro Cognitivo */}
                     <Card title="DETERIORO COGNITIVO" className="!mt-4">
                         <Form form={form} layout="vertical">
                             <Form.Item name="forgetsRecentEvents" valuePropName="checked">
@@ -459,7 +432,7 @@ const SARCFTest = () => {
                                             onChange={(e) => handleCognitivoChange("rememberQuickly", e.target.checked)}
                                             checked={respuestas.cognitivo.rememberQuickly}
                                         >
-                                            ¿Tarda poco en acordarse? (minutos)
+                                            ¿Tarda poco en acordarse? (minutos) (+1)
                                         </Checkbox>
                                     </Form.Item>
                                     <Form.Item name="rememberSlowly" valuePropName="checked">
@@ -467,7 +440,7 @@ const SARCFTest = () => {
                                             onChange={(e) => handleCognitivoChange("rememberSlowly", e.target.checked)}
                                             checked={respuestas.cognitivo.rememberSlowly}
                                         >
-                                            ¿Tarda mucho en acordarse? (horas)
+                                            ¿Tarda mucho en acordarse? (horas) (+2)
                                         </Checkbox>
                                     </Form.Item>
                                     <Form.Item name="affectsDailyActivities" valuePropName="checked">
@@ -475,21 +448,25 @@ const SARCFTest = () => {
                                             onChange={(e) => handleCognitivoChange("affectsDailyActivities", e.target.checked)}
                                             checked={respuestas.cognitivo.affectsDailyActivities}
                                         >
-                                            ¿Afecta sus actividades cotidianas?
+                                            ¿Afecta sus actividades cotidianas? (+3)
                                         </Checkbox>
                                     </Form.Item>
+                                    <Divider />
+                                    <div style={{ textAlign: 'center', marginTop: 16 }}>
+                                        <Text strong>Puntaje de Deterioro Cognitivo: </Text>
+                                        <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                                            {calcularPuntuacionCognitivo()} / 3
+                                        </Text>
+                                    </div>
                                 </>
                             )}
                         </Form>
                     </Card>
 
-                    {/* Card de Incontinencia */}
-
                 </Col>
                 <Col xs={24} md={8}>
                     <Card title="INCONTINENCIA URINARIA (ICIQ-SF)">
                         <Form form={form} layout="vertical">
-                            {/* Pregunta 1 - Frecuencia */}
                             <Form.Item
                                 label="1. ¿Con qué frecuencia pierde orina?"
                                 name="icqFrequency"
@@ -507,7 +484,6 @@ const SARCFTest = () => {
                                 </Select>
                             </Form.Item>
 
-                            {/* Pregunta 2 - Cantidad */}
                             <Form.Item
                                 label="2. ¿Qué cantidad de orina cree que pierde habitualmente?"
                                 name="icqAmount"
@@ -525,7 +501,6 @@ const SARCFTest = () => {
                                 </Select>
                             </Form.Item>
 
-                            {/* Pregunta 3 - Impacto */}
                             <Form.Item
                                 label="3. ¿En qué medida estos escapes de orina afectan su vida diaria?"
                                 name="icqImpact"
@@ -559,9 +534,6 @@ const SARCFTest = () => {
                             <Button
                                 type="primary"
                                 onClick={() => setShowICIQResult(true)}
-                                disabled={!respuestas.incontinencia.icqFrequency ||
-                                    !respuestas.incontinencia.icqAmount ||
-                                    !respuestas.incontinencia.icqImpact}
                                 block
                             >
                                 Calcular Puntuación
@@ -592,7 +564,6 @@ const SARCFTest = () => {
                 </Col>
             </Row>
 
-            {/* Botones de acción */}
             <div className="flex justify-center gap-4 mt-8">
                 <Link href="/">
                     <Button type="default" icon={<ArrowLeftOutlined />} size="large">
@@ -605,7 +576,6 @@ const SARCFTest = () => {
                     icon={<SaveOutlined />}
                     size="large"
                     onClick={saveFile}
-                    disabled={!todasLasSeccionesCompletas()}
                 >
                     Guardar Todos los Resultados
                 </Button>

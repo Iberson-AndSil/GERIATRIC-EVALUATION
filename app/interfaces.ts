@@ -15,7 +15,9 @@ export interface Paciente {
   relacion:string;
   gijon:number;
   abvdScore:number;
-  abvdDescription:string;
   aivdScore:number;
-  aivdDescription:string;
+  sarcopenia:number;
+  caida:number;
+  deterioro:number;
+  incontinencia:number;
 }

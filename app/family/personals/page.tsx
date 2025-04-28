@@ -1,5 +1,5 @@
 "use client";
-import { Form, Input, InputNumber, Radio, Row, Col, Typography, Button, Divider, Select } from "antd";
+import { Form, Input, InputNumber, Radio, Row, Col, Typography, Button, Divider, Select, notification } from "antd";
 import { RiseOutlined, HeartOutlined, HomeOutlined, IdcardOutlined, ManOutlined, TeamOutlined, UserOutlined, WomanOutlined, ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 import React, { useEffect } from "react";
 import { useGlobalContext } from "@/app/context/GlobalContext";
@@ -8,6 +8,7 @@ import * as XLSX from "xlsx";
 import { Paciente } from "@/app/interfaces";
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
+import { NotificationPlacement } from "antd/es/notification/interface";
 
 const { Title, Text } = Typography;
 
@@ -44,7 +45,8 @@ const PatientForm = () => {
   const [form] = Form.useForm();
   const router = useRouter();
   const { excelData, fileHandle } = useGlobalContext();
-
+  const [api, contextHolder] = notification.useNotification();
+  
   const updateBirthDate = () => {
     const day = form.getFieldValue('birth_day');
     const month = form.getFieldValue('birth_month');
@@ -85,7 +87,7 @@ const PatientForm = () => {
   const saveFile = async () => {
     try {
       if (!fileHandle) {
-        alert("Por favor seleccione un archivo primero");
+        openNotification("warning", "Selecciona el excel", "Por favor seleccione un archivo primero.", "topRight");
         return;
       }
 
@@ -127,9 +129,11 @@ const PatientForm = () => {
         relacion: formData.relacion.trim(),
         gijon: 0,
         abvdScore:0,
-        abvdDescription:"",
         aivdScore:0,
-        aivdDescription:""
+        sarcopenia:0,
+        caida:0,
+        deterioro:0,
+        incontinencia:0,
       };
 
       const nuevosDatos = [
@@ -158,7 +162,7 @@ const PatientForm = () => {
       await writable.close();
 
       form.resetFields();
-      alert("Paciente guardado exitosamente con código: " + nuevoCodigo);
+      openNotification("success", "Éxito", `Datos del paciente ${formData} guardados.`, "topRight");
       router.push('/family/gijon');
 
     } catch (err: unknown) {
@@ -172,6 +176,19 @@ const PatientForm = () => {
     }
   };
 
+  const openNotification = (
+      type: "success" | "error" | "warning",
+      message: string,
+      description: string,
+      placement: NotificationPlacement
+    ) => {
+      api[type]({
+        message,
+        description,
+        placement,
+      });
+    };
+  
 
   useEffect(() => {
     if (excelData.length > 0) {
@@ -181,6 +198,7 @@ const PatientForm = () => {
 
   return (
     <>
+    {contextHolder}
       <Form
         form={form}
         layout="vertical"
