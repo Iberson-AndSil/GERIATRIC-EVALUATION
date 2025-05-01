@@ -284,14 +284,22 @@ const SARCFTest = () => {
     };
 
     return (
-        <div className="w-full p-4">
-            <Title level={3} className="text-center font-bold mb-6">
-                CUESTIONARIO SARC-F PARA EVALUACIÓN DE RIESGO DE SARCOPENIA
+        <div className="w-full">
+            <Title
+                level={3}
+                style={{
+                    textAlign: 'center',
+                    marginBottom: '24px',
+                    color: '#1890ff',
+                    fontWeight: 500
+                }}
+            >
+                SÍNDROMES GERIÁTRICOS
             </Title>
 
             <Row gutter={[16, 16]}>
                 <Col xs={24} md={8}>
-                    <Card title="SARCOPENIA (SARC-F)" className="mb-4">
+                    <Card title="SARCOPENIA (SARC-F)" className="!h-full !rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300">
                         <Form layout="vertical">
                             {preguntasSarcopenia.map((pregunta) => (
                                 <Form.Item
@@ -300,7 +308,7 @@ const SARCFTest = () => {
                                     className="mb-4"
                                 >
                                     <Select
-                                        placeholder="Seleccione una opción"
+                                        placeholder={`- Seleccione -`}
                                         onChange={(value) => handleSarcopeniaChange(pregunta.key, value)}
                                         value={respuestas.sarcopenia[pregunta.key]}
                                     >
@@ -354,59 +362,61 @@ const SARCFTest = () => {
                 </Col>
 
                 <Col xs={24} md={8}>
-                    <Card title="CAÍDAS" className="mb-4">
-                        <Form form={form} layout="vertical">
-                            <Form.Item name="hasFallen" valuePropName="checked">
-                                <Checkbox
-                                    onChange={(e) => {
-                                        handleCaidasChange("hasFallen", e.target.checked);
-                                        setShowFallQuestions(e.target.checked);
-                                    }}
-                                    checked={respuestas.caidas.hasFallen}
-                                >
-                                    ¿Se ha caído en el último año?
-                                </Checkbox>
-                            </Form.Item>
+                    <div className="h-1/2 pb-4">
+                        <Card title="CAÍDAS" className="h-full !rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300">
+                            <Form form={form} layout="vertical">
+                                <Form.Item name="hasFallen" valuePropName="checked">
+                                    <Checkbox
+                                        onChange={(e) => {
+                                            handleCaidasChange("hasFallen", e.target.checked);
+                                            setShowFallQuestions(e.target.checked);
+                                        }}
+                                        checked={respuestas.caidas.hasFallen}
+                                    >
+                                        ¿Se ha caído en el último año?
+                                    </Checkbox>
+                                </Form.Item>
 
-                            {showFallQuestions && (
-                                <>
-                                    <Divider orientation="left" plain>Preguntas adicionales</Divider>
-                                    <Form.Item name="neededMedicalAssistance" valuePropName="checked">
-                                        <Checkbox
-                                            onChange={(e) => handleCaidasChange("neededMedicalAssistance", e.target.checked)}
-                                            checked={respuestas.caidas.neededMedicalAssistance}
-                                        >
-                                            ¿Necesitó asistencia médica? (+1)
-                                        </Checkbox>
-                                    </Form.Item>
-                                    <Form.Item name="couldNotGetUp" valuePropName="checked">
-                                        <Checkbox
-                                            onChange={(e) => handleCaidasChange("couldNotGetUp", e.target.checked)}
-                                            checked={respuestas.caidas.couldNotGetUp}
-                                        >
-                                            ¿No pudo levantarse después de 15 minutos? (+1)
-                                        </Checkbox>
-                                    </Form.Item>
-                                    <Form.Item name="fearOfFalling" valuePropName="checked">
-                                        <Checkbox
-                                            onChange={(e) => handleCaidasChange("fearOfFalling", e.target.checked)}
-                                            checked={respuestas.caidas.fearOfFalling}
-                                        >
-                                            ¿Tiene miedo a volverse a caer? (+1)
-                                        </Checkbox>
-                                    </Form.Item>
-                                    <Divider />
-                                    <div style={{ textAlign: 'center', marginTop: 16 }}>
-                                        <Text strong>Puntaje de Riesgo de Caídas: </Text>
-                                        <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
-                                            {calcularPuntuacionCaidas()} / 3
-                                        </Text>
-                                    </div>
-                                </>
-                            )}
-                        </Form>
-                    </Card>
-                    <Card title="DETERIORO COGNITIVO" className="!mt-4">
+                                {showFallQuestions ? (
+                                    <>
+                                        <Divider orientation="left" plain>Preguntas adicionales</Divider>
+                                        <Form.Item name="neededMedicalAssistance" valuePropName="checked">
+                                            <Checkbox
+                                                onChange={(e) => handleCaidasChange("neededMedicalAssistance", e.target.checked)}
+                                                checked={respuestas.caidas.neededMedicalAssistance}
+                                            >
+                                                ¿Necesitó asistencia médica? (+1)
+                                            </Checkbox>
+                                        </Form.Item>
+                                        <Form.Item name="couldNotGetUp" valuePropName="checked">
+                                            <Checkbox
+                                                onChange={(e) => handleCaidasChange("couldNotGetUp", e.target.checked)}
+                                                checked={respuestas.caidas.couldNotGetUp}
+                                            >
+                                                ¿No pudo levantarse después de 15 minutos? (+1)
+                                            </Checkbox>
+                                        </Form.Item>
+                                        <Form.Item name="fearOfFalling" valuePropName="checked">
+                                            <Checkbox
+                                                onChange={(e) => handleCaidasChange("fearOfFalling", e.target.checked)}
+                                                checked={respuestas.caidas.fearOfFalling}
+                                            >
+                                                ¿Tiene miedo a volverse a caer? (+1)
+                                            </Checkbox>
+                                        </Form.Item>
+                                        <Divider />
+                                        <div style={{ textAlign: 'center', marginTop: 16 }}>
+                                            <Text strong>Puntaje de Riesgo de Caídas: </Text>
+                                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>
+                                                {calcularPuntuacionCaidas()} / 3
+                                            </Text>
+                                        </div>
+                                    </>
+                                ) : <div className="w-full flex justify-center italic"><Text>Selecciona para ver preguntas adicionales.</Text></div>}
+                            </Form>
+                        </Card>
+                    </div>
+                    <Card title="DETERIORO COGNITIVO" className="h-1/2 !rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300">
                         <Form form={form} layout="vertical">
                             <Form.Item name="forgetsRecentEvents" valuePropName="checked">
                                 <Checkbox
@@ -420,7 +430,7 @@ const SARCFTest = () => {
                                 </Checkbox>
                             </Form.Item>
 
-                            {showCognitiveQuestions && (
+                            {showCognitiveQuestions ? (
                                 <>
                                     <Divider orientation="left" plain>Preguntas adicionales</Divider>
                                     <Form.Item name="rememberQuickly" valuePropName="checked">
@@ -455,13 +465,12 @@ const SARCFTest = () => {
                                         </Text>
                                     </div>
                                 </>
-                            )}
+                            ) : <div className="w-full flex justify-center italic"><Text>Selecciona para ver preguntas adicionales.</Text></div>}
                         </Form>
                     </Card>
-
                 </Col>
                 <Col xs={24} md={8}>
-                    <Card title="INCONTINENCIA URINARIA (ICIQ-SF)">
+                    <Card title="INCONTINENCIA URINARIA (ICIQ-SF)" className="h-full !rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300">
                         <Form form={form} layout="vertical">
                             <Form.Item
                                 label="1. ¿Con qué frecuencia pierde orina?"

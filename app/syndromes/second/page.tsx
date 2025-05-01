@@ -1,9 +1,12 @@
 "use client";
 import { useState } from 'react';
 import { Radio, Card, Space, Typography, Col, Input, Checkbox, Button, Row, message, Image } from 'antd';
+import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 import { useGlobalContext } from '@/app/context/GlobalContext';
 const { Text } = Typography;
 import * as XLSX from "xlsx";
+import Title from 'antd/es/typography/Title';
+import Link from 'next/link';
 
 export default function Home() {
     const { fileHandle } = useGlobalContext();
@@ -54,8 +57,8 @@ export default function Home() {
         const newData = { ...sensoryData, [field]: value };
         setSensoryData(newData);
         evaluateSensory(newData);
-        console.log("handleSensoryChange",newData);
-        
+        console.log("handleSensoryChange", newData);
+
     };
 
     const handleBristolChange = (field: string, value: any) => {
@@ -169,8 +172,8 @@ export default function Home() {
             const puntajeSensorial = [
                 sensoryData.dificultadVista === 'si' ? 1 : 0,
                 sensoryData.dificultadEscucha === 'si' ? 1 : 0,
-                sensoryData.usaAnteojos=== 'si' ? 1 : 0,
-                sensoryData.usaAudifonos=== 'si' ? 1 : 0
+                sensoryData.usaAnteojos === 'si' ? 1 : 0,
+                sensoryData.usaAudifonos === 'si' ? 1 : 0
             ].reduce((a, b) => a + b, 0);
 
             const puntajeBristol = [
@@ -193,61 +196,72 @@ export default function Home() {
             };
 
             const file = await fileHandle.getFile();
-        const arrayBuffer = await file.arrayBuffer();
-        const existingWb = XLSX.read(arrayBuffer, { type: "array" });
-        const wsName = existingWb.SheetNames[0];
-        const ws = existingWb.Sheets[wsName];
+            const arrayBuffer = await file.arrayBuffer();
+            const existingWb = XLSX.read(arrayBuffer, { type: "array" });
+            const wsName = existingWb.SheetNames[0];
+            const ws = existingWb.Sheets[wsName];
 
-        const existingData: string[][] = XLSX.utils.sheet_to_json(ws, {
-            header: 1,
-            defval: ""
-        });
+            const existingData: string[][] = XLSX.utils.sheet_to_json(ws, {
+                header: 1,
+                defval: ""
+            });
 
-        let lastRowIndex = existingData.length - 1;
-        while (lastRowIndex > 0 && existingData[lastRowIndex].every(cell => cell === "")) {
-            lastRowIndex--;
+            let lastRowIndex = existingData.length - 1;
+            while (lastRowIndex > 0 && existingData[lastRowIndex].every(cell => cell === "")) {
+                lastRowIndex--;
+            }
+
+            if (lastRowIndex < 0 || (lastRowIndex === 0 && existingData[0].every(cell => cell === ""))) {
+                existingData.push([]);
+                lastRowIndex = existingData.length - 1;
+            }
+
+            while (existingData[lastRowIndex].length < 25) {
+                existingData[lastRowIndex].push("");
+            }
+
+            existingData[lastRowIndex][21] = puntajeDepresion.toString();
+            existingData[lastRowIndex][22] = puntajeSensorial.toString();
+            existingData[lastRowIndex][23] = puntajeBristol.toString();
+            existingData[lastRowIndex][24] = puntajeMoriski().toString();
+
+            const newWs = XLSX.utils.aoa_to_sheet(existingData);
+            const updatedWb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(updatedWb, newWs, wsName);
+
+            const writable = await fileHandle.createWritable();
+            await writable.write(XLSX.write(updatedWb, {
+                bookType: "xlsx",
+                type: "buffer",
+                bookSST: true
+            }));
+            await writable.close();
+
+            message.success("Datos guardados correctamente");
+        } catch (error) {
+            console.error("Error al guardar datos:", error);
+            message.error("Error al guardar los datos");
+        } finally {
+            setLoading(false);
         }
-
-        if (lastRowIndex < 0 || (lastRowIndex === 0 && existingData[0].every(cell => cell === ""))) {
-            existingData.push([]);
-            lastRowIndex = existingData.length - 1;
-        }
-
-        while (existingData[lastRowIndex].length < 25) {
-            existingData[lastRowIndex].push("");
-        }
-
-        existingData[lastRowIndex][21] = puntajeDepresion.toString();
-        existingData[lastRowIndex][22] = puntajeSensorial.toString();
-        existingData[lastRowIndex][23] = puntajeBristol.toString();
-        existingData[lastRowIndex][24] = puntajeMoriski().toString();
-
-        const newWs = XLSX.utils.aoa_to_sheet(existingData);
-        const updatedWb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(updatedWb, newWs, wsName);
-
-        const writable = await fileHandle.createWritable();
-        await writable.write(XLSX.write(updatedWb, {
-            bookType: "xlsx",
-            type: "buffer",
-            bookSST: true
-        }));
-        await writable.close();
-
-        message.success("Datos guardados correctamente");
-    } catch (error) {
-        console.error("Error al guardar datos:", error);
-        message.error("Error al guardar los datos");
-    } finally {
-        setLoading(false);
-    }
     };
 
     return (
         <div style={{ padding: 24 }}>
+            <Title
+                level={3}
+                style={{
+                    textAlign: 'center',
+                    marginBottom: '24px',
+                    color: '#1890ff',
+                    fontWeight: 500
+                }}
+            >
+                SÍNDROMES GERIÁTRICOS
+            </Title>
             <Row gutter={[16, 16]}>
                 <Col xs={24} md={12}>
-                    <Card title="DEPRESIÓN (Geriatric Depression Scale 4 - UPCH)">
+                    <Card title="DEPRESIÓN (Geriatric Depression Scale 4 - UPCH)" className='!rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300'>
                         <Space direction="vertical" size="large" style={{ width: '100%' }}>
                             <div>
                                 <Text>¿Está satisfecho con su vida?</Text><br />
@@ -290,7 +304,7 @@ export default function Home() {
                     </Card>
                 </Col>
                 <Col xs={24} md={12}>
-                    <Card title="DETERIORO SENSORIAL (Geriatric Depression Scale 4 - UPCH)">
+                    <Card title="DETERIORO SENSORIAL (Geriatric Depression Scale 4 - UPCH)" className='!rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300'>
                         <Space direction="vertical" size="large" style={{ width: '100%' }}>
                             <div>
                                 <Text>¿Tiene dificultad para ver la televisión, leer o para ejecutar cualquier actividad de la vida diaria a causa de su vista?</Text><br />
@@ -336,10 +350,10 @@ export default function Home() {
 
             <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
                 <Col xs={24} md={12}>
-                    <Card title="Test de Heces de Bristol">
-                        <div className='flex'>
+                    <Card title="ESTREÑIMIENTO (Test de Heces de Bristol)" className='!rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300'>
+                        <div className='flex justify-between'>
 
-                            <Space direction="vertical" size="large" style={{ width: '80%' }}>
+                            <Space direction="vertical" size="large" className='w-2/5'>
                                 <div>
                                     <Text>Tipo de heces según la escala de Bristol (1 al 7)</Text>
                                     <Input
@@ -383,14 +397,14 @@ export default function Home() {
                                     </Card>
                                 )}
                             </Space>
-                            <div className="w-1/2">
+                            <div className="w-2/5">
                                 <Image src="/heces.jpg" alt="Escala de Bristol" />
                             </div>
                         </div>
                     </Card>
                 </Col>
                 <Col xs={12}>
-                    <Card title="ADHERENCIA A TRATAMIENTO FARMACOLÓGICO (Moriski Green)">
+                    <Card title="ADHERENCIA A TRATAMIENTO FARMACOLÓGICO (Moriski Green)" className='h-full !rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300'>
                         <Space direction="vertical" size="large" style={{ width: '100%' }}>
                             <div>
                                 <Text>¿Olvida alguna vez tomar los medicamentos para tratar su enfermedad?</Text><br />
@@ -433,11 +447,16 @@ export default function Home() {
                     </Card>
                 </Col>
             </Row>
+            <div className="flex justify-center gap-4 mt-8">
+                <Link href="/">
+                    <Button type="default" icon={<ArrowLeftOutlined />} size="large">
+                        Volver
+                    </Button>
+                </Link>
 
-            <Row style={{ marginTop: 24 }}>
-                <Col span={24} style={{ textAlign: 'center' }}>
-                    <Button
+                <Button
                         type="primary"
+                        icon={<SaveOutlined />}
                         size="large"
                         onClick={guardarDatos}
                         loading={loading}
@@ -450,8 +469,7 @@ export default function Home() {
                     >
                         Guardar Todos los Resultados
                     </Button>
-                </Col>
-            </Row>
+            </div>
         </div>
     );
 }

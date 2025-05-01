@@ -284,7 +284,7 @@ const IndiceBarthel = () => {
                   </Text>
                   <Select
                     style={{ width: '100%' }}
-                    placeholder={`Seleccione opción para ${actividad.nombre.toLowerCase()}`}
+                    placeholder={`- Seleccione -`}
                     onChange={(value) => handleChangeABVD(actividad.key as keyof typeof puntajes, value)}
                     value={puntajes[actividad.key as keyof typeof puntajes]}
                   >
@@ -337,11 +337,10 @@ const IndiceBarthel = () => {
                   </Text>
                   <Select<number | null>
                     style={{ width: '100%' }}
-                    placeholder="Seleccione una opción"
+                    placeholder="- Seleccione -"
                     onChange={(value: number | null) => handleChange(pregunta.key, value)}
                     value={respuestas[pregunta.key] ?? null}
                   >
-                    <Option value={null}>- Seleccione -</Option>
                     {opciones.map((opcion, index) => (
                       <Option key={`${pregunta.key}-${index}`} value={opcion.valor}>
                         {opcion.valor} - {opcion.label}
