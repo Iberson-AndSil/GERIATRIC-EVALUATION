@@ -360,7 +360,7 @@ const Home = () => {
         <Row justify="end">
           <Col>
             <Link
-              href={(excelData as PacienteWithStatus[]).some(p => p.requiresCompletion) ? 'family/personals' : 'family/personals'}
+              href={(excelData as PacienteWithStatus[]).some(p => p.requiresCompletion) ? 'family/' : 'family/'}
               passHref
             >
               <Button

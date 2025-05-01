@@ -31,11 +31,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const items = [
     { key: "/", icon: <HomeOutlined />, label: "Inicio", onClick: () => router.push("/") },
     {
-      key: "/family", icon: <UserOutlined />, label: "Socio Familiar",
-      children: [
-        { key: "/reports", icon: <FormOutlined />, label: "Datos", onClick: () => router.push("/family/personals") },
-        { key: "/gijon", icon: <BarChartOutlined />, label: "Escala de Gijon", onClick: () => router.push("/family/gijon") },
-      ],
+      key: "/family", icon: <UserOutlined />, label: "Socio Familiar", onClick: () => router.push("/family")
     },
     {
       key: "/assessment", icon: <AuditOutlined />, label: "Valoración Funcional",
