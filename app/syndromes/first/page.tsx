@@ -243,10 +243,6 @@ const SARCFTest = () => {
                     existingData[lastRowIndex].push("");
                 }
 
-                // preguntasSarcopenia.forEach((pregunta, index) => {
-                //     existingData[lastRowIndex][13 + index] = respuestas.sarcopenia[pregunta.key]?.toString() || "";
-                // });
-
                 const puntajeSarcopenia = calcularPuntuacionSarcopenia();
                 existingData[lastRowIndex][17] = puntajeSarcopenia.toString();
 
@@ -274,7 +270,7 @@ const SARCFTest = () => {
 
             form.resetFields();
             alert("Resultados guardados exitosamente");
-            router.push('');
+            router.push('/syndromes/second');
 
         } catch (err: unknown) {
             if (err instanceof Error) {

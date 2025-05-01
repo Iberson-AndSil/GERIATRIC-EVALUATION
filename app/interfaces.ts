@@ -20,4 +20,8 @@ export interface Paciente {
   caida:number;
   deterioro:number;
   incontinencia:number;
+  depresion:number;
+  sensorial:number;
+  bristol:number;
+  adherencia:number;
 }

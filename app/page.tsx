@@ -154,7 +154,8 @@ const Home = () => {
     'zona_residencia', 'domicilio', 'nivel_educativo',
     'ocupacion', 'sistema_pension', 'ingreso_economico',
     'con_quien_vive', 'relacion', 'gijon',  'abvdScore',
-    'aivdScore', 'sarcopenia', 'caida', 'deterioro', 'incontinencia'
+    'aivdScore', 'sarcopenia', 'caida', 'deterioro', 'incontinencia',
+    'depresion', 'sensorial', 'bristol', 'adherencia'
   ];
 
   const generateTemplate = () => {

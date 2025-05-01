@@ -46,7 +46,7 @@ const PatientForm = () => {
   const router = useRouter();
   const { excelData, fileHandle } = useGlobalContext();
   const [api, contextHolder] = notification.useNotification();
-  
+
   const updateBirthDate = () => {
     const day = form.getFieldValue('birth_day');
     const month = form.getFieldValue('birth_month');
@@ -128,12 +128,16 @@ const PatientForm = () => {
         con_quien_vive: formData.con_quien_vive.trim(),
         relacion: formData.relacion.trim(),
         gijon: 0,
-        abvdScore:0,
-        aivdScore:0,
-        sarcopenia:0,
-        caida:0,
-        deterioro:0,
-        incontinencia:0,
+        abvdScore: 0,
+        aivdScore: 0,
+        sarcopenia: 0,
+        caida: 0,
+        deterioro: 0,
+        incontinencia: 0,
+        depresion: 0,
+        sensorial: 0,
+        bristol: 0,
+        adherencia: 0,
       };
 
       const nuevosDatos = [
@@ -177,18 +181,18 @@ const PatientForm = () => {
   };
 
   const openNotification = (
-      type: "success" | "error" | "warning",
-      message: string,
-      description: string,
-      placement: NotificationPlacement
-    ) => {
-      api[type]({
-        message,
-        description,
-        placement,
-      });
-    };
-  
+    type: "success" | "error" | "warning",
+    message: string,
+    description: string,
+    placement: NotificationPlacement
+  ) => {
+    api[type]({
+      message,
+      description,
+      placement,
+    });
+  };
+
 
   useEffect(() => {
     if (excelData.length > 0) {
@@ -198,7 +202,7 @@ const PatientForm = () => {
 
   return (
     <>
-    {contextHolder}
+      {contextHolder}
       <Form
         form={form}
         layout="vertical"
