@@ -245,7 +245,7 @@ const PatientForm = () => {
 
       form.resetFields();
       openNotification("success", "Éxito", `Datos del paciente ${formData} guardados.`, "topRight");
-      router.push('/family/gijon');
+      router.push('/funtional/');
 
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -427,10 +427,10 @@ const PatientForm = () => {
                   >
                     <Radio.Group size="large">
                       <Radio.Button value="F" className="!truncate">
-                        <WomanOutlined /> Femenino
+                        <WomanOutlined /> F
                       </Radio.Button>
                       <Radio.Button value="M" className="!truncate">
-                        <ManOutlined /> Masculino
+                        <ManOutlined /> M
                       </Radio.Button>
                     </Radio.Group>
                   </Form.Item>
