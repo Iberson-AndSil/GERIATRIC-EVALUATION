@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { Radio, Card, Space, Typography, Col, Form, Input, Checkbox, Button, Row, message, Image } from 'antd';
+import { Radio, Card, Space, Typography, Col, Input, Checkbox, Button, Row, message, Image } from 'antd';
 import { useGlobalContext } from '@/app/context/GlobalContext';
 const { Text } = Typography;
 import * as XLSX from "xlsx";
