@@ -155,7 +155,8 @@ const Home = () => {
     'ocupacion', 'sistema_pension', 'ingreso_economico',
     'con_quien_vive', 'relacion', 'gijon',  'abvdScore',
     'aivdScore', 'sarcopenia', 'caida', 'deterioro', 'incontinencia',
-    'depresion', 'sensorial', 'bristol', 'adherencia'
+    'depresion', 'sensorial', 'bristol', 'adherencia', 'dynamometry',
+    'balance',
   ];
 
   const generateTemplate = () => {

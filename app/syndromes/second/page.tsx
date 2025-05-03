@@ -7,9 +7,11 @@ const { Text } = Typography;
 import * as XLSX from "xlsx";
 import Title from 'antd/es/typography/Title';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
     const { fileHandle } = useGlobalContext();
+     const router = useRouter();
     const [depresionResult, setDepresionResult] = useState<string | null>(null);
     const [sensoryResult, setSensoryResult] = useState<string | null>(null);
     const [bristolResult, setBristolResult] = useState<string | null>(null);
@@ -235,9 +237,9 @@ export default function Home() {
                 type: "buffer",
                 bookSST: true
             }));
+            router.push('/physical');
             await writable.close();
-
-            message.success("Datos guardados correctamente");
+            alert("Paciente guardado exitosamente y última fila actualizada");
         } catch (error) {
             console.error("Error al guardar datos:", error);
             message.error("Error al guardar los datos");

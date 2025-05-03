@@ -216,6 +216,8 @@ const PatientForm = () => {
         sensorial: 0,
         bristol: 0,
         adherencia: 0,
+        dynamometry:0,
+        balance:0
       };
 
       const nuevosDatos = [

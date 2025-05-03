@@ -18,6 +18,7 @@ import {
   HeartOutlined,
   MedicineBoxOutlined,
   AuditOutlined,
+  SecurityScanOutlined,
 } from "@ant-design/icons";
 import { GlobalProvider } from "../context/GlobalContext";
 
@@ -41,6 +42,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         { key: "/first", icon: <HeartOutlined />, label: "Primera Parte", onClick: () => router.push("/syndromes/first") },
         { key: "/second", icon: <MedicineBoxOutlined />, label: "Segunda Parte", onClick: () => router.push("/syndromes/second") },
       ],
+    },
+    {
+      key: "/physical", icon: <SecurityScanOutlined />, label: "Valoración Física", onClick: () => router.push("/physical")
     },
     { key: "/dashboard", icon: <DesktopOutlined />, label: "Dashboard", onClick: () => router.push("/dashboard") },
     {

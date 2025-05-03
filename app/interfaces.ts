@@ -24,4 +24,6 @@ export interface Paciente {
   sensorial:number;
   bristol:number;
   adherencia:number;
+  dynamometry:number;
+  balance:number;
 }
