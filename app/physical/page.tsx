@@ -141,7 +141,7 @@ const SPPBEvaluation = () => {
           form.resetFields();
           setAverageScore(0);
           setTotalScore(0);
-          router.push('/physical');
+          router.push('/mental');
           alert("Paciente guardado exitosamente y última fila actualizada");
 
         } catch (err: unknown) {

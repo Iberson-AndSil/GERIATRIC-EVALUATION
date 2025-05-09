@@ -582,21 +582,21 @@ const PatientForm = () => {
           </Col>
           <Col xs={24} md={8}>
             <Card title="ESCALA DE GIJON"
-              className="!ml-4 !rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300 h-full">
+              className="!ml-4 !rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300 h-full w-full">
               <div className="grid gap-4">
                 {categories.map((category: any) => (
-                  <div key={category.key} className="mb-2">
+                  <div key={category.key} className="mb-2 w-full">
                     <Text strong className="block mb-1">
                       {category.title}
                     </Text>
                     <Select
-                      style={{ width: '100%' }}
+                      className="w-full truncate"
                       placeholder={`Seleccione ${category.title.toLowerCase()}`}
                       onChange={(value) => handleChange(category.key as keyof typeof puntajes, parseInt(value))}
                       value={puntajes[category.key as keyof typeof puntajes] ? puntajes[category.key as keyof typeof puntajes].toString() : undefined}
                     >
                       {category.options.map((option: any, index: any) => (
-                        <Option key={`${category.key}-${index}`} value={(index + 1).toString()}>
+                        <Option className="w-full truncate" key={`${category.key}-${index}`} value={(index + 1).toString()}>
                           {option}
                         </Option>
                       ))}
