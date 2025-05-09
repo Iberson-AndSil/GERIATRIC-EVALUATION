@@ -26,4 +26,7 @@ export interface Paciente {
   adherencia:number;
   dynamometry:number;
   balance:number;
+  dimension_fisica:number;
+  dimension_mental:number;
+  puntaje_total:number;
 }

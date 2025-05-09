@@ -46,6 +46,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     {
       key: "/physical", icon: <SecurityScanOutlined />, label: "Valoración Física", onClick: () => router.push("/physical")
     },
+    {
+      key: "/mental", icon: <SecurityScanOutlined />, label: "Valoración Mental", onClick: () => router.push("/mental")
+    },
     { key: "/dashboard", icon: <DesktopOutlined />, label: "Dashboard", onClick: () => router.push("/dashboard") },
     {
       key: "sub-dashboard",

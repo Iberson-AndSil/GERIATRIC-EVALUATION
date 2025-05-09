@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 
 export default function Home() {
     const { fileHandle } = useGlobalContext();
-     const router = useRouter();
+    const router = useRouter();
     const [depresionResult, setDepresionResult] = useState<string | null>(null);
     const [sensoryResult, setSensoryResult] = useState<string | null>(null);
     const [bristolResult, setBristolResult] = useState<string | null>(null);
@@ -457,20 +457,20 @@ export default function Home() {
                 </Link>
 
                 <Button
-                        type="primary"
-                        icon={<SaveOutlined />}
-                        size="large"
-                        onClick={guardarDatos}
-                        loading={loading}
-                        disabled={
-                            !depresionResult ||
-                            !sensoryResult ||
-                            !bristolResult ||
-                            !adherenciaResult
-                        }
-                    >
-                        Guardar Todos los Resultados
-                    </Button>
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    size="large"
+                    onClick={guardarDatos}
+                    loading={loading}
+                    disabled={
+                        !depresionResult ||
+                        !sensoryResult ||
+                        !bristolResult ||
+                        !adherenciaResult
+                    }
+                >
+                    Guardar Todos los Resultados
+                </Button>
             </div>
         </div>
     );

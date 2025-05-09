@@ -156,7 +156,7 @@ const Home = () => {
     'con_quien_vive', 'relacion', 'gijon',  'abvdScore',
     'aivdScore', 'sarcopenia', 'caida', 'deterioro', 'incontinencia',
     'depresion', 'sensorial', 'bristol', 'adherencia', 'dynamometry',
-    'balance',
+    'balance',  'dimension_fisica', 'dimension_mental', 'puntaje_total'
   ];
 
   const generateTemplate = () => {

@@ -216,8 +216,11 @@ const PatientForm = () => {
         sensorial: 0,
         bristol: 0,
         adherencia: 0,
-        dynamometry:0,
-        balance:0
+        dynamometry: 0,
+        balance: 0,
+        dimension_fisica: 0,
+        dimension_mental: 0,
+        puntaje_total: 0
       };
 
       const nuevosDatos = [
@@ -302,8 +305,8 @@ const PatientForm = () => {
         <div className="flex">
 
           <Col xs={24} md={16}>
-            <Card title="INFORMACIÓN BÁSICA" 
-            className="!mb-4 !rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300">
+            <Card title="INFORMACIÓN BÁSICA"
+              className="!mb-4 !rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300">
               <Row gutter={[16, 16]}>
                 <Col xs={24} md={16}>
                   <Form.Item
@@ -456,7 +459,7 @@ const PatientForm = () => {
               </Row>
             </Card>
             <Card title="INFORMACIÓN ADICIONAL"
-            className="!rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300">
+              className="!rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300">
               <Row gutter={[16, 16]}>
                 <Col span={24}>
                   <Form.Item
@@ -578,8 +581,8 @@ const PatientForm = () => {
             </Card>
           </Col>
           <Col xs={24} md={8}>
-            <Card title="ESCALA DE GIJON" 
-            className="!ml-4 !rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300 h-full">
+            <Card title="ESCALA DE GIJON"
+              className="!ml-4 !rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300 h-full">
               <div className="grid gap-4">
                 {categories.map((category: any) => (
                   <div key={category.key} className="mb-2">
