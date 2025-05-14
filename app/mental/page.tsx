@@ -295,7 +295,7 @@ const HealthSurvey = () => {
 
             form.resetFields();
             alert("Resultados guardados exitosamente");
-            router.push('');
+            router.push('/cognitive/');
 
         } catch (err: unknown) {
             if (err instanceof Error) {
