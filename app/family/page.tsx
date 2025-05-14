@@ -220,7 +220,8 @@ const PatientForm = () => {
         balance: 0,
         dimension_fisica: 0,
         dimension_mental: 0,
-        puntaje_total: 0
+        puntaje_total: 0,
+        cognitivo_total:0,
       };
 
       const nuevosDatos = [

@@ -29,4 +29,5 @@ export interface Paciente {
   dimension_fisica:number;
   dimension_mental:number;
   puntaje_total:number;
+  cognitivo_total:number;
 }
