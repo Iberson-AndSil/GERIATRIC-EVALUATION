@@ -7,18 +7,20 @@ import { useRouter } from "next/navigation";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  ContainerOutlined,
-  DesktopOutlined,
   MailOutlined,
   BarChartOutlined,
   LineChartOutlined,
-  UserOutlined,
   FileSearchOutlined,
   HomeOutlined,
   HeartOutlined,
   MedicineBoxOutlined,
   AuditOutlined,
-  SecurityScanOutlined,
+  TeamOutlined,
+  ExperimentOutlined,
+  ReadOutlined,
+  DashboardOutlined,
+  FileDoneOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { GlobalProvider } from "../context/GlobalContext";
 
@@ -31,7 +33,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const items = [
     { key: "/", icon: <HomeOutlined />, label: "Inicio", onClick: () => router.push("/") },
     {
-      key: "/family", icon: <UserOutlined />, label: "Socio Familiar", onClick: () => router.push("/family")
+      key: "/family", icon: <TeamOutlined />, label: "Socio Familiar", onClick: () => router.push("/family")
     },
     {
       key: "/assessment", icon: <AuditOutlined />, label: "Valoración Funcional", onClick: () => router.push("/funtional")
@@ -44,25 +46,25 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       ],
     },
     {
-      key: "/physical", icon: <SecurityScanOutlined />, label: "Valoración Física", onClick: () => router.push("/physical")
+      key: "/physical", icon: <ExperimentOutlined />, label: "Valoración Física", onClick: () => router.push("/physical")
     },
     {
-      key: "/mental", icon: <SecurityScanOutlined />, label: "Valoración Mental", onClick: () => router.push("/mental")
+      key: "/mental", icon: <MailOutlined />, label: "Valoración Mental", onClick: () => router.push("/mental")
     },
     {
-      key: "/cognitive", icon: <SecurityScanOutlined />, label: "Valoración Cognitiva", onClick: () => router.push("/cognitive")
+      key: "/cognitive", icon: <ReadOutlined />, label: "Valoración Cognitiva", onClick: () => router.push("/cognitive")
     },
-    { key: "/dashboard", icon: <DesktopOutlined />, label: "Dashboard", onClick: () => router.push("/dashboard") },
+    { key: "/dashboard", icon: <DashboardOutlined />, label: "Dashboard", onClick: () => router.push("/dashboard") },
     {
       key: "sub-dashboard",
       label: "Reportes",
-      icon: <MailOutlined />,
+      icon: <FileDoneOutlined />,
       children: [
         { key: "/dashboard/reports", icon: <BarChartOutlined />, label: "Ver Reportes", onClick: () => router.push("/dashboard/reports") },
         { key: "/dashboard/analytics", icon: <LineChartOutlined />, label: "Análisis de Datos", onClick: () => router.push("/dashboard/analytics") },
       ],
     },
-    { key: "/settings", icon: <ContainerOutlined />, label: "Configuración", onClick: () => router.push("/settings") },
+    { key: "/settings", icon: <SettingOutlined />, label: "Configuración", onClick: () => router.push("/settings") },
   ];
 
   return (
@@ -86,7 +88,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </Header>
 
         <AntLayout>
-          <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme="dark">
+          <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme="dark" width={240} collapsedWidth={80}>
             <Menu
               mode="inline"
               theme="dark"
