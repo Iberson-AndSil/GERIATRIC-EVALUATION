@@ -169,7 +169,7 @@ const Home = () => {
 
   const handleFileUpload = async () => {
     try {
-      const [fileHandle] = await window.showOpenFilePicker({
+      const [fileHandle] =await (window as any).showOpenFilePicker({
         types: [{
           description: "Excel Files",
           accept: { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"] }

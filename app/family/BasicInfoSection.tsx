@@ -3,7 +3,6 @@ import React from "react";
 import { Form, Input, InputNumber, Radio, Row, Col, Typography, Card, Select } from "antd";
 import { UserOutlined, IdcardOutlined, ManOutlined, WomanOutlined } from "@ant-design/icons";
 
-const { Option } = Select;
 const { Text } = Typography;
 
 interface BasicInfoSectionProps {
@@ -14,7 +13,6 @@ interface BasicInfoSectionProps {
 }
 
 export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
-    form,
     handleDayChange,
     handleMonthChange,
     handleYearChange,
