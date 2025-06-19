@@ -111,9 +111,10 @@ export default function FunctionalAssessmentPage() {
 
   const obtenerInterpretacion = () => {
     const total = obtenerPuntajeTotal();
-    if (total >= 90) return "Dependencia leve";
-    if (total >= 60) return "Dependencia moderada";
-    if (total >= 40) return "Dependencia grave";
+    if (total >= 100) return "Independiente";
+    if (total >= 60) return "Dependencia leve";
+    if (total >= 40 && total <= 55) return "Dependencia moderada";
+    if (total >= 20 && total <= 35) return "Dependencia grave";
     return "Dependencia total";
   };
 
@@ -124,7 +125,7 @@ export default function FunctionalAssessmentPage() {
   const interpretacionAIVD = () => {
     const total = puntajeTotal();
     if (total <= 3) return "Función Normal";
-    if (total <= 5) return "Disfunción leve";
+    if (total >= 4) return "Dependencia Funcional";
     return "Disfunción severa";
   };
 

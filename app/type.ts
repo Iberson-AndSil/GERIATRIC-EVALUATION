@@ -64,3 +64,51 @@ export type AdherenceData = {
   dejarMedicacion: string | null;
   sientaMal: string | null;
 };
+
+export type SarcopeniaResponses = {
+  liftingWeight?: number;
+  crossingRoom?: number;
+  transferring?: number;
+  climbingStairs?: number;
+  falls?: number;
+};
+
+export type FallsResponses = {
+  hasFallen?: boolean;
+  neededMedicalAssistance?: boolean;
+  couldNotGetUp?: boolean;
+  fearOfFalling?: boolean;
+};
+
+export type CognitiveResponses = {
+  forgetsRecentEvents?: boolean;
+  rememberQuickly?: boolean;
+  rememberSlowly?: boolean;
+  affectsDailyActivities?: boolean;
+};
+
+export type IncontinenceResponses = {
+  frequency?: number;
+  amount?: number;
+  impact?: number;
+  situations?: string[];
+  situationsScore?: number; 
+};
+
+export interface AllResponses {
+  sarcopenia: SarcopeniaResponses;
+  falls: FallsResponses;
+  cognitive: CognitiveResponses;
+  incontinence: IncontinenceResponses;
+}
+
+export type SarcopeniaQuestion = {
+  key: keyof SarcopeniaResponses;
+  text: string;
+  options: { label: string; value: number }[];
+};
+
+export type OptionType = {
+  label: string;
+  value: number;
+};
