@@ -1,37 +1,37 @@
 export type PuntajesType = {
-    comer: number | null;
-    trasladarse: number | null;
-    aseo: number | null;
-    retrete: number | null;
-    banarse: number | null;
-    desplazarse: number | null;
-    escaleras: number | null;
-    vestirse: number | null;
-    heces: number | null;
-    orina: number | null;
+  comer: number | null;
+  trasladarse: number | null;
+  aseo: number | null;
+  retrete: number | null;
+  banarse: number | null;
+  desplazarse: number | null;
+  escaleras: number | null;
+  vestirse: number | null;
+  heces: number | null;
+  orina: number | null;
 };
 
 export type RespuestasType = {
-    [key: string]: number | null;
+  [key: string]: number | null;
 };
 
 export type OpcionType = {
-    label: string;
-    valor: number;
+  label: string;
+  valor: number;
 };
 
 export type ActividadType = {
-    nombre: string;
-    key: string;
-    opciones: {
-        descripcion: string;
-        valor: number;
-    }[];
+  nombre: string;
+  key: string;
+  opciones: {
+    descripcion: string;
+    valor: number;
+  }[];
 };
 
 export type PreguntaType = {
-    key: string;
-    texto: string;
+  key: string;
+  texto: string;
 };
 
 export type DepressionData = {
@@ -92,7 +92,7 @@ export type IncontinenceResponses = {
   amount?: number;
   impact?: number;
   situations?: string[];
-  situationsScore?: number; 
+  situationsScore?: number;
 };
 
 export interface AllResponses {
@@ -112,3 +112,41 @@ export type OptionType = {
   label: string;
   value: number;
 };
+
+export type DimensionKey = 'PHYSICAL' | 'MENTAL';
+
+export interface DimensionConfig {
+  name: string;
+  description: string;
+  questionIndexes: number[];
+  maxScore: number;
+  icon: React.ReactNode;
+}
+
+export type DimensionsConfig = {
+  [key in DimensionKey]: DimensionConfig;
+};
+
+export interface SurveyQuestion {
+  question: string;
+  options: string[];
+  type: string;
+  scores: number[];
+}
+
+export interface QuestionGroup {
+  title: string;
+  description: string;
+  questions: SurveyQuestion[];
+}
+
+export interface SurveyResults {
+  dimensions: {
+    [key in DimensionKey]: {
+      rawScore: number;
+      maxPossible: number;
+    } & DimensionConfig;
+  };
+  totalScore: number;
+  answers: Record<string, string>;
+}
