@@ -33,3 +33,34 @@ export type PreguntaType = {
     key: string;
     texto: string;
 };
+
+export type DepressionData = {
+  vidaSatisfecha: string | null;
+  impotente: string | null;
+  problemasMemoria: string | null;
+  aburrido: string | null;
+};
+
+export type SensoryData = {
+  dificultadVista: string | null;
+  usaAnteojos: string | null;
+  dificultadEscucha: string | null;
+  usaAudifonos: string | null;
+};
+
+export type BristolData = {
+  bristolType: string | null;
+  effort: boolean;
+  hardStool: boolean;
+  incomplete: boolean;
+  obstruction: boolean;
+  manualAid: boolean;
+  lessThanThree: boolean;
+};
+
+export type AdherenceData = {
+  olvido: string | null;
+  tomarMedicamento: string | null;
+  dejarMedicacion: string | null;
+  sientaMal: string | null;
+};

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
-import { Form, Card, Typography, Button, Row, Col } from "antd";
+import { Form, Typography, Button, Row, Col } from "antd";
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import * as XLSX from "xlsx";
