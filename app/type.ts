@@ -150,3 +150,45 @@ export interface SurveyResults {
   totalScore: number;
   answers: Record<string, string>;
 }
+
+export type MOCAScores = {
+  visuospatial: boolean[];
+  naming: boolean[];
+  memoryAttempt: boolean[];
+  attention1: boolean[];
+  attention2: boolean[];
+  attention3: boolean[];
+  language1: boolean[];
+  language2: boolean[];
+  abstraction: boolean[];
+  delayedRecall: boolean[];
+  orientation: boolean[];
+};
+
+export type EducationLevel = any;
+
+export type SectionKey = 
+  | 'info' 
+  | 'visuospatial' 
+  | 'naming' 
+  | 'memory' 
+  | 'attention' 
+  | 'language' 
+  | 'abstraction' 
+  | 'delayedRecall' 
+  | 'orientation' 
+  | 'results';
+
+export interface Section {
+  key: SectionKey;
+  title: string;
+}
+
+export interface MOCATestProps {
+  scores: MOCAScores;
+  educationLevel: EducationLevel;
+  activeSection: SectionKey;
+  onCheckboxChange: (section: keyof MOCAScores, index: number) => (e: any) => void;
+  onEducationChange: (value: EducationLevel) => void;
+  onSectionChange: (section: SectionKey) => void;
+}
