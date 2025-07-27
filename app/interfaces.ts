@@ -30,6 +30,7 @@ export interface Paciente {
   dimension_mental: number;
   puntaje_total: number;
   cognitivo_total: number;
+  mmse30: number;
 }
 
 export interface GijonCategory {

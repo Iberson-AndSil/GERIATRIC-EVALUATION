@@ -2,10 +2,16 @@
 import React, { useState } from "react";
 import { Image } from 'antd';
 import { Form, Input, Button, Card, Row, Col, Checkbox, Typography, Radio } from "antd";
-
-const { Title, Text } = Typography;
+import * as XLSX from "xlsx";
+import { useGlobalContext } from "../context/GlobalContext";
+import { useRouter } from 'next/navigation';
+import Link from "next/link";
+import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 
 const MMSEForm = () => {
+    const { Title, Text } = Typography;
+    const router = useRouter();
+    const { fileHandle } = useGlobalContext();
     const [score, setScore] = useState(0);
     const [interpretation, setInterpretation] = useState("");
     const [form] = Form.useForm();
@@ -13,58 +19,97 @@ const MMSEForm = () => {
     const calculateScore = (values: any) => {
         let total = 0;
 
-        // 1. ORIENTACIÓN (10 puntos)
-        // Fecha (5 ítems: día, mes, año, día semana, estación)
         if (values.date_day) total += 1;
         if (values.date_month) total += 1;
         if (values.date_year) total += 1;
         if (values.date_weekday) total += 1;
         if (values.date_season) total += 1;
 
-        // Lugar (5 ítems: piso, lugar, ciudad, departamento, país)
         if (values.place_floor) total += 1;
         if (values.place_location) total += 1;
         if (values.place_city) total += 1;
         if (values.place_department) total += 1;
         if (values.place_country) total += 1;
 
-        // 2. MEMORIA INMEDIATA (3 puntos)
         if (values.memory_words?.length === 3) total += 3;
 
-        // 3. ATENCIÓN Y CÁLCULO (5 puntos)
         if (values.calculation === "93-86-79-72-65") total += 5;
 
-        // 4. RECUERDO DIFERIDO (3 puntos)
         if (values.recall_words?.length === 3) total += 3;
 
-        // 5. LENGUAJE Y CONSTRUCCIÓN (9 puntos)
-        // - Nombrar objetos (2 puntos)
         if (values.name_pencil) total += 1;
         if (values.name_clock) total += 1;
 
-        // - Repetir frase (1 punto)
         if (values.repeat_phrase) total += 1;
 
-        // - Tres órdenes (3 puntos)
         if (values.command_right_hand) total += 1;
         if (values.command_fold_paper) total += 1;
         if (values.command_floor) total += 1;
 
-        // - Cerrar ojos (1 punto)
         if (values.command_close_eyes) total += 1;
 
-        // - Escribir frase (1 punto)
         if (values.write_sentence) total += 1;
 
-        // - Copiar dibujo (1 punto)
         if (values.copy_drawing) total += 1;
 
         setScore(total);
 
-        // Interpretación
         if (total >= 26) setInterpretation("Normal (sin deterioro cognitivo)");
         else if (total >= 20) setInterpretation("Deterioro cognitivo leve");
         else setInterpretation("Deterioro moderado/grave (posible demencia)");
+    };
+
+    const handleSaveData = async () => {
+        try {
+            if (!fileHandle) {
+                alert("Por favor seleccione un archivo primero");
+                return;
+            }
+
+            const file = await fileHandle.getFile();
+            const arrayBuffer = await file.arrayBuffer();
+            const existingWb = XLSX.read(arrayBuffer, { type: "array" });
+            const wsName = existingWb.SheetNames[0];
+            const ws = existingWb.Sheets[wsName];
+
+            const existingData: number[][] = XLSX.utils.sheet_to_json(ws, {
+                header: 1,
+                defval: ""
+            });
+            const lastRowIndex = existingData.length - 1;
+
+            if (lastRowIndex >= 0) {
+                while (existingData[lastRowIndex].length < 31) {
+                    existingData[lastRowIndex].push(0);
+                }
+
+                existingData[lastRowIndex][31] = score;
+            }
+
+            const updatedWs = XLSX.utils.aoa_to_sheet(existingData);
+            const updatedWb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(updatedWb, updatedWs, wsName);
+
+            const writable = await fileHandle.createWritable();
+            await writable.write(XLSX.write(updatedWb, {
+                bookType: "xlsx",
+                type: "buffer",
+                bookSST: true
+            }));
+            await writable.close();
+
+            alert("Resultados guardados exitosamente");
+            router.push('/');
+
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                console.error("Error detallado:", err);
+                alert(`Error al guardar: ${err.message}`);
+            } else {
+                console.error("Error desconocido:", err);
+                alert("Error al guardar: Verifique la consola para más detalles");
+            }
+        }
     };
 
     return (
@@ -247,6 +292,32 @@ const MMSEForm = () => {
                     <Text>Interpretación: {interpretation}</Text>
                 </Card>
             )}
+            <Row key="actions" className="m-12 flex justify-center">
+                <Col>
+                    <Link href="/cognitive" passHref>
+                        <Button
+                            type="default"
+                            icon={<ArrowLeftOutlined />}
+                            size="large"
+                            style={{ minWidth: '120px' }}
+                        >
+                            Atrás
+                        </Button>
+                    </Link>
+                </Col>
+                <Col>
+                    <Button className="!ml-3"
+                        type="primary"
+                        size="large"
+                        onClick={handleSaveData}
+                        style={{ minWidth: '120px' }}
+                        disabled={!fileHandle}
+                        icon={<SaveOutlined />}
+                    >
+                        {fileHandle ? "Guardar Paciente" : "Seleccione archivo primero"}
+                    </Button>
+                </Col>
+            </Row>
         </div>
     );
 };

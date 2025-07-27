@@ -157,7 +157,7 @@ const Home = () => {
     'aivdScore', 'sarcopenia', 'caida', 'deterioro', 'incontinencia',
     'depresion', 'sensorial', 'bristol', 'adherencia', 'dynamometry',
     'balance',  'dimension_fisica', 'dimension_mental', 'puntaje_total', 
-    'cognitivo_total'
+    'cognitivo_total', 'mmse30' 
   ];
 
   const generateTemplate = () => {
