@@ -2,7 +2,7 @@
 import { Card, Space, Typography, Select, Button } from 'antd';
 import { CalculoItems, RespuestaItem } from '../utils/cognitive/types';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 const { Option } = Select;
 
 interface Parte3CalculoMonedasProps {

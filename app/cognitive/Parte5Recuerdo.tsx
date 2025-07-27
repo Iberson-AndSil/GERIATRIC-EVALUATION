@@ -1,7 +1,7 @@
-import { Card, Input, Typography, Button, Space, Table } from 'antd';
+import { Card, Input, Typography, Button, Space } from 'antd';
 import { Recuerdo, Intrusiones } from '../utils/cognitive/types';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 interface Parte5RecuerdoProps {
   recuerdo: Recuerdo;

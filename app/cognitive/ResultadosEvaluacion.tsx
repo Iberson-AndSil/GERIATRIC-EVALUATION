@@ -1,4 +1,4 @@
-import { Card, Typography, Button, Row, Col, Statistic, Alert, Tag, Space, Divider } from 'antd';
+import { Card, Typography, Button, Row, Col, Statistic, Alert, Space, Divider } from 'antd';
 import * as XLSX from "xlsx";
 import { useRouter } from 'next/navigation';
 import { 
@@ -8,7 +8,6 @@ import {
   RespuestaItem,
   Intrusiones,
   Recuerdo,
-  InterpretacionResultado
 } from '../utils/cognitive/types';
 import { 
   calcularPuntajeParte1,

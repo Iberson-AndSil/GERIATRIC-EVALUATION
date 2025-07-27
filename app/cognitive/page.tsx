@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Card, Typography, Progress, Row, Col } from 'antd';
+import { Typography, Progress } from 'antd';
 import { useGlobalContext } from '../context/GlobalContext';
 import Parte1DenominacionMonedas from './Parte1DenominacionMonedas';
 import Parte2DenominacionBilletes from './Parte2DenominacionBilletes';

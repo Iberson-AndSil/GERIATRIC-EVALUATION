@@ -1,9 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Card, Input, Typography, Button, Tag, Alert } from 'antd';
-import { Intrusiones } from '../utils/cognitive/types';
+import { Card, Input, Typography, Button, Tag } from 'antd';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 interface Parte4FluenciaVerbalProps {
   animales: string[];
@@ -37,7 +36,7 @@ export default function Parte4FluenciaVerbal({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [tiempoFluencia, isRunning]);
+}, [tiempoFluencia, isRunning, setTiempoFluencia]);
 
   const handleAnimalChange = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -45,7 +44,7 @@ export default function Parte4FluenciaVerbal({
       if (value) {
         setAnimales(prev => [...prev, value]);
         (e.target as HTMLInputElement).value = '';
-        
+
         if (!isRunning && tiempoFluencia === 60) {
           setIsRunning(true);
         }
