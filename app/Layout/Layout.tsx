@@ -21,6 +21,8 @@ import {
   DashboardOutlined,
   FileDoneOutlined,
   SettingOutlined,
+  CheckCircleOutlined,
+  DeploymentUnitOutlined,
 } from "@ant-design/icons";
 import { GlobalProvider } from "../context/GlobalContext";
 
@@ -55,10 +57,10 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       key: "/cognitive", icon: <ReadOutlined />, label: "Valoración Cognitiva", onClick: () => router.push("/cognitive")
     },
     {
-      key: "/mmse30", icon: <ReadOutlined />, label: "MMSE 30", onClick: () => router.push("/mmse30")
+      key: "/mmse30", icon: <CheckCircleOutlined />, label: "MMSE 30", onClick: () => router.push("/mmse30")
     },
     {
-      key: "/moca", icon: <ReadOutlined />, label: "MOCA", onClick: () => router.push("/moca")
+      key: "/moca", icon: <DeploymentUnitOutlined />, label: "MOCA", onClick: () => router.push("/moca")
     },
     { key: "/dashboard", icon: <DashboardOutlined />, label: "Dashboard", onClick: () => router.push("/dashboard") },
     {

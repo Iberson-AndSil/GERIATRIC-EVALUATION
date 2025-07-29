@@ -99,7 +99,7 @@ const MMSEForm = () => {
             await writable.close();
 
             alert("Resultados guardados exitosamente");
-            router.push('/');
+            router.push('/moca');
 
         } catch (err: unknown) {
             if (err instanceof Error) {
