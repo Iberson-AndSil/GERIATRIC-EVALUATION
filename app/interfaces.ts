@@ -31,6 +31,7 @@ export interface Paciente {
   puntaje_total: number;
   cognitivo_total: number;
   mmse30: number;
+  moca:number;
 }
 
 export interface GijonCategory {
