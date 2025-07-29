@@ -13,7 +13,7 @@ const NamingSection: React.FC<MOCATestProps> = ({
       <Row gutter={16}>
         <Col span={8}>
           <div style={{ border: '1px solid #d9d9d9', padding: '10px' }}>
-            <Image src="/animal1.png" alt="Animal 1" style={{ maxWidth: '100%' }} />
+            <Image src="/moca/lion.jpg" alt="Animal 1" style={{ maxWidth: '100%' }} />
             <Checkbox 
               onChange={onCheckboxChange('naming', 0)}
               checked={scores.naming[0]}
@@ -24,7 +24,7 @@ const NamingSection: React.FC<MOCATestProps> = ({
         </Col>
         <Col span={8}>
           <div style={{ border: '1px solid #d9d9d9', padding: '10px' }}>
-            <Image src="/animal2.png" alt="Animal 2" style={{ maxWidth: '100%' }}/>
+            <Image src="/moca/rino.jpg" alt="Animal 2" style={{ maxWidth: '100%' }}/>
             <Checkbox 
               onChange={onCheckboxChange('naming', 1)}
               checked={scores.naming[1]}
@@ -35,7 +35,7 @@ const NamingSection: React.FC<MOCATestProps> = ({
         </Col>
         <Col span={8}>
           <div style={{ border: '1px solid #d9d9d9', padding: '10px' }}>
-            <Image src="/animal3.png" alt="Animal 3" style={{ maxWidth: '100%' }} />
+            <Image src="/moca/camello.jpg" alt="Animal 3" style={{ maxWidth: '100%' }} />
             <Checkbox 
               onChange={onCheckboxChange('naming', 2)}
               checked={scores.naming[2]}

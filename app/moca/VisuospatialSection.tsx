@@ -15,7 +15,7 @@ const VisuospatialSection: React.FC<MOCATestProps> = ({
       <Row gutter={16} style={{ marginBottom: '20px' }}>
         <Col span={12}>
           <div style={{ border: '1px solid #d9d9d9', padding: '10px', marginBottom: '10px' }}>
-            <Image src="/cube.png" alt="Cube" style={{ maxWidth: '100%' }} />
+            <Image src="/moca/nodos.jpg" alt="nodes" style={{ maxWidth: '100%' }} />
             <Checkbox 
               onChange={onCheckboxChange('visuospatial', 0)}
               checked={scores.visuospatial[0]}
@@ -26,7 +26,7 @@ const VisuospatialSection: React.FC<MOCATestProps> = ({
         </Col>
         <Col span={12}>
           <div style={{ border: '1px solid #d9d9d9', padding: '10px', marginBottom: '10px' }}>
-            <Image src="/clock.png" alt="Clock" style={{ maxWidth: '100%' }} />
+            <Image src="/moca/cubo.jpg" alt="Clock" style={{ maxWidth: '100%' }} />
             <Checkbox 
               onChange={onCheckboxChange('visuospatial', 1)}
               checked={scores.visuospatial[1]}
