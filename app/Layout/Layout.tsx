@@ -23,6 +23,7 @@ import {
   SettingOutlined,
   CheckCircleOutlined,
   DeploymentUnitOutlined,
+  SmileOutlined,
 } from "@ant-design/icons";
 import { GlobalProvider } from "../context/GlobalContext";
 
@@ -61,6 +62,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     },
     {
       key: "/moca", icon: <DeploymentUnitOutlined />, label: "MOCA", onClick: () => router.push("/moca")
+    },
+    {
+      key: "/affective", icon: <SmileOutlined />, label: "Afectividad", onClick: () => router.push("/affective")
     },
     { key: "/dashboard", icon: <DashboardOutlined />, label: "Dashboard", onClick: () => router.push("/dashboard") },
     {

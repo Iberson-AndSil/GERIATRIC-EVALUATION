@@ -54,6 +54,7 @@ export const formatPatientData = (formData: any, score: number, existingCodes: S
     cognitivo_total: 0,
     mmse30:0,
     moca:0,
+    afectiva:0,
   };
 };
 

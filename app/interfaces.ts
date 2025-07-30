@@ -32,6 +32,7 @@ export interface Paciente {
   cognitivo_total: number;
   mmse30: number;
   moca:number;
+  afectiva:number;
 }
 
 export interface GijonCategory {
