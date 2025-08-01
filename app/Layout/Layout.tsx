@@ -24,7 +24,7 @@ import {
   CheckCircleOutlined,
   DeploymentUnitOutlined,
   SmileOutlined,
-} from "@ant-design/icons";
+  } from "@ant-design/icons";
 import { GlobalProvider } from "../context/GlobalContext";
 
 const { Header, Sider, Content } = AntLayout;
@@ -65,6 +65,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     },
     {
       key: "/affective", icon: <SmileOutlined />, label: "Afectividad", onClick: () => router.push("/affective")
+    },
+    {
+      key: "/nutritional", icon: <MedicineBoxOutlined />, label: "Valoración Nutricional", onClick: () => router.push("/nutritional")
     },
     { key: "/dashboard", icon: <DashboardOutlined />, label: "Dashboard", onClick: () => router.push("/dashboard") },
     {

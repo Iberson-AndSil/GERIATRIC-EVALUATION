@@ -93,7 +93,7 @@ export default function Cuestionario() {
       await writable.close();
 
       alert("Resultados guardados exitosamente");
-      router.push('/');
+      router.push('/nutritional');
 
     } catch (err: unknown) {
       if (err instanceof Error) {

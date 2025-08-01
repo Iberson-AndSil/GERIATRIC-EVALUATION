@@ -94,7 +94,7 @@ export default function ResultadosEvaluacion({
       await writable.close();
 
       alert("Resultados guardados exitosamente");
-      router.push('/');
+      router.push('/mmse30');
 
     } catch (err: unknown) {
       if (err instanceof Error) {

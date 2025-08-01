@@ -55,6 +55,7 @@ export const formatPatientData = (formData: any, score: number, existingCodes: S
     mmse30:0,
     moca:0,
     afectiva:0,
+    nutricional:0,
   };
 };
 

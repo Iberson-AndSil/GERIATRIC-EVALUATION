@@ -33,6 +33,7 @@ export interface Paciente {
   mmse30: number;
   moca:number;
   afectiva:number;
+  nutricional:number;
 }
 
 export interface GijonCategory {
@@ -47,4 +48,36 @@ export interface GijonScores {
   vivienda: number;
   sociales: number;
   apoyo: number;
+}
+
+export interface FormValues {
+  weight?: number;
+  height?: number;
+  imc?: number;
+  abdominalPerimeter?: number;
+  calfPerimeter?: number;
+  brachialPerimeter?: number;
+  heelKneeHeight?: number;
+  biaFat?: number;
+  muscleMass?: number;
+  q1?: number;
+  q2?: number;
+  q3?: number;
+  q4?: number;
+  q5?: number;
+  q6?: number;
+  q7?: number;
+  q8?: number;
+  q9?: number;
+  q10?: number;
+  q11?: number;
+  q12_dairy?: boolean;
+  q12_eggs?: boolean;
+  q12_meat?: boolean;
+  q13?: number;
+  q14?: number;
+  q15?: number;
+  q16?: number;
+  q17?: number;
+  q18?: number;
 }

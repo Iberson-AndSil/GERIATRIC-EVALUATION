@@ -66,7 +66,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
       await writable.close();
 
       alert("Resultados guardados exitosamente");
-      router.push('/');
+      router.push('/affective');
 
     } catch (err: unknown) {
       if (err instanceof Error) {
