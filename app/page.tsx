@@ -29,7 +29,6 @@ const Home = () => {
   
   useEffect(() => {
     console.log(excelData);
-    
   }, [excelData]);
 
   const handleSearch = (
@@ -238,6 +237,27 @@ const Home = () => {
           const ingreso_economico = Number(getValue('ingreso_economico')) || 0;
           const con_quien_vive = String(getValue('con_quien_vive') || '').trim();
           const relacion = String(getValue('relacion') || '').trim();
+          const gijon = Number(getValue('gijon')) || 0;
+          const abvdScore = Number(getValue('abvdScore'))||0;
+          const aivdScore = Number(getValue('aivdScore'))||0;
+          const sarcopenia = Number(getValue('sarcopenia'))||0;
+          const caida = Number(getValue('caida'))||0;
+          const deterioro = Number(getValue('deterioro'))||0;
+          const incontinencia = Number(getValue('incontinencia'))||0;
+          const depresion = Number(getValue('depresion'))||0;
+          const sensorial = Number(getValue('sensorial'))||0;
+          const bristol = Number(getValue('bristol'))||0;
+          const adherencia = Number(getValue('adherencia'))||0;
+          const dynamometry = Number(getValue('dynamometry'))||0;
+          const balance = Number(getValue('balance'))||0;
+          const dimension_fisica = Number(getValue('dimension_fisica'))||0;
+          const dimension_mental = Number(getValue('dimension_mental'))||0;
+          const puntaje_total = Number(getValue('puntaje_total'))||0;
+          const cognitivo_total = Number(getValue('cognitivo_total'))||0;
+          const mmse30 = Number(getValue('mmse30'))||0;
+          const moca = Number(getValue('moca'))||0;
+          const afectiva = Number(getValue('afectiva'))||0;
+          const nutricional = Number(getValue('nutricional'))||0;
 
           const isEmptyRow = !codigo && !nombre && !dni && isNaN(edad);
           if (isEmptyRow) return null;
@@ -258,6 +278,27 @@ const Home = () => {
             con_quien_vive,
             relacion,
             requiresCompletion: !codigo || !nombre || !dni || isNaN(edad),
+            gijon,
+            abvdScore,
+            aivdScore,
+            sarcopenia,
+            caida,
+            deterioro,
+            incontinencia,
+            depresion,
+            sensorial,
+            bristol,
+            adherencia,
+            dynamometry,
+            balance,
+            dimension_fisica,
+            dimension_mental,
+            puntaje_total,
+            cognitivo_total,
+            mmse30,
+            moca,
+            afectiva,
+            nutricional
           };
         })
         .filter((item): item is PacienteWithStatus => item !== null);
