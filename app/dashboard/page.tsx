@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Layout, Card, Row, Col, Input, Table, Typography, Spin } from 'antd';
+import { Layout, Card, Row, Col, Input, Table, Typography, Spin, Select } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { Column, Pie, Bar, Scatter } from '@ant-design/charts';
 import { Paciente } from '../interfaces';
@@ -8,13 +8,46 @@ import { useGlobalContext } from '@/app/context/GlobalContext';
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
+const { Option } = Select;
+
+// Tipo para las opciones de métricas
+type MetricOption = {
+  value: string;
+  label: string;
+};
 
 const DashboardPacientes: React.FC = () => {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState<Paciente | null>(null);
   const [busqueda, setBusqueda] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedMetric, setSelectedMetric] = useState('abvdScore');
   const { excelData } = useGlobalContext();
+
+  // Opciones para el select de métricas
+  const metricOptions: MetricOption[] = [
+    { value: 'gijon', label: 'Gijón' },
+    { value: 'abvdScore', label: 'ABVD Score' },
+    { value: 'aivdScore', label: 'AIVD Score' },
+    { value: 'sarcopenia', label: 'Sarcopenia' },
+    { value: 'caida', label: 'Caída' },
+    { value: 'deterioro', label: 'Deterioro' },
+    { value: 'incontinencia', label: 'Incontinencia' },
+    { value: 'depresion', label: 'Depresión' },
+    { value: 'sensorial', label: 'Sensorial' },
+    { value: 'bristol', label: 'Bristol' },
+    { value: 'adherencia', label: 'Adherencia' },
+    { value: 'dynamometry', label: 'Dynamometry' },
+    { value: 'balance', label: 'Balance' },
+    { value: 'dimension_fisica', label: 'Dimensión Física' },
+    { value: 'dimension_mental', label: 'Dimensión Mental' },
+    { value: 'puntaje_total', label: 'Puntaje Total' },
+    { value: 'cognitivo_total', label: 'Cognitivo Total' },
+    { value: 'mmse30', label: 'MMSE30' },
+    { value: 'moca', label: 'MOCA' },
+    { value: 'afectiva', label: 'Afectiva' },
+    { value: 'nutricional', label: 'Nutricional' },
+  ];
 
   useEffect(() => {
     if (excelData && excelData.length > 0) {
@@ -23,6 +56,27 @@ const DashboardPacientes: React.FC = () => {
         edad: Number(item.edad) || 0,
         sexo: String(item.sexo) || '',
         abvdScore: Number(item.abvdScore) || 0,
+        // Asegúrate de que todas las métricas estén formateadas como números
+        gijon: Number(item.gijon) || 0,
+        aivdScore: Number(item.aivdScore) || 0,
+        sarcopenia: Number(item.sarcopenia) || 0,
+        caida: Number(item.caida) || 0,
+        deterioro: Number(item.deterioro) || 0,
+        incontinencia: Number(item.incontinencia) || 0,
+        depresion: Number(item.depresion) || 0,
+        sensorial: Number(item.sensorial) || 0,
+        bristol: Number(item.bristol) || 0,
+        adherencia: Number(item.adherencia) || 0,
+        dynamometry: Number(item.dynamometry) || 0,
+        balance: Number(item.balance) || 0,
+        dimension_fisica: Number(item.dimension_fisica) || 0,
+        dimension_mental: Number(item.dimension_mental) || 0,
+        puntaje_total: Number(item.puntaje_total) || 0,
+        cognitivo_total: Number(item.cognitivo_total) || 0,
+        mmse30: Number(item.mmse30) || 0,
+        moca: Number(item.moca) || 0,
+        afectiva: Number(item.afectiva) || 0,
+        nutricional: Number(item.nutricional) || 0,
       }));
 
       setPacientes(datosFormateados);
@@ -146,20 +200,21 @@ const DashboardPacientes: React.FC = () => {
 
   const configEdadPuntuacionScatter = {
     data: pacientes
-      .filter(p => !isNaN(Number(p.abvdScore)))
+      .filter(p => !isNaN(Number(p[selectedMetric as keyof Paciente])))
       .map(p => ({
         edad: Number(p.edad) || 0,
-        puntuacion: Number(p.abvdScore) || 0,
+        puntuacion: Number(p[selectedMetric as keyof Paciente]) || 0,
+        nombre: p.nombre || 'Sin nombre',
       })),
     xField: 'edad',
     yField: 'puntuacion',
     colorField: 'puntuacion',
     size: 5,
     tooltip: {
-      fields: ['edad', 'puntuacion'],
+      fields: ['edad', 'puntuacion', 'nombre'],
       formatter: (datum: any) => ({
-        name: datum.nombre || 'Sin nombre',
-        value: `Edad: ${datum.edad}\nPuntuación ABVD: ${datum.puntuacion}`,
+        name: datum.nombre,
+        value: `Edad: ${datum.edad}\nPuntuación ${metricOptions.find(m => m.value === selectedMetric)?.label}: ${datum.puntuacion}`,
       }),
       showTitle: true,
     },
@@ -178,12 +233,14 @@ const DashboardPacientes: React.FC = () => {
     return [
       {
         sexo: 'Masculino',
-        promedio: masculinos.length > 0 ? masculinos.reduce((sum, p) => sum + p.abvdScore, 0) / masculinos.length : 0,
+        promedio: masculinos.length > 0 ? 
+          masculinos.reduce((sum, p) => sum + (Number(p[selectedMetric as keyof Paciente]) || 0), 0) / masculinos.length : 0,
         count: masculinos.length,
       },
       {
         sexo: 'Femenino',
-        promedio: femeninos.length > 0 ? femeninos.reduce((sum, p) => sum + p.abvdScore, 0) / femeninos.length : 0,
+        promedio: femeninos.length > 0 ? 
+          femeninos.reduce((sum, p) => sum + (Number(p[selectedMetric as keyof Paciente]) || 0), 0) / femeninos.length : 0,
         count: femeninos.length,
       },
     ];
@@ -203,7 +260,7 @@ const DashboardPacientes: React.FC = () => {
       formatter: (item: any) => {
         return {
           name: item.sexo,
-          value: `Promedio: ${item.promedio.toFixed(2)}\nPacientes: ${item.count}`,
+          value: `Promedio ${metricOptions.find(m => m.value === selectedMetric)?.label}: ${item.promedio.toFixed(2)}\nPacientes: ${item.count}`,
         };
       },
     },
@@ -280,16 +337,31 @@ const DashboardPacientes: React.FC = () => {
               </Col>
             </Row>
             <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+              <Col span={24}>
+                <Card title="Seleccionar Métrica" loading={loading}>
+                  <Select
+                    style={{ width: '100%' }}
+                    value={selectedMetric}
+                    onChange={(value) => setSelectedMetric(value)}
+                  >
+                    {metricOptions.map(option => (
+                      <Option key={option.value} value={option.value}>
+                        {option.label}
+                      </Option>
+                    ))}
+                  </Select>
+                </Card>
+              </Col>
             </Row>
 
             <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
               <Col span={12}>
-                <Card title="Edad vs. Puntuación ABVD" loading={loading}>
+                <Card title={`Edad vs. Puntuación ${metricOptions.find(m => m.value === selectedMetric)?.label}`} loading={loading}>
                   <Scatter {...configEdadPuntuacionScatter} />
                 </Card>
               </Col>
               <Col span={12}>
-                <Card title="Promedio de Puntuación ABVD por Sexo" loading={loading}>
+                <Card title={`Promedio de ${metricOptions.find(m => m.value === selectedMetric)?.label} por Sexo`} loading={loading}>
                   <Bar {...configPromedioSexoBar} />
                 </Card>
               </Col>
@@ -306,7 +378,11 @@ const DashboardPacientes: React.FC = () => {
                       { title: 'DNI', dataIndex: 'dni', key: 'dni' },
                       { title: 'Edad', dataIndex: 'edad', key: 'edad' },
                       { title: 'Sexo', dataIndex: 'sexo', key: 'sexo', render: (sexo) => sexo === 'M' ? 'Masculino' : sexo === 'F' ? 'Femenino' : 'No especificado' },
-                      { title: 'Puntuación ABVD', dataIndex: 'abvdScore', key: 'abvdScore' },
+                      { 
+                        title: metricOptions.find(m => m.value === selectedMetric)?.label, 
+                        dataIndex: selectedMetric, 
+                        key: selectedMetric 
+                      },
                       {
                         title: 'Acciones',
                         key: 'acciones',
