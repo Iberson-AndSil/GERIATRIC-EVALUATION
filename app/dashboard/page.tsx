@@ -4,7 +4,6 @@ import { Layout, Card, Row, Col, Input, Table, Typography, Spin, Select } from '
 import { SearchOutlined } from '@ant-design/icons';
 import { Column, Pie, Bar, Scatter } from '@ant-design/charts';
 import { Paciente } from '../interfaces';
-import { useGlobalContext } from '@/app/context/GlobalContext';
 import { obtenerPacientesConResultadosRecientes } from '../lib/pacienteService';
 
 const { Header, Content } = Layout;

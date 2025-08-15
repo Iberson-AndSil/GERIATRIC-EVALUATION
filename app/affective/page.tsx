@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import * as XLSX from "xlsx";
 import { Typography, Select, Row, Col, Card, Result, Button, notification } from 'antd';
 import { useGlobalContext } from '../context/GlobalContext';
 import { useRouter } from 'next/navigation';

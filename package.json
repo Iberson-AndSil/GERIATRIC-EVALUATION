@@ -22,8 +22,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-highlight-words": "^0.21.0",
-    "react-router-dom": "^7.4.1",
-    "xlsx": "^0.18.5"
+    "react-router-dom": "^7.4.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

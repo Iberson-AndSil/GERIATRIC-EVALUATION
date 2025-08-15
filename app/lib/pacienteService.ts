@@ -22,7 +22,6 @@ export const obtenerPacientesConResultadosRecientes = async (): Promise<Paciente
     const resultadosRef = collection(db, "pacientes", pacienteDoc.id, "resultados");
     const q = query(resultadosRef, orderBy("fecha", "desc"), limit(1));
     const resultadosSnapshot = await getDocs(q);
-    
     let resultadoReciente = {};
     if (!resultadosSnapshot.empty) {
       resultadoReciente = resultadosSnapshot.docs[0].data();
@@ -34,7 +33,6 @@ export const obtenerPacientesConResultadosRecientes = async (): Promise<Paciente
       ...resultadoReciente
     } as Paciente;
   });
-  
   return Promise.all(pacientesPromises);
 };
 
@@ -42,12 +40,22 @@ export const crearPaciente = async (id: string, data: Paciente) => {
   await setDoc(doc(db, "pacientes", id), data);
 };
 
+// export const obtenerPacientes = async (): Promise<Paciente[]> => {
+//   const querySnapshot = await getDocs(collection(db, "pacientes"));
+//   return querySnapshot.docs.map(doc => {
+//     const { id, ...data } = doc.data() as Paciente;
+//     return {
+//       id: doc.id,
+//       ...data
+//     };
+//   });
+// };
+
 export const obtenerPacientes = async (): Promise<Paciente[]> => {
   const querySnapshot = await getDocs(collection(db, "pacientes"));
   return querySnapshot.docs.map(doc => {
-    const { id, ...data } = doc.data() as Paciente;
+    const { ...data } = doc.data() as Paciente;
     return {
-      id: doc.id,
       ...data
     };
   });

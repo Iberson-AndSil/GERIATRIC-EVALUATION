@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { Image, notification } from 'antd';
 import { Form, Input, Button, Card, Row, Col, Checkbox, Typography, Radio } from "antd";
-import * as XLSX from "xlsx";
 import { useGlobalContext } from "../context/GlobalContext";
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
@@ -305,7 +304,3 @@ const MMSEForm = () => {
 };
 
 export default MMSEForm;
-
-function setLoading(arg0: boolean) {
-    throw new Error("Function not implemented.");
-}

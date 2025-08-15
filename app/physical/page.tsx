@@ -4,7 +4,6 @@ import { Steps, Form, InputNumber, Button, Card, Row, Col, Typography, Result, R
 import { UserOutlined, ClockCircleOutlined, ArrowUpOutlined, ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useGlobalContext } from '../context/GlobalContext';
-import * as XLSX from "xlsx";
 import { useRouter } from 'next/navigation';
 import { actualizarResultado } from '../lib/pacienteService';
 const { Step } = Steps;

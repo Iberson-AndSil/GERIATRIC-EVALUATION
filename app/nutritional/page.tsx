@@ -5,7 +5,6 @@ import { Form, Input, Card, Button, Radio, Checkbox, Row, Col, notification } fr
 import { FormValues } from "../interfaces";
 import Title from 'antd/es/typography/Title';
 import { useGlobalContext } from '../context/GlobalContext';
-import * as XLSX from "xlsx";
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";

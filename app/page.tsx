@@ -1,8 +1,8 @@
 "use client";
 import React, { useEffect, useState, useRef } from 'react';
-import { ConfigProvider, Dropdown, Menu, Popconfirm, Modal, Form, Input, InputNumber, Select, Radio, DatePicker } from 'antd';
-import { Button, Table, notification, Card, Space, Row, Col, Typography, Divider, Tag } from 'antd';
-import { ArrowLeftOutlined, ArrowRightOutlined, DeleteOutlined, DollarOutlined, EditOutlined, HomeOutlined, IdcardOutlined, ManOutlined, MoreOutlined, PlusOutlined, SearchOutlined, UserOutlined, WomanOutlined } from '@ant-design/icons';
+import { ConfigProvider, Dropdown, Popconfirm, Modal, Form, Input, InputNumber, Select, Radio, DatePicker } from 'antd';
+import { Button, Table, notification, Space, Row, Col, Typography, Divider, Tag } from 'antd';
+import { ArrowRightOutlined, DeleteOutlined, DollarOutlined, EditOutlined, HomeOutlined, IdcardOutlined, ManOutlined, MoreOutlined, PlusOutlined, SearchOutlined, UserOutlined, WomanOutlined } from '@ant-design/icons';
 import { useGlobalContext } from '@/app/context/GlobalContext';
 import { NotificationPlacement } from 'antd/es/notification/interface';
 import Link from 'next/link';
@@ -18,8 +18,6 @@ import { db } from './lib/firebaseConfig';
 import { crearRegistroResultados } from './lib/pacienteService';
 
 const { Title, Text } = Typography;
-const { Option } = Select;
-
 interface PacienteWithStatus extends Paciente {
   isNew?: boolean;
   requiresCompletion: boolean;
@@ -29,8 +27,8 @@ const Home = () => {
   const router = useRouter();
   const [pacientes, setPacientes] = useState<PacienteWithStatus[]>([]);
   const [api, contextHolder] = notification.useNotification();
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState('');
+  const [searchText, setSearchText] = useState<string>("");
+  const [searchedColumn, setSearchedColumn] = useState<keyof Paciente | "">("");
   const searchInput = useRef<any>(null);
   const [loading, setLoading] = useState(false);
   const { setCurrentPatient, currentPatient, setCurrentResultId } = useGlobalContext();
@@ -68,8 +66,6 @@ const Home = () => {
       if (!response.ok) {
         throw new Error('Error en la respuesta del servidor');
       }
-
-      const data = await response.json();
       openNotification("success", "Éxito", "Paciente eliminado correctamente", "topRight");
       fetchPacientes();
     } catch (error) {
@@ -88,7 +84,7 @@ const Home = () => {
         const ultimoResultadoDoc = resultadosSnap.docs[0];
         const ultimoResultado = { id: ultimoResultadoDoc.id, ...ultimoResultadoDoc.data() } as { id: string; completado: boolean };
         if (ultimoResultado.completado === false) {
-          setCurrentResultId(ultimoResultado.id);          
+          setCurrentResultId(ultimoResultado.id);
         }
       } else {
         console.log("No hay resultados para este paciente");
@@ -104,16 +100,16 @@ const Home = () => {
     }
   };
 
-const handleNewEvaluation = async (paciente: Paciente) => {
-  try {
-    setCurrentPatient(paciente);
-    const nuevoResultadoId = await crearRegistroResultados(paciente.dni);
-    setCurrentResultId(nuevoResultadoId);
-    router.push('/family');
-  } catch (error) {
-    console.error("Error al crear registro de resultados:", error);
-  }
-};
+  const handleNewEvaluation = async (paciente: Paciente) => {
+    try {
+      setCurrentPatient(paciente);
+      const nuevoResultadoId = await crearRegistroResultados(paciente.dni);
+      setCurrentResultId(nuevoResultadoId);
+      router.push('/family');
+    } catch (error) {
+      console.error("Error al crear registro de resultados:", error);
+    }
+  };
 
   const showEditModal = (paciente: Paciente) => {
     setEditingPatient(paciente);

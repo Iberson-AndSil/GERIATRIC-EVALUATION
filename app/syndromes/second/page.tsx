@@ -1,10 +1,10 @@
 "use client";
-import { Row, Col, Typography, notification } from 'antd';
-import { useDepression } from '../../utils/syndromes/useDepression';
-import { useSensory } from '../../utils/syndromes/useSensory';
-import { useBristol } from '../../utils/syndromes/useBristol';
-import { useAdherence } from '../../utils/syndromes/useAdherence';
-import { useSaveData } from '../../utils/syndromes/useSaveData';
+import { Row, Col, Typography } from 'antd';
+import { useDepression } from '@/app/utils/syndromes/useDepression';
+import { useSensory } from '@/app/utils/syndromes/useSensory';
+import { useBristol } from '@/app/utils/syndromes/useBristol';
+import { useAdherence } from '@/app/utils/syndromes/useAdherence';
+import { useSaveData } from '@/app/utils/syndromes/useSaveData';
 import { DepressionCard } from './DepressionCard';
 import { SensoryCard } from './SensoryCard';
 import { BristolCard } from './BristolCard';
@@ -15,8 +15,6 @@ import { SaveButtons } from './SaveButtons';
 const { Title } = Typography;
 
 export default function Home() {
-  const [api, contextHolder] = notification.useNotification();
-
   const {
     depresionData,
     depresionResult,
@@ -63,7 +61,6 @@ export default function Home() {
 
   return (
     <div style={{ padding: 24 }}>
-      {contextHolder}
       <Title
         level={3}
         style={{

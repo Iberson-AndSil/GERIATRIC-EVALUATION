@@ -37,7 +37,6 @@ export default function ResultadosEvaluacion({
   animales,
   intrusiones,
   recuerdo,
-  fileHandle,
   resetEvaluation
 }: ResultadosEvaluacionProps) {
   const router = useRouter();
