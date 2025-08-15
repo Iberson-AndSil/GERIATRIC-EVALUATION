@@ -1,20 +1,22 @@
 "use client";
 import React, { useState } from "react";
-import { Image } from 'antd';
+import { Image, notification } from 'antd';
 import { Form, Input, Button, Card, Row, Col, Checkbox, Typography, Radio } from "antd";
-import * as XLSX from "xlsx";
 import { useGlobalContext } from "../context/GlobalContext";
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
+import { actualizarResultado } from "../lib/pacienteService";
 
 const MMSEForm = () => {
     const { Title, Text } = Typography;
     const router = useRouter();
-    const { fileHandle } = useGlobalContext();
+    const { currentPatient, currentResultId } = useGlobalContext();
     const [score, setScore] = useState(0);
     const [interpretation, setInterpretation] = useState("");
     const [form] = Form.useForm();
+    const [loading, setLoading] = useState(false);
+    const [api, contextHolder] = notification.useNotification();
 
     const calculateScore = (values: any) => {
         let total = 0;
@@ -61,44 +63,21 @@ const MMSEForm = () => {
 
     const handleSaveData = async () => {
         try {
-            if (!fileHandle) {
-                alert("Por favor seleccione un archivo primero");
-                return;
-            }
+            setLoading(true);
 
-            const file = await fileHandle.getFile();
-            const arrayBuffer = await file.arrayBuffer();
-            const existingWb = XLSX.read(arrayBuffer, { type: "array" });
-            const wsName = existingWb.SheetNames[0];
-            const ws = existingWb.Sheets[wsName];
+            await actualizarResultado(
+                currentPatient!.dni,
+                currentResultId || "",
+                'mmse30',
+                score
+            );
 
-            const existingData: number[][] = XLSX.utils.sheet_to_json(ws, {
-                header: 1,
-                defval: ""
+            api.success({
+                message: 'Éxito',
+                description: 'Resultados de ABVD y AIVD guardados correctamente',
+                placement: 'topRight'
             });
-            const lastRowIndex = existingData.length - 1;
 
-            if (lastRowIndex >= 0) {
-                while (existingData[lastRowIndex].length < 31) {
-                    existingData[lastRowIndex].push(0);
-                }
-
-                existingData[lastRowIndex][31] = score;
-            }
-
-            const updatedWs = XLSX.utils.aoa_to_sheet(existingData);
-            const updatedWb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(updatedWb, updatedWs, wsName);
-
-            const writable = await fileHandle.createWritable();
-            await writable.write(XLSX.write(updatedWb, {
-                bookType: "xlsx",
-                type: "buffer",
-                bookSST: true
-            }));
-            await writable.close();
-
-            alert("Resultados guardados exitosamente");
             router.push('/moca');
 
         } catch (err: unknown) {
@@ -114,6 +93,7 @@ const MMSEForm = () => {
 
     return (
         <div>
+            {contextHolder}
             <Title
                 level={3}
                 style={{
@@ -311,10 +291,11 @@ const MMSEForm = () => {
                         size="large"
                         onClick={handleSaveData}
                         style={{ minWidth: '120px' }}
-                        disabled={!fileHandle}
+                        disabled={!currentPatient}
+                        loading={loading}
                         icon={<SaveOutlined />}
                     >
-                        {fileHandle ? "Guardar Paciente" : "Seleccione archivo primero"}
+                        {currentPatient ? "Guardar Paciente" : "Seleccione archivo primero"}
                     </Button>
                 </Col>
             </Row>

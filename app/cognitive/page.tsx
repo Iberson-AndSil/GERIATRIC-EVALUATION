@@ -22,8 +22,7 @@ const { Title, Text } = Typography;
 export default function EvaluacionMonetaria() {
   const [currentStep, setCurrentStep] = useState(1);
   const [tiempoFluencia, setTiempoFluencia] = useState(60);
-  const { fileHandle } = useGlobalContext();
-
+    const { currentPatient } = useGlobalContext();
   const [monedasCorrectas, setMonedasCorrectas] = useState<MonedasCorrectas>({
     centimos10: false,
     centimos20: false,
@@ -140,7 +139,7 @@ export default function EvaluacionMonetaria() {
             animales={animales}
             intrusiones={intrusiones}
             recuerdo={recuerdo}
-            fileHandle={fileHandle}
+            fileHandle={currentPatient}
             resetEvaluation={() => setCurrentStep(1)}
           />
         );

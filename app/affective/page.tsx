@@ -1,11 +1,11 @@
 'use client';
 import { useState } from 'react';
-import * as XLSX from "xlsx";
-import { Typography, Select, Row, Col, Card, Result, Button } from 'antd';
+import { Typography, Select, Row, Col, Card, Result, Button, notification } from 'antd';
 import { useGlobalContext } from '../context/GlobalContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
+import { actualizarResultado } from '../lib/pacienteService';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -32,8 +32,10 @@ const preguntas: { texto: string; sumaSiEs: Respuesta }[] = [
 
 export default function Cuestionario() {
   const [respuestas, setRespuestas] = useState<Respuestas>({});
-  const { fileHandle } = useGlobalContext();
+  const { currentPatient, currentResultId } = useGlobalContext();
   const router = useRouter();
+  const [api, contextHolder] = notification.useNotification();
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (index: number, value: Respuesta) => {
     setRespuestas(prev => ({ ...prev, [index]: value }));
@@ -55,44 +57,26 @@ export default function Cuestionario() {
 
   const handleSaveData = async () => {
     try {
-      if (!fileHandle) {
-        alert("Por favor seleccione un archivo primero");
-        return;
+      setLoading(true);
+
+      if (!currentPatient?.dni) {
+        throw new Error("No se ha seleccionado un paciente");
       }
 
-      const file = await fileHandle.getFile();
-      const arrayBuffer = await file.arrayBuffer();
-      const existingWb = XLSX.read(arrayBuffer, { type: "array" });
-      const wsName = existingWb.SheetNames[0];
-      const ws = existingWb.Sheets[wsName];
+      const afectiva = contarPuntos();
+      await actualizarResultado(
+        currentPatient!.dni,
+        currentResultId || "",
+        'afectiva',
+        afectiva
+      );
 
-      const existingData: number[][] = XLSX.utils.sheet_to_json(ws, {
-        header: 1,
-        defval: ""
+      api.success({
+        message: 'Éxito',
+        description: 'Resultados de ABVD y AIVD guardados correctamente',
+        placement: 'topRight'
       });
-      const lastRowIndex = existingData.length - 1;
 
-      if (lastRowIndex >= 0) {
-        while (existingData[lastRowIndex].length < 31) {
-          existingData[lastRowIndex].push(0);
-        }
-
-        existingData[lastRowIndex][33] = contarPuntos();
-      }
-
-      const updatedWs = XLSX.utils.aoa_to_sheet(existingData);
-      const updatedWb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(updatedWb, updatedWs, wsName);
-
-      const writable = await fileHandle.createWritable();
-      await writable.write(XLSX.write(updatedWb, {
-        bookType: "xlsx",
-        type: "buffer",
-        bookSST: true
-      }));
-      await writable.close();
-
-      alert("Resultados guardados exitosamente");
       router.push('/nutritional');
 
     } catch (err: unknown) {
@@ -111,7 +95,7 @@ export default function Cuestionario() {
   return (
     <div style={{ maxWidth: 900, margin: 'auto', padding: 24 }}>
       <Title level={3}>Escala GDS-15 (Yesavage)</Title>
-
+      {contextHolder}
       <Row gutter={[16, 16]}>
         {preguntas.map((pregunta, index) => (
           <Col key={index} xs={24} sm={12}>
@@ -144,31 +128,32 @@ export default function Cuestionario() {
       )}
 
       <Row key="actions" className="m-12 flex justify-center">
-                <Col>
-                    <Link href="/moca" passHref>
-                        <Button
-                            type="default"
-                            icon={<ArrowLeftOutlined />}
-                            size="large"
-                            style={{ minWidth: '120px' }}
-                        >
-                            Atrás
-                        </Button>
-                    </Link>
-                </Col>
-                <Col>
-                    <Button className="!ml-3"
-                        type="primary"
-                        size="large"
-                        onClick={handleSaveData}
-                        style={{ minWidth: '120px' }}
-                        disabled={!fileHandle}
-                        icon={<SaveOutlined />}
-                    >
-                        {fileHandle ? "Guardar Paciente" : "Seleccione archivo primero"}
-                    </Button>
-                </Col>
-            </Row>
+        <Col>
+          <Link href="/moca" passHref>
+            <Button
+              type="default"
+              icon={<ArrowLeftOutlined />}
+              size="large"
+              style={{ minWidth: '120px' }}
+            >
+              Atrás
+            </Button>
+          </Link>
+        </Col>
+        <Col>
+          <Button className="!ml-3"
+            type="primary"
+            size="large"
+            onClick={handleSaveData}
+            style={{ minWidth: '120px' }}
+            disabled={!currentPatient}
+            loading={loading}
+            icon={<SaveOutlined />}
+          >
+            {currentPatient ? "Guardar Paciente" : "Seleccione archivo primero"}
+          </Button>
+        </Col>
+      </Row>
     </div>
   );
 }

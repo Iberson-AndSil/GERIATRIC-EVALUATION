@@ -1,11 +1,11 @@
-import React from 'react';
-import { Card, Typography, Divider, Space, Progress, Row, Col, Button } from 'antd';
+import React, { useState } from 'react';
+import { Card, Typography, Divider, Space, Progress, Row, Col, Button, notification } from 'antd';
 import { MOCATestProps, SectionKey } from '../type';
 import { useGlobalContext } from '../context/GlobalContext';
-import * as XLSX from "xlsx";
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
+import { actualizarResultado } from '../lib/pacienteService';
 
 const { Title, Text } = Typography;
 
@@ -23,49 +23,28 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
   calculateSectionProgress,
 }) => {
 
-  const { fileHandle } = useGlobalContext();
+  const { currentPatient, currentResultId } = useGlobalContext();
   const router = useRouter();
-
+  const [loading, setLoading] = useState(false);
+  const [api, contextHolder] = notification.useNotification();
   const handleSaveData = async () => {
     try {
-      if (!fileHandle) {
-        alert("Por favor seleccione un archivo primero");
-        return;
-      }
 
-      const file = await fileHandle.getFile();
-      const arrayBuffer = await file.arrayBuffer();
-      const existingWb = XLSX.read(arrayBuffer, { type: "array" });
-      const wsName = existingWb.SheetNames[0];
-      const ws = existingWb.Sheets[wsName];
+      setLoading(true);
 
-      const existingData: number[][] = XLSX.utils.sheet_to_json(ws, {
-        header: 1,
-        defval: ""
+      await actualizarResultado(
+        currentPatient!.dni,
+        currentResultId || "",
+        'moca',
+        totalScore
+      );
+
+      api.success({
+        message: 'Éxito',
+        description: 'Resultados de ABVD y AIVD guardados correctamente',
+        placement: 'topRight'
       });
-      const lastRowIndex = existingData.length - 1;
 
-      if (lastRowIndex >= 0) {
-        while (existingData[lastRowIndex].length < 31) {
-          existingData[lastRowIndex].push(0);
-        }
-
-        existingData[lastRowIndex][32] = totalScore;
-      }
-
-      const updatedWs = XLSX.utils.aoa_to_sheet(existingData);
-      const updatedWb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(updatedWb, updatedWs, wsName);
-
-      const writable = await fileHandle.createWritable();
-      await writable.write(XLSX.write(updatedWb, {
-        bookType: "xlsx",
-        type: "buffer",
-        bookSST: true
-      }));
-      await writable.close();
-
-      alert("Resultados guardados exitosamente");
       router.push('/affective');
 
     } catch (err: unknown) {
@@ -81,6 +60,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
 
   return (
     <>
+      {contextHolder}
       <Card title="Resultado">
         <Title level={3}>
           Puntuación total: {totalScore}/30
@@ -154,10 +134,11 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
             size="large"
             onClick={handleSaveData}
             style={{ minWidth: '120px' }}
-            disabled={!fileHandle}
+            disabled={!currentPatient}
+            loading={loading}
             icon={<SaveOutlined />}
           >
-            {fileHandle ? "Guardar Paciente" : "Seleccione archivo primero"}
+            {currentPatient ? "Guardar Paciente" : "Seleccione archivo primero"}
           </Button>
         </Col>
       </Row>

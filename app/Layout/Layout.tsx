@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import 'antd/dist/reset.css';
-import { Layout as AntLayout, Menu, Button,ConfigProvider  } from "antd";
-import { StyleProvider } from '@ant-design/cssinjs';
+import "antd/dist/reset.css";
+import { Layout as AntLayout, Menu, Button, ConfigProvider } from "antd";
+import { StyleProvider } from "@ant-design/cssinjs";
 import { useRouter } from "next/navigation";
 import {
   MenuFoldOutlined,
@@ -24,51 +24,36 @@ import {
   CheckCircleOutlined,
   DeploymentUnitOutlined,
   SmileOutlined,
-  } from "@ant-design/icons";
-import { GlobalProvider } from "../context/GlobalContext";
+} from "@ant-design/icons";
+import { useGlobalContext } from "@/app/context/GlobalContext";
 
 const { Header, Sider, Content } = AntLayout;
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
+  const { currentPatient } = useGlobalContext();
   const router = useRouter();
 
   const items = [
     { key: "/", icon: <HomeOutlined />, label: "Inicio", onClick: () => router.push("/") },
+    { key: "/family", icon: <TeamOutlined />, label: "Socio Familiar", onClick: () => router.push("/family") },
+    { key: "/assessment", icon: <AuditOutlined />, label: "Valoración Funcional", onClick: () => router.push("/funtional") },
     {
-      key: "/family", icon: <TeamOutlined />, label: "Socio Familiar", onClick: () => router.push("/family")
-    },
-    {
-      key: "/assessment", icon: <AuditOutlined />, label: "Valoración Funcional", onClick: () => router.push("/funtional")
-    },
-    {
-      key: "/syndromes", icon: <FileSearchOutlined />, label: "Síndromes Geriátricos",
+      key: "/syndromes",
+      icon: <FileSearchOutlined />,
+      label: "Síndromes Geriátricos",
       children: [
         { key: "/first", icon: <HeartOutlined />, label: "Primera Parte", onClick: () => router.push("/syndromes/first") },
         { key: "/second", icon: <MedicineBoxOutlined />, label: "Segunda Parte", onClick: () => router.push("/syndromes/second") },
       ],
     },
-    {
-      key: "/physical", icon: <ExperimentOutlined />, label: "Valoración Física", onClick: () => router.push("/physical")
-    },
-    {
-      key: "/mental", icon: <MailOutlined />, label: "Valoración Mental", onClick: () => router.push("/mental")
-    },
-    {
-      key: "/cognitive", icon: <ReadOutlined />, label: "Valoración Cognitiva", onClick: () => router.push("/cognitive")
-    },
-    {
-      key: "/mmse30", icon: <CheckCircleOutlined />, label: "MMSE 30", onClick: () => router.push("/mmse30")
-    },
-    {
-      key: "/moca", icon: <DeploymentUnitOutlined />, label: "MOCA", onClick: () => router.push("/moca")
-    },
-    {
-      key: "/affective", icon: <SmileOutlined />, label: "Afectividad", onClick: () => router.push("/affective")
-    },
-    {
-      key: "/nutritional", icon: <MedicineBoxOutlined />, label: "Valoración Nutricional", onClick: () => router.push("/nutritional")
-    },
+    { key: "/physical", icon: <ExperimentOutlined />, label: "Valoración Física", onClick: () => router.push("/physical") },
+    { key: "/mental", icon: <MailOutlined />, label: "Valoración Mental", onClick: () => router.push("/mental") },
+    { key: "/cognitive", icon: <ReadOutlined />, label: "Valoración Cognitiva", onClick: () => router.push("/cognitive") },
+    { key: "/mmse30", icon: <CheckCircleOutlined />, label: "MMSE 30", onClick: () => router.push("/mmse30") },
+    { key: "/moca", icon: <DeploymentUnitOutlined />, label: "MOCA", onClick: () => router.push("/moca") },
+    { key: "/affective", icon: <SmileOutlined />, label: "Afectividad", onClick: () => router.push("/affective") },
+    { key: "/nutritional", icon: <MedicineBoxOutlined />, label: "Valoración Nutricional", onClick: () => router.push("/nutritional") },
     { key: "/dashboard", icon: <DashboardOutlined />, label: "Dashboard", onClick: () => router.push("/dashboard") },
     {
       key: "sub-dashboard",
@@ -86,39 +71,45 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <StyleProvider hashPriority="high">
       <ConfigProvider
         theme={{
-          token: {
-            colorPrimary: '#1890ff',
-          },
+          token: { colorPrimary: "#1890ff" },
         }}
       >
-    <GlobalProvider>
-      <AntLayout style={{ minHeight: "100vh" }}>
-        <Header style={{ background: "#001529", padding: "0 20px", display: "flex", alignItems: "center", justifyContent: "space-between", color: "white" }}>
-          <Button
-            type="primary"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-          />
-          <h1 style={{ color: "white", margin: 0 }}>Test Geriatric</h1>
-        </Header>
-
-        <AntLayout>
-          <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme="dark" width={240} collapsedWidth={80}>
-            <Menu
-              mode="inline"
-              theme="dark"
-              items={items}
-            />
-          </Sider>
+        <AntLayout style={{ minHeight: "100vh" }}>
+          <Header
+            style={{
+              background: "#001529",
+              padding: "0 20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              color: "white",
+            }}
+          >
+            <div className="flex items-center">
+              <Button
+                type="primary"
+                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                onClick={() => setCollapsed(!collapsed)}
+              />
+              <h1 className="!ml-6" style={{ color: "white", margin: 0 }}>Test Geriatric</h1>
+            </div>
+            <h1 style={{ color: "white", margin: 0 }}>
+              {currentPatient?.nombre ?? "Sin paciente"}
+            </h1>
+          </Header>
 
           <AntLayout>
-            <Content style={{ margin: "20px", padding: "20px", background: "#fff", borderRadius: "8px" }}>
-              {children}
-            </Content>
+            <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme="dark" width={240} collapsedWidth={80}>
+              <Menu mode="inline" theme="dark" items={items} />
+            </Sider>
+
+            <AntLayout>
+              <Content style={{ margin: "20px", padding: "20px", background: "#fff", borderRadius: "8px" }}>
+                {children}
+              </Content>
+            </AntLayout>
           </AntLayout>
         </AntLayout>
-      </AntLayout>
-    </GlobalProvider>
       </ConfigProvider>
     </StyleProvider>
   );

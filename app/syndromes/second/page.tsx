@@ -1,15 +1,16 @@
 "use client";
 import { Row, Col, Typography } from 'antd';
-import { useDepression } from '../../utils/syndromes/useDepression';
-import { useSensory } from '../../utils/syndromes/useSensory';
-import { useBristol } from '../../utils/syndromes/useBristol';
-import { useAdherence } from '../../utils/syndromes/useAdherence';
-import { useSaveData } from '../../utils/syndromes/useSaveData';
+import { useDepression } from '@/app/utils/syndromes/useDepression';
+import { useSensory } from '@/app/utils/syndromes/useSensory';
+import { useBristol } from '@/app/utils/syndromes/useBristol';
+import { useAdherence } from '@/app/utils/syndromes/useAdherence';
+import { useSaveData } from '@/app/utils/syndromes/useSaveData';
 import { DepressionCard } from './DepressionCard';
 import { SensoryCard } from './SensoryCard';
 import { BristolCard } from './BristolCard';
 import { AdherenceCard } from './AdherenceCard';
 import { SaveButtons } from './SaveButtons';
+
 
 const { Title } = Typography;
 
@@ -75,14 +76,12 @@ export default function Home() {
       <Row gutter={[16, 16]}>
         <Col xs={24} md={12}>
           <DepressionCard 
-            // depresionData={depresionData}
             depresionResult={depresionResult}
             handleDepresionChange={handleDepresionChange}
           />
         </Col>
         <Col xs={24} md={12}>
           <SensoryCard 
-            // sensoryData={sensoryData}
             sensoryResult={sensoryResult}
             handleSensoryChange={handleSensoryChange}
           />
@@ -92,7 +91,6 @@ export default function Home() {
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24} md={12}>
           <BristolCard 
-            // bristolData={bristolData}
             bristolResult={bristolResult}
             handleBristolChange={handleBristolChange}
           />

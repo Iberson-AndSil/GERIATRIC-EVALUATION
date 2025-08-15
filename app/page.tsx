@@ -1,35 +1,181 @@
 "use client";
 import React, { useEffect, useState, useRef } from 'react';
-import { ConfigProvider } from 'antd';
-import { Button, Table, notification, Card, Space, Row, Col, Typography, Divider, Tag, Input } from 'antd';
-import { UploadOutlined, DownloadOutlined, ArrowRightOutlined, SearchOutlined } from '@ant-design/icons';
-import * as XLSX from 'xlsx';
+import { ConfigProvider, Dropdown, Popconfirm, Modal, Form, Input, InputNumber, Select, Radio, DatePicker } from 'antd';
+import { Button, Table, notification, Space, Row, Col, Typography, Divider, Tag } from 'antd';
+import { ArrowRightOutlined, DeleteOutlined, DollarOutlined, EditOutlined, HomeOutlined, IdcardOutlined, ManOutlined, MoreOutlined, PlusOutlined, SearchOutlined, UserOutlined, WomanOutlined } from '@ant-design/icons';
 import { useGlobalContext } from '@/app/context/GlobalContext';
 import { NotificationPlacement } from 'antd/es/notification/interface';
 import Link from 'next/link';
 import { Paciente } from './interfaces';
-import type { ColumnType} from 'antd/es/table/interface';
+import type { ColumnType } from 'antd/es/table/interface';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import moment from 'moment';
+import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
+import { db } from './lib/firebaseConfig';
+import { crearRegistroResultados } from './lib/pacienteService';
 
 const { Title, Text } = Typography;
-
 interface PacienteWithStatus extends Paciente {
   isNew?: boolean;
   requiresCompletion: boolean;
 }
 
 const Home = () => {
-  const { excelData, setExcelData, filePath, setFilePath, setFileHandle } = useGlobalContext();
+  const router = useRouter();
+  const [pacientes, setPacientes] = useState<PacienteWithStatus[]>([]);
   const [api, contextHolder] = notification.useNotification();
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState('');
+  const [searchText, setSearchText] = useState<string>("");
+  const [searchedColumn, setSearchedColumn] = useState<keyof Paciente | "">("");
   const searchInput = useRef<any>(null);
+  const [loading, setLoading] = useState(false);
+  const { setCurrentPatient, currentPatient, setCurrentResultId } = useGlobalContext();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingPatient, setEditingPatient] = useState<Paciente | null>(null);
+  const [form] = Form.useForm();
 
-  
+  const fetchPacientes = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get("/api/pacientes");
+      const pacientesData = res.data.map((paciente: any) => ({
+        ...paciente,
+        requiresCompletion: !paciente.codigo || !paciente.nombre || !paciente.dni || !paciente.edad
+      }));
+      setPacientes(pacientesData);
+    } catch (error) {
+      console.error("Error al obtener pacientes:", error);
+      openNotification("error", "Error", "No se pudo obtener la lista de pacientes", "topRight");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    console.log(excelData);
-  }, [excelData]);
+    fetchPacientes();
+  }, []);
+
+  const handleDelete = async (dni: string) => {
+    try {
+      const response = await fetch(`/api/pacientes/${dni}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Error en la respuesta del servidor');
+      }
+      openNotification("success", "Éxito", "Paciente eliminado correctamente", "topRight");
+      fetchPacientes();
+    } catch (error) {
+      console.error("Error completo:", error);
+      openNotification("error", "Error", "No se pudo eliminar el paciente", "topRight");
+    }
+  };
+
+  const handleSelectPatient = async (paciente: Paciente) => {
+    try {
+      setCurrentPatient(paciente);
+      const resultadosRef = collection(db, "pacientes", paciente.dni, "resultados");
+      const q = query(resultadosRef, orderBy("fecha", "desc"), limit(1));
+      const resultadosSnap = await getDocs(q);
+      if (!resultadosSnap.empty) {
+        const ultimoResultadoDoc = resultadosSnap.docs[0];
+        const ultimoResultado = { id: ultimoResultadoDoc.id, ...ultimoResultadoDoc.data() } as { id: string; completado: boolean };
+        if (ultimoResultado.completado === false) {
+          setCurrentResultId(ultimoResultado.id);
+        }
+      } else {
+        console.log("No hay resultados para este paciente");
+      }
+      openNotification(
+        "success",
+        "Paciente seleccionado",
+        `Has seleccionado a ${paciente.nombre}`,
+        "topRight"
+      );
+    } catch (error) {
+      console.error("Error al obtener último resultado:", error);
+    }
+  };
+
+  const handleNewEvaluation = async (paciente: Paciente) => {
+    try {
+      setCurrentPatient(paciente);
+      const nuevoResultadoId = await crearRegistroResultados(paciente.dni);
+      setCurrentResultId(nuevoResultadoId);
+      router.push('/family');
+    } catch (error) {
+      console.error("Error al crear registro de resultados:", error);
+    }
+  };
+
+  const showEditModal = (paciente: Paciente) => {
+    setEditingPatient(paciente);
+    const pacienteWithMoment = {
+      ...paciente,
+      fecha_nacimiento: paciente.fecha_nacimiento ? moment(paciente.fecha_nacimiento) : null
+    };
+    form.setFieldsValue(pacienteWithMoment);
+    setIsModalVisible(true);
+  };
+
+  const handleEditOk = async () => {
+    try {
+      const values = await form.validateFields();
+
+      if (!editingPatient?.dni) {
+        throw new Error('No se ha seleccionado un paciente válido para editar');
+      }
+
+      const fechaNacimiento = new Date(
+        parseInt(values.year),
+        parseInt(values.month) - 1,
+        parseInt(values.day)
+      );
+
+      const payload = {
+        ...values,
+        fecha_nacimiento: fechaNacimiento,
+        ingreso_economico: Number(values.ingreso_economico)
+      };
+
+      const response = await axios.put(`/api/pacientes/${editingPatient.dni}`, payload, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status >= 200 && response.status < 300) {
+        openNotification("success", "Éxito", "Paciente actualizado correctamente", "topRight");
+        await fetchPacientes();
+        setIsModalVisible(false);
+        form.resetFields();
+      } else {
+        throw new Error(`Respuesta inesperada: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("Error completo:", error);
+
+      let errorMessage = "No se pudo actualizar el paciente";
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data?.error?.message ||
+          error.response?.data?.message ||
+          error.message;
+        console.error("Detalles del error:", error.response?.data);
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      openNotification("error", "Error", errorMessage, "topRight");
+    }
+  };
+
+  const handleEditCancel = () => {
+    setIsModalVisible(false);
+    form.resetFields();
+  };
 
   const handleSearch = (
     selectedKeys: string[],
@@ -91,9 +237,9 @@ const Home = () => {
     ),
     onFilter: (value: any, record: any) =>
       record[dataIndex]
-        .toString()
-        .toLowerCase()
-        .includes((value as string).toLowerCase()),
+        ?.toString()
+        ?.toLowerCase()
+        ?.includes((value as string).toLowerCase()),
     render: (text: string) =>
       searchedColumn === dataIndex ? (
         <Highlighter
@@ -107,7 +253,7 @@ const Home = () => {
       ),
   });
 
-  const columns: ColumnType<Paciente>[]= [
+  const columns: ColumnType<Paciente>[] = [
     {
       title: 'Nombre',
       dataIndex: 'nombre',
@@ -127,7 +273,7 @@ const Home = () => {
       dataIndex: 'edad',
       key: 'edad',
       align: 'center' as const,
-      sorter: (a: Paciente, b: Paciente) => a.edad - b.edad,
+      sorter: (a: Paciente, b: Paciente) => (a.edad || 0) - (b.edad || 0),
       sortDirections: ['descend', 'ascend'],
     },
     {
@@ -146,172 +292,68 @@ const Home = () => {
       ],
       onFilter: (value: any, record: Paciente) => record.sexo === value,
     },
+    {
+      title: 'Acciones',
+      key: 'action',
+      align: 'center' as const,
+      render: (_, record) => (
+        <Space size="middle">
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => handleSelectPatient(record)}
+          >
+            Seleccionar
+          </Button>
+
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: 'edit',
+                  icon: <EditOutlined />,
+                  label: 'Editar',
+                  onClick: () => showEditModal(record)
+                },
+                {
+                  key: 'new-evaluation',
+                  icon: <PlusOutlined />,
+                  label: 'Nueva Evaluación',
+                  onClick: () => handleNewEvaluation(record)
+                },
+                {
+                  key: 'view',
+                  icon: <SearchOutlined />,
+                  label: <Link href={`/pacientes/${record.dni}`}>Ver Detalles</Link>
+                },
+                {
+                  type: 'divider',
+                },
+                {
+                  key: 'delete',
+                  danger: true,
+                  icon: <DeleteOutlined />,
+                  label: (
+                    <Popconfirm
+                      title="¿Estás seguro de eliminar este paciente?"
+                      onConfirm={() => handleDelete(record.dni)}
+                      okText="Sí"
+                      cancelText="No"
+                    >
+                      Eliminar
+                    </Popconfirm>
+                  )
+                }
+              ]
+            }}
+            trigger={['click']}
+          >
+            <Button type="text" icon={<MoreOutlined />} />
+          </Dropdown>
+        </Space>
+      ),
+    },
   ];
-
-  const requiredColumns = [
-    'codigo', 'nombre', 'dni', 'fecha_nacimiento', 'edad', 'sexo',
-    'zona_residencia', 'domicilio', 'nivel_educativo',
-    'ocupacion', 'sistema_pension', 'ingreso_economico',
-    'con_quien_vive', 'relacion', 'gijon',  'abvdScore',
-    'aivdScore', 'sarcopenia', 'caida', 'deterioro', 'incontinencia',
-    'depresion', 'sensorial', 'bristol', 'adherencia', 'dynamometry',
-    'balance',  'dimension_fisica', 'dimension_mental', 'puntaje_total', 
-    'cognitivo_total', 'mmse30', 'moca', 'afectiva', 'nutricional'
-  ];
-
-  const generateTemplate = () => {
-    const ws = XLSX.utils.json_to_sheet([{}], { header: requiredColumns });
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Pacientes');
-    XLSX.writeFile(wb, 'plantilla_valoracion_geriatrica.xlsx');
-  };
-
-  const handleFileUpload = async () => {
-    try {
-      const [fileHandle] =await (window as any).showOpenFilePicker({
-        types: [{
-          description: "Excel Files",
-          accept: { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"] }
-        }],
-        multiple: false,
-      });
-
-      const file = await fileHandle.getFile();
-      const arrayBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: "array" });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-      if (jsonData.length === 0) {
-        openNotification("error", "Error", "El archivo está vacío.", "topRight");
-        return;
-      }
-
-      const headers = (jsonData[0] as string[]).map(h => String(h).trim());
-      const normalizedHeaders = headers.map(h => h.toLowerCase());
-
-      const missingColumns = requiredColumns.filter(
-        col => !normalizedHeaders.includes(col.toLowerCase())
-      );
-
-      if (missingColumns.length > 0) {
-        openNotification(
-          "error",
-          "Error",
-          `Faltan columnas requeridas: ${missingColumns.join(", ")}`,
-          "topRight"
-        );
-        return;
-      }
-
-      const columnIndexMap: Record<string, number> = {};
-      headers.forEach((header, index) => {
-        columnIndexMap[header.toLowerCase()] = index;
-      });
-
-      const isRowArray = (row: unknown): row is any[] => Array.isArray(row);
-
-      const isRowEmpty = (row: any[]) =>
-        !row || row.every(cell => cell === null || cell === undefined || String(cell).trim() === "");
-
-      const formattedData = jsonData.slice(1)
-        .filter(isRowArray)
-        .filter(row => !isRowEmpty(row))
-        .map((row) => {
-          const getValue = (col: string) =>
-            row[columnIndexMap[col.toLowerCase()]] !== undefined
-              ? row[columnIndexMap[col.toLowerCase()]]
-              : null;
-
-          const codigo = String(getValue('codigo') || '').trim();
-          const nombre = String(getValue('nombre') || '').trim();
-          const dni = String(getValue('dni') || '').trim();
-          const edad = Number(getValue('edad')) || 0;
-          const sexo = String(getValue('sexo') || '').trim();
-          const fecha_nacimiento = String(getValue('fecha_nacimiento') || '').trim();
-          const zona_residencia = String(getValue('zona_residencia') || '').trim();
-          const domicilio = String(getValue('domicilio') || '').trim();
-          const nivel_educativo = String(getValue('nivel_educativo') || '').trim();
-          const ocupacion = String(getValue('ocupacion') || '').trim();
-          const sistema_pension = String(getValue('sistema_pension') || '').trim();
-          const ingreso_economico = Number(getValue('ingreso_economico')) || 0;
-          const con_quien_vive = String(getValue('con_quien_vive') || '').trim();
-          const relacion = String(getValue('relacion') || '').trim();
-          const gijon = Number(getValue('gijon')) || 0;
-          const abvdScore = Number(getValue('abvdScore'))||0;
-          const aivdScore = Number(getValue('aivdScore'))||0;
-          const sarcopenia = Number(getValue('sarcopenia'))||0;
-          const caida = Number(getValue('caida'))||0;
-          const deterioro = Number(getValue('deterioro'))||0;
-          const incontinencia = Number(getValue('incontinencia'))||0;
-          const depresion = Number(getValue('depresion'))||0;
-          const sensorial = Number(getValue('sensorial'))||0;
-          const bristol = Number(getValue('bristol'))||0;
-          const adherencia = Number(getValue('adherencia'))||0;
-          const dynamometry = Number(getValue('dynamometry'))||0;
-          const balance = Number(getValue('balance'))||0;
-          const dimension_fisica = Number(getValue('dimension_fisica'))||0;
-          const dimension_mental = Number(getValue('dimension_mental'))||0;
-          const puntaje_total = Number(getValue('puntaje_total'))||0;
-          const cognitivo_total = Number(getValue('cognitivo_total'))||0;
-          const mmse30 = Number(getValue('mmse30'))||0;
-          const moca = Number(getValue('moca'))||0;
-          const afectiva = Number(getValue('afectiva'))||0;
-          const nutricional = Number(getValue('nutricional'))||0;
-
-          const isEmptyRow = !codigo && !nombre && !dni && isNaN(edad);
-          if (isEmptyRow) return null;
-
-          return {
-            codigo,
-            nombre,
-            dni,
-            edad,
-            sexo,
-            fecha_nacimiento,
-            zona_residencia,
-            domicilio,
-            nivel_educativo,
-            ocupacion,
-            sistema_pension,
-            ingreso_economico,
-            con_quien_vive,
-            relacion,
-            requiresCompletion: !codigo || !nombre || !dni || isNaN(edad),
-            gijon,
-            abvdScore,
-            aivdScore,
-            sarcopenia,
-            caida,
-            deterioro,
-            incontinencia,
-            depresion,
-            sensorial,
-            bristol,
-            adherencia,
-            dynamometry,
-            balance,
-            dimension_fisica,
-            dimension_mental,
-            puntaje_total,
-            cognitivo_total,
-            mmse30,
-            moca,
-            afectiva,
-            nutricional
-          };
-        })
-        .filter((item): item is PacienteWithStatus => item !== null);
-
-      setExcelData(formattedData);
-      setFilePath(file.name);
-      setFileHandle(fileHandle);
-      openNotification("success", "Éxito", `Datos cargados: ${formattedData.length} pacientes`, "topRight");
-    } catch (err) {
-      console.error("Error al cargar el archivo:", err);
-      openNotification("error", "Error", "Hubo un problema al cargar el archivo.", "topRight");
-    }
-  };
 
   const openNotification = (
     type: "success" | "error" | "warning",
@@ -326,6 +368,11 @@ const Home = () => {
     });
   };
 
+  const newPatient = () => {
+    setCurrentPatient(null);
+    router.push('/family/');
+  }
+
   return (
     <ConfigProvider theme={{ cssVar: true, hashed: false }}>
       <div style={{ padding: '24px' }}>
@@ -337,33 +384,8 @@ const Home = () => {
               VALORACIÓN GERIÁTRICA INTEGRAL
             </Title>
             <Text type="secondary" style={{ textAlign: 'center', display: 'block' }}>
-              Sistema de carga y validación de datos de pacientes
+              Sistema de gestión de pacientes
             </Text>
-          </Col>
-        </Row>
-
-        <Divider orientation="left" orientationMargin="0">
-          <Text strong>Instrucciones</Text>
-        </Divider>
-
-        <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-          <Col span={24}>
-            <Card style={{ backgroundColor: '#fafafa' }}>
-              <Space direction="vertical">
-                <Text>
-                  <Text strong>1.</Text> Descarga la plantilla si no cuentas con un archivo Excel con el formato requerido.
-                </Text>
-                <Text>
-                  <Text strong>2.</Text> Carga el archivo Excel para validar los datos.
-                </Text>
-                <Text>
-                  <Text strong>3.</Text> Revisa que los datos se muestren correctamente y continúa con el proceso.
-                </Text>
-                <Text>
-                  <Text strong>4.</Text> Por favor mantener cerrado el archivo excel mientras se interactúa con el sistema.
-                </Text>
-              </Space>
-            </Card>
           </Col>
         </Row>
 
@@ -373,50 +395,165 @@ const Home = () => {
 
         <Row gutter={16} style={{ marginBottom: '24px' }} className='flex justify-start'>
           <Col>
-            <Button icon={<DownloadOutlined />} onClick={generateTemplate} type="dashed">
-              Descargar Plantilla
+            <Button onClick={newPatient} type="primary" icon={<PlusOutlined />}>
+              Nuevo Paciente
             </Button>
           </Col>
           <Col>
-            <Button icon={<UploadOutlined />} type="primary" onClick={handleFileUpload}>
-              Cargar Archivo Excel
+            <Button
+              icon={<SearchOutlined />}
+              onClick={fetchPacientes}
+              loading={loading}
+            >
+              Actualizar lista
             </Button>
           </Col>
         </Row>
 
-        {excelData.length > 0 && (
-          <>
-            <Divider orientation="left" orientationMargin="0">
-              <Text strong>Pacientes Cargados</Text>
-            </Divider>
-            <Table
-              dataSource={excelData}
-              columns={columns}
-              rowKey="dni"
-              bordered
-              style={{ marginBottom: '24px' }}
-              pagination={{ pageSize: 5 }}
-            />
-          </>
-        )}
+        <Divider orientation="left" orientationMargin="0">
+          <Text strong>Pacientes Registrados</Text>
+        </Divider>
 
-        <Row justify="end">
+        <Table
+          dataSource={pacientes}
+          columns={columns}
+          rowKey="dni"
+          bordered
+          loading={loading}
+          style={{ marginBottom: '24px' }}
+          pagination={{ pageSize: 5 }}
+        />
+
+        <Row key="actions" justify="end">
           <Col>
-            <Link
-              href={(excelData as PacienteWithStatus[]).some(p => p.requiresCompletion) ? 'family/' : 'family/'}
-              passHref
-            >
+            <Link href="/family" passHref>
               <Button
                 type="primary"
-                style={{ minWidth: '120px' }}
-                disabled={!filePath}
                 icon={<ArrowRightOutlined />}
+                size="large"
+                disabled={!currentPatient}
+                style={{
+                  minWidth: '120px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}
               >
-                Continuar
+                Siguiente
               </Button>
             </Link>
           </Col>
         </Row>
+
+        <Modal
+          title={`Editar Paciente: ${editingPatient?.nombre}`}
+          open={isModalVisible}
+          onOk={handleEditOk}
+          onCancel={handleEditCancel}
+          okText="Guardar"
+          cancelText="Cancelar"
+          width={700}
+        >
+          <Form form={form} layout="vertical">
+            <Row gutter={16}>
+              <Col span={16}>
+                <Form.Item
+                  name="nombre"
+                  label="Apellidos y Nombres"
+                  rules={[{ required: true, message: 'Ingrese nombre completo' }]}
+                >
+                  <Input placeholder="Nombre completo" prefix={<UserOutlined />} size="large" />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  name="dni"
+                  label="DNI"
+                  rules={[
+                    { required: true, message: 'Ingrese DNI' },
+                    { pattern: /^\d{8}$/, message: 'DNI debe tener 8 dígitos' }
+                  ]}
+                >
+                  <Input disabled={true} placeholder="DNI" prefix={<IdcardOutlined />} size="large" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="fecha_nacimiento"
+                  label="Fecha de Nacimiento"
+                  rules={[{ required: true, message: 'Ingrese fecha de nacimiento' }]}
+                >
+                  <DatePicker style={{ width: '100%' }} size="large" />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="sexo"
+                  label="Sexo"
+                  rules={[{ required: true, message: 'Seleccione sexo' }]}
+                >
+                  <Radio.Group size="large" className="w-full">
+                    <Radio.Button value="F"><WomanOutlined /> F</Radio.Button>
+                    <Radio.Button value="M"><ManOutlined /> M</Radio.Button>
+                  </Radio.Group>
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  name="zona_residencia"
+                  label="Zona Residencia"
+                  rules={[{ required: true, message: 'Seleccione zona' }]}
+                >
+                  <Select
+                    placeholder="Zona"
+                    size="large"
+                    options={[
+                      { value: 'rural', label: 'Rural' },
+                      { value: 'urbano', label: 'Urbano' }
+                    ]}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Form.Item
+              name="domicilio"
+              label="Domicilio"
+              rules={[{ required: true, message: 'Ingrese domicilio' }]}
+            >
+              <Input placeholder="Domicilio" prefix={<HomeOutlined />} size="large" />
+            </Form.Item>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="ocupacion"
+                  label="Ocupación"
+                  rules={[{ required: true, message: 'Ingrese ocupación' }]}
+                >
+                  <Input placeholder="Ocupación" size="large" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="ingreso_economico"
+                  label="Ingreso Económico"
+                  rules={[{ required: true, message: 'Ingrese ingreso' }]}
+                >
+                  <InputNumber
+                    placeholder="Ingreso"
+                    prefix={<DollarOutlined />}
+                    style={{ width: '100%' }}
+                    size="large"
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
       </div>
     </ConfigProvider>
   );

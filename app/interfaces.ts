@@ -1,9 +1,10 @@
 export interface Paciente {
-  codigo: string;
+  [x: string]: any;
+  id: string;
   nombre: string;
   dni: string;
   edad: number;
-  fecha_nacimiento: string;
+  fecha_nacimiento: Date;
   sexo: 'M' | 'F';
   zona_residencia: string;
   domicilio: string;
@@ -13,28 +14,65 @@ export interface Paciente {
   ingreso_economico: number;
   con_quien_vive: string;
   relacion: string;
-  gijon: number;
-  abvdScore: number;
-  aivdScore: number;
-  sarcopenia: number;
-  caida: number;
-  deterioro: number;
-  incontinencia: number;
-  depresion: number;
-  sensorial: number;
-  bristol: number;
-  adherencia: number;
-  dynamometry: number;
-  balance: number;
-  dimension_fisica: number;
-  dimension_mental: number;
-  puntaje_total: number;
-  cognitivo_total: number;
-  mmse30: number;
-  moca:number;
-  afectiva:number;
-  nutricional:number;
+  // gijon: number;
+// abvdScore: number;
+// aivdScore: number;
+// sarcopenia: number;
+// caida: number;
+// deterioro: number;
+// incontinencia: number;
+// depresion: number;
+// sensorial: number;
+// bristol: number;
+// adherencia: number;
+// dynamometry: number;
+// balance: number;
+// dimension_fisica: number;
+// dimension_mental: number;
+// puntaje_total: number;
+// cognitivo_total: number;
+// mmse30: number;
+// moca:number;
+// afectiva:number;
+// nutricional:number;
 }
+
+// id:formData.dni,
+// nombre: formData.nombre,
+// dni: formData.dni,
+// fecha_nacimiento: fechaNacimiento,
+// sexo: formData.sexo,
+// edad: formData.edad,
+// zona_residencia: formData.zona_residencia,
+// domicilio: formData.domicilio,
+// nivel_educativo: formData.nivel_educativo,
+// ocupacion: formData.ocupacion,
+// sistema_pension: formData.sistema_pension,
+// ingreso_economico: formData.ingreso_economico,
+// con_quien_vive: formData.con_quien_vive,
+// relacion: formData.relacion,
+
+// gijon: number;
+// abvdScore: number;
+// aivdScore: number;
+// sarcopenia: number;
+// caida: number;
+// deterioro: number;
+// incontinencia: number;
+// depresion: number;
+// sensorial: number;
+// bristol: number;
+// adherencia: number;
+// dynamometry: number;
+// balance: number;
+// dimension_fisica: number;
+// dimension_mental: number;
+// puntaje_total: number;
+// cognitivo_total: number;
+// mmse30: number;
+// moca:number;
+// afectiva:number;
+// nutricional:number;
 
 export interface GijonCategory {
   key: string;

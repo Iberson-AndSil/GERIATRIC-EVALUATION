@@ -1,25 +1,26 @@
 "use client";
 import { Form, Typography, Button, notification, Row, Col } from "antd";
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
-import React from "react";
-import { useGlobalContext } from "@/app/context/GlobalContext";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { NotificationPlacement } from "antd/es/notification/interface";
 import { usePatientForm } from "../utils/family/usePatientForm";
 import { BasicInfoSection } from "./BasicInfoSection";
-import { AdditionalInfoSection } from "./AdditionalInfoSection";
 import { GijonScaleSection } from "./GijonScaleSection";
-import { savePatientToExcel, formatPatientData } from "../utils/family/family";
+import axios from "axios";
+import { actualizarResultado, crearRegistroResultados } from "../lib/pacienteService";
+import { useGlobalContext } from "../context/GlobalContext";
 
 const { Title } = Typography;
 
 const PatientForm = () => {
   const [form] = Form.useForm();
   const router = useRouter();
-  const { fileHandle } = useGlobalContext();
   const [api, contextHolder] = notification.useNotification();
-  
+  const [loading, setLoading] = useState(false);
+  const { setCurrentResultId, currentResultId, setCurrentPatient } = useGlobalContext();
+
   const {
     puntajes,
     handleScoreChange,
@@ -32,30 +33,66 @@ const PatientForm = () => {
   const handleMonthChange = () => updateBirthDate(form);
   const handleYearChange = () => updateBirthDate(form);
 
-  const saveFile = async () => {
+  const savePatientToFirebase = async () => {
     try {
-      if (!fileHandle) {
-        openNotification("warning", "Selecciona el excel", "Por favor seleccione un archivo primero.", "topRight");
-        return;
-      }
-
+      setLoading(true);
       const formData = await form.validateFields();
       const score = obtenerPuntajeTotal();
-      const patientData = formatPatientData(formData, score, new Set());
       
-      await savePatientToExcel(fileHandle, patientData, form);
+      const fechaNacimiento = new Date(
+        parseInt(formData.year),
+        parseInt(formData.month) - 1,
+        parseInt(formData.day)
+      );
+
+      const patientData = {
+        id: formData.dni,
+        nombre: formData.nombre,
+        dni: formData.dni,
+        fecha_nacimiento: fechaNacimiento,
+        sexo: formData.sexo,
+        edad: formData.edad,
+        zona_residencia: formData.zona_residencia,
+        domicilio: formData.domicilio,
+        nivel_educativo: formData.nivel_educativo,
+        ocupacion: formData.ocupacion,
+        sistema_pension: formData.sistema_pension,
+        ingreso_economico: formData.ingreso_economico,
+        con_quien_vive: formData.con_quien_vive,
+        relacion: formData.relacion,
+      };
+
+      await axios.post("/api/pacientes", patientData);
+
+      let resultadoId = currentResultId;
       
-      openNotification("success", "Éxito", `Datos del paciente guardados.`, "topRight");
+      if (!resultadoId) {
+        setCurrentPatient(patientData);
+        resultadoId = await crearRegistroResultados(formData.dni);
+        setCurrentResultId(resultadoId);
+      }
+      else{
+        await actualizarResultado(
+          formData.dni,
+          resultadoId,
+          'gijon',
+          score
+        );
+      }
+
+      openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
       router.push('/funtional/');
 
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error("Error detallado:", err);
-        alert(`Error al guardar: ${err.message}`);
-      } else {
-        console.error("Error desconocido:", err);
-        alert("Error al guardar: Verifique la consola para más detalles");
-      }
+      console.error("Error al guardar:", err);
+      openNotification(
+        "error",
+        "Error",
+        "No se pudo guardar la información. Por favor intente nuevamente.",
+        "topRight"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,13 +127,12 @@ const PatientForm = () => {
 
         <div className="flex">
           <Col xs={24} md={16}>
-            <BasicInfoSection 
+            <BasicInfoSection
               form={form}
               handleDayChange={handleDayChange}
               handleMonthChange={handleMonthChange}
               handleYearChange={handleYearChange}
             />
-            <AdditionalInfoSection />
           </Col>
           <Col xs={24} md={8}>
             <GijonScaleSection
@@ -125,18 +161,12 @@ const PatientForm = () => {
             <Button
               type="primary"
               size="large"
-              onClick={saveFile}
+              onClick={savePatientToFirebase}
               style={{ minWidth: '120px' }}
-              disabled={!fileHandle}
+              loading={loading}
+              icon={<SaveOutlined />}
             >
-              {fileHandle ? (
-                <>
-                  Guardar Paciente
-                  <SaveOutlined style={{ marginLeft: 8 }} />
-                </>
-              ) : (
-                "Seleccione archivo primero"
-              )}
+              Guardar Paciente
             </Button>
           </Col>
         </Row>

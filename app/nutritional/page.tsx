@@ -1,24 +1,26 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Card, Button, Radio, Checkbox, Row, Col } from 'antd';
+import { Form, Input, Card, Button, Radio, Checkbox, Row, Col, notification } from 'antd';
 import { FormValues } from "../interfaces";
 import Title from 'antd/es/typography/Title';
 import { useGlobalContext } from '../context/GlobalContext';
-import * as XLSX from "xlsx";
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
+import { actualizarResultado } from '../lib/pacienteService';
 
 const NutritionalAssessment: React.FC = () => {
     const [form] = Form.useForm<FormValues>();
     const [totalScore, setTotalScore] = useState<number | null>(null);
-    const { fileHandle } = useGlobalContext();
+    const { currentPatient, currentResultId } = useGlobalContext();
     const weight = Form.useWatch('weight', form);
     const height = Form.useWatch('height', form);
     const brachialPerimeter = Form.useWatch('brachialPerimeter', form);
     const calfPerimeter = Form.useWatch('calfPerimeter', form);
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const [api, contextHolder] = notification.useNotification();
 
     useEffect(() => {
         if (weight && height) {
@@ -105,44 +107,26 @@ const NutritionalAssessment: React.FC = () => {
 
     const handleSaveData = async () => {
         try {
-            if (!fileHandle) {
-                alert("Por favor seleccione un archivo primero");
-                return;
+            setLoading(true);
+
+            if (!currentPatient?.dni) {
+                throw new Error("No se ha seleccionado un paciente");
             }
 
-            const file = await fileHandle.getFile();
-            const arrayBuffer = await file.arrayBuffer();
-            const existingWb = XLSX.read(arrayBuffer, { type: "array" });
-            const wsName = existingWb.SheetNames[0];
-            const ws = existingWb.Sheets[wsName];
-            const existingData: number[][] = XLSX.utils.sheet_to_json(ws, {
-                header: 1,
-                defval: ""
+            await actualizarResultado(
+                currentPatient.dni,
+                currentResultId || "",
+                'nutricional',
+                totalScore
+            );
+
+            api.success({
+                message: 'Éxito',
+                description: 'Resultados de ABVD y AIVD guardados correctamente',
+                placement: 'topRight'
             });
-            const lastRowIndex = existingData.length - 1;
 
-            if (lastRowIndex >= 0) {
-                while (existingData[lastRowIndex].length < 31) {
-                    existingData[lastRowIndex].push(0);
-                }
-                if (totalScore !== null) {
-                    existingData[lastRowIndex][34] = totalScore;
-                }
-            }
 
-            const updatedWs = XLSX.utils.aoa_to_sheet(existingData);
-            const updatedWb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(updatedWb, updatedWs, wsName);
-
-            const writable = await fileHandle.createWritable();
-            await writable.write(XLSX.write(updatedWb, {
-                bookType: "xlsx",
-                type: "buffer",
-                bookSST: true
-            }));
-            await writable.close();
-
-            alert("Resultados guardados exitosamente");
             router.push('/');
 
         } catch (err: unknown) {
@@ -158,6 +142,7 @@ const NutritionalAssessment: React.FC = () => {
 
     return (
         <div style={{ padding: '24px', margin: '0 auto' }}>
+            {contextHolder}
             <Title
                 level={3}
                 style={{
@@ -409,10 +394,11 @@ const NutritionalAssessment: React.FC = () => {
                         size="large"
                         onClick={handleSaveData}
                         style={{ minWidth: '120px' }}
-                        disabled={!fileHandle}
+                        disabled={!currentPatient}
+                        loading={loading}
                         icon={<SaveOutlined />}
                     >
-                        {fileHandle ? "Guardar Paciente" : "Seleccione archivo primero"}
+                        {currentPatient ? "Guardar Paciente" : "Seleccione archivo primero"}
                     </Button>
                 </Col>
             </Row>
