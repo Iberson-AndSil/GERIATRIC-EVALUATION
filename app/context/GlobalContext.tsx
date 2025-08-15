@@ -1,24 +1,34 @@
+"use client";
 import { createContext, useContext, useState, ReactNode } from "react";
 import { Paciente } from "../interfaces";
 
 interface GlobalContextType {
-  filePath: string;
-  excelData: Paciente[];
-  setFilePath: (value: string) => void;
-  setExcelData: (data: Paciente[]) => void;
-  fileHandle: FileSystemFileHandle | null;
-  setFileHandle: (handle: FileSystemFileHandle | null) => void;
+  currentPatient: Paciente | null;
+  setCurrentPatient: (patient: Paciente | null) => void;
+  currentResultId: string | null;
+  setCurrentResultId: (id: string | null) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 
 export const GlobalProvider = ({ children }: { children: ReactNode }) => {
-  const [filePath, setFilePath] = useState<string>("");
-  const [excelData, setExcelData] = useState<Paciente[]>([]);
-  const [fileHandle, setFileHandle] = useState<FileSystemFileHandle | null>(null);
+  const [currentPatient, setCurrentPatient] = useState<Paciente | null>(null);
+  const [currentResultId, setCurrentResultId] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   return (
-    <GlobalContext.Provider value={{ filePath, excelData, setFilePath, setExcelData, fileHandle, setFileHandle }}>
+    <GlobalContext.Provider 
+      value={{ 
+        currentPatient,
+        setCurrentPatient,
+        currentResultId,
+        setCurrentResultId,
+        loading,
+        setLoading
+      }}
+    >
       {children}
     </GlobalContext.Provider>
   );

@@ -1,16 +1,15 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
-import { Form, Typography, Button, Row, Col } from "antd";
+import { Form, Typography, Button, Row, Col, notification } from "antd";
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 import Link from "next/link";
-import * as XLSX from "xlsx";
 
 import ABVDForm from "./ABVDForm";
 import AIVDForm from "./AIVDForm";
 import { PuntajesType, RespuestasType } from "../type";
 import { useGlobalContext } from "@/app/context/GlobalContext";
+import { actualizarResultado } from "../lib/pacienteService";
 
 const { Title } = Typography;
 
@@ -29,51 +28,42 @@ export default function FunctionalAssessmentPage() {
   });
 
   const [respuestas, setRespuestas] = useState<RespuestasType>({});
-  const { fileHandle } = useGlobalContext();
+  const { currentPatient, currentResultId } = useGlobalContext();
   const router = useRouter();
   const [form] = Form.useForm();
+  const [api, contextHolder] = notification.useNotification();
+  const [loading, setLoading] = useState(false);
 
-  const saveFile = async () => {
+  const saveToFirebase = async () => {
     try {
-      if (!fileHandle) {
-        alert("Por favor seleccione un archivo primero");
-        return;
+      setLoading(true);
+
+      if (!currentPatient?.dni) {
+        throw new Error("No se ha seleccionado un paciente");
       }
 
-      const file = await fileHandle.getFile();
-      const arrayBuffer = await file.arrayBuffer();
-      const existingWb = XLSX.read(arrayBuffer, { type: "array" });
-      const wsName = existingWb.SheetNames[0];
-      const ws = existingWb.Sheets[wsName];
+      const abvdScore = obtenerPuntajeTotal();
+      const aivdScore = puntajeTotal();
 
-      const existingData: string[][] = XLSX.utils.sheet_to_json(ws, {
-        header: 1,
-        defval: ""
+      await actualizarResultado(
+        currentPatient.dni,
+        currentResultId || "",
+        'abvdScore',
+        abvdScore
+      );
+
+      await actualizarResultado(
+        currentPatient.dni,
+        currentResultId || "",
+        'aivdScore',
+        aivdScore
+      );
+
+      api.success({
+        message: 'Éxito',
+        description: 'Resultados de ABVD y AIVD guardados correctamente',
+        placement: 'topRight'
       });
-
-      const lastRowIndex = existingData.length - 1;
-
-      if (lastRowIndex >= 0) {
-        while (existingData[lastRowIndex].length < 18) {
-          existingData[lastRowIndex].push("");
-        }
-
-        existingData[lastRowIndex][15] = obtenerPuntajeTotal().toString();
-        existingData[lastRowIndex][16] = puntajeTotal().toString();
-      }
-
-      const updatedWs = XLSX.utils.aoa_to_sheet(existingData);
-
-      const updatedWb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(updatedWb, updatedWs, wsName);
-
-      const writable = await fileHandle.createWritable();
-      await writable.write(XLSX.write(updatedWb, {
-        bookType: "xlsx",
-        type: "buffer",
-        bookSST: true
-      }));
-      await writable.close();
 
       form.resetFields();
       setPuntajes({
@@ -88,23 +78,23 @@ export default function FunctionalAssessmentPage() {
         heces: null,
         orina: null,
       });
-      alert("Paciente guardado exitosamente y última fila actualizada");
-      router.push('/syndromes/first');
 
+      router.push('/syndromes/first');
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error("Error detallado:", err);
-        alert(`Error al guardar: ${err.message}`);
-      } else {
-        console.error("Error desconocido:", err);
-        alert("Error al guardar: Verifique la consola para más detalles");
-      }
+      console.error("Error al guardar:", err);
+      api.error({
+        message: 'Error',
+        description: err instanceof Error ? err.message : 'Ocurrió un error al guardar',
+        placement: 'topRight'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   const obtenerPuntajeTotal = () => {
     return Object.values(puntajes).reduce(
-      (acc:any, curr:any) => acc + (curr || 0),
+      (acc: any, curr: any) => acc + (curr || 0),
       0
     );
   };
@@ -131,6 +121,7 @@ export default function FunctionalAssessmentPage() {
 
   return (
     <div className="p-4 w-full flex flex-col items-center">
+      {contextHolder}
       <Title
         level={3}
         style={{
@@ -145,8 +136,8 @@ export default function FunctionalAssessmentPage() {
 
       <div className="flex w-full">
         <Col xs={24} md={12}>
-          <ABVDForm 
-            puntajes={puntajes} 
+          <ABVDForm
+            puntajes={puntajes}
             setPuntajes={setPuntajes}
             total={obtenerPuntajeTotal()}
             interpretacion={obtenerInterpretacion()}
@@ -180,12 +171,13 @@ export default function FunctionalAssessmentPage() {
           <Button className="!ml-3"
             type="primary"
             size="large"
-            onClick={saveFile}
+            onClick={saveToFirebase}
             style={{ minWidth: '120px' }}
-            disabled={!fileHandle}
+            disabled={!currentPatient}
+            loading={loading}
             icon={<SaveOutlined />}
           >
-            {fileHandle ? "Guardar Paciente" : "Seleccione archivo primero"}
+            {currentPatient?.dni ? "Guardar Resultados" : "Seleccione un paciente"}
           </Button>
         </Col>
       </Row>

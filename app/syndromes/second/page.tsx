@@ -1,5 +1,5 @@
 "use client";
-import { Row, Col, Typography } from 'antd';
+import { Row, Col, Typography, notification } from 'antd';
 import { useDepression } from '../../utils/syndromes/useDepression';
 import { useSensory } from '../../utils/syndromes/useSensory';
 import { useBristol } from '../../utils/syndromes/useBristol';
@@ -11,9 +11,12 @@ import { BristolCard } from './BristolCard';
 import { AdherenceCard } from './AdherenceCard';
 import { SaveButtons } from './SaveButtons';
 
+
 const { Title } = Typography;
 
 export default function Home() {
+  const [api, contextHolder] = notification.useNotification();
+
   const {
     depresionData,
     depresionResult,
@@ -60,6 +63,7 @@ export default function Home() {
 
   return (
     <div style={{ padding: 24 }}>
+      {contextHolder}
       <Title
         level={3}
         style={{
@@ -75,14 +79,12 @@ export default function Home() {
       <Row gutter={[16, 16]}>
         <Col xs={24} md={12}>
           <DepressionCard 
-            // depresionData={depresionData}
             depresionResult={depresionResult}
             handleDepresionChange={handleDepresionChange}
           />
         </Col>
         <Col xs={24} md={12}>
           <SensoryCard 
-            // sensoryData={sensoryData}
             sensoryResult={sensoryResult}
             handleSensoryChange={handleSensoryChange}
           />
@@ -92,7 +94,6 @@ export default function Home() {
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col xs={24} md={12}>
           <BristolCard 
-            // bristolData={bristolData}
             bristolResult={bristolResult}
             handleBristolChange={handleBristolChange}
           />

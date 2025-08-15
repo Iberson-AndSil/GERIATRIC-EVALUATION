@@ -1,20 +1,21 @@
-import { Card, Typography, Button, Row, Col, Statistic, Alert, Space, Divider } from 'antd';
-import * as XLSX from "xlsx";
+import { Card, Typography, Button, Row, Col, Statistic, Alert, Space, Divider, notification } from 'antd';
 import { useRouter } from 'next/navigation';
-import { 
-  MonedasCorrectas, 
-  BilletesCorrectos, 
-  CalculoItems, 
+import {
+  MonedasCorrectas,
+  BilletesCorrectos,
+  CalculoItems,
   RespuestaItem,
   Intrusiones,
   Recuerdo,
 } from '../utils/cognitive/types';
-import { 
+import {
   calcularPuntajeParte1,
   calcularPuntajeParte2,
   calcularPuntajeParte3,
   interpretarResultado
 } from '../utils/cognitive/utils';
+import { useGlobalContext } from '../context/GlobalContext';
+import { actualizarResultado } from '../lib/pacienteService';
 
 const { Title, Text } = Typography;
 
@@ -45,55 +46,33 @@ export default function ResultadosEvaluacion({
   const puntajeParte3 = calcularPuntajeParte3(recuerdo, intrusiones);
   const puntajeTotal = puntajeParte1 + puntajeParte2 + puntajeParte3;
   const interpretacion = interpretarResultado(puntajeTotal);
+  const { currentPatient, currentResultId } = useGlobalContext();
+   const [api, contextHolder] = notification.useNotification();
 
-  const totalMonedasCorrectas = Math.max(0, 
+  const totalMonedasCorrectas = Math.max(0,
     Object.values(monedasCorrectas)
-    .filter(val => val === true).length - intrusiones.monedas);
-  
-  const totalBilletesCorrectos = Math.max(0, 
+      .filter(val => val === true).length - intrusiones.monedas);
+
+  const totalBilletesCorrectos = Math.max(0,
     Object.values(billetesCorrectos)
-    .filter(val => val === true).length - intrusiones.billetes);
+      .filter(val => val === true).length - intrusiones.billetes);
 
   const handleSaveData = async () => {
     try {
-      if (!fileHandle) {
-        alert("Por favor seleccione un archivo primero");
-        return;
-      }
 
-      const file = await fileHandle.getFile();
-      const arrayBuffer = await file.arrayBuffer();
-      const existingWb = XLSX.read(arrayBuffer, { type: "array" });
-      const wsName = existingWb.SheetNames[0];
-      const ws = existingWb.Sheets[wsName];
+      await actualizarResultado(
+        currentPatient!.dni,
+        currentResultId || "",
+        'cognitivo_total',
+        puntajeTotal
+      );
 
-      const existingData: number[][] = XLSX.utils.sheet_to_json(ws, {
-        header: 1,
-        defval: ""
+      api.success({
+        message: 'Éxito',
+        description: 'Resultados de ABVD y AIVD guardados correctamente',
+        placement: 'topRight'
       });
-      const lastRowIndex = existingData.length - 1;
 
-      if (lastRowIndex >= 0) {
-        while (existingData[lastRowIndex].length < 31) {
-          existingData[lastRowIndex].push(0);
-        }
-
-        existingData[lastRowIndex][30] = puntajeTotal;
-      }
-
-      const updatedWs = XLSX.utils.aoa_to_sheet(existingData);
-      const updatedWb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(updatedWb, updatedWs, wsName);
-
-      const writable = await fileHandle.createWritable();
-      await writable.write(XLSX.write(updatedWb, {
-        bookType: "xlsx",
-        type: "buffer",
-        bookSST: true
-      }));
-      await writable.close();
-
-      alert("Resultados guardados exitosamente");
       router.push('/mmse30');
 
     } catch (err: unknown) {
@@ -109,33 +88,33 @@ export default function ResultadosEvaluacion({
 
   return (
     <Card title="Resultados de la Evaluación">
+      {contextHolder}
       <Title level={4}>Resumen de puntuaciones</Title>
-
       <Row gutter={16} style={{ marginBottom: '20px' }}>
         <Col span={8}>
           <Card>
-            <Statistic 
-              title="Parte I: Denominación" 
-              value={puntajeParte1} 
-              suffix={`/11`} 
+            <Statistic
+              title="Parte I: Denominación"
+              value={puntajeParte1}
+              suffix={`/11`}
             />
           </Card>
         </Col>
         <Col span={8}>
           <Card>
-            <Statistic 
-              title="Parte II: Cálculo" 
-              value={puntajeParte2} 
-              suffix={`/10`} 
+            <Statistic
+              title="Parte II: Cálculo"
+              value={puntajeParte2}
+              suffix={`/10`}
             />
           </Card>
         </Col>
         <Col span={8}>
           <Card>
-            <Statistic 
-              title="Parte III: Recuerdo" 
-              value={puntajeParte3} 
-              suffix={`/10`} 
+            <Statistic
+              title="Parte III: Recuerdo"
+              value={puntajeParte3}
+              suffix={`/10`}
             />
           </Card>
         </Col>
@@ -146,10 +125,10 @@ export default function ResultadosEvaluacion({
       <Row gutter={16} style={{ marginBottom: '20px' }}>
         <Col span={24}>
           <Card>
-            <Statistic 
-              title="Puntuación Total" 
-              value={puntajeTotal} 
-              suffix={`/31`} 
+            <Statistic
+              title="Puntuación Total"
+              value={puntajeTotal}
+              suffix={`/31`}
             />
           </Card>
         </Col>

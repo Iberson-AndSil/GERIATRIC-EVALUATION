@@ -1,11 +1,12 @@
 "use client";
 import React, { useState } from 'react';
-import { Steps, Form, InputNumber, Button, Card, Row, Col, Typography, Result, Radio, Space, Tag } from 'antd';
+import { Steps, Form, InputNumber, Button, Card, Row, Col, Typography, Result, Radio, Space, Tag, notification } from 'antd';
 import { UserOutlined, ClockCircleOutlined, ArrowUpOutlined, ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useGlobalContext } from '../context/GlobalContext';
 import * as XLSX from "xlsx";
 import { useRouter } from 'next/navigation';
+import { actualizarResultado } from '../lib/pacienteService';
 const { Step } = Steps;
 const { Title, Text } = Typography;
 
@@ -18,12 +19,13 @@ const SPPBEvaluation = () => {
     const [tandemScore, setTandemScore] = useState(0);
     const [chairStandScore, setChairStandScore] = useState(0);
     const [walkScore, setWalkScore] = useState(0);
-    const { fileHandle } = useGlobalContext();
-
+    const { currentPatient, currentResultId } = useGlobalContext();
+    const [loading, setLoading] = useState(false);
     const [firstMeasure, setFirstMeasure] = useState<number | null>(null);
     const [secondMeasure, setSecondMeasure] = useState<number | null>(null);
     const [averageScore, setAverageScore] = useState<number | null>(null);
     const [strengthCategory, setStrengthCategory] = useState<string>('');
+    const [api, contextHolder] = notification.useNotification();
 
     const steps = [
         {
@@ -98,60 +100,50 @@ const SPPBEvaluation = () => {
 
     const saveFile = async () => {
         try {
-          if (!fileHandle) {
-            alert("Por favor seleccione un archivo primero");
-            return;
-          }
 
-          const file = await fileHandle.getFile();
-          const arrayBuffer = await file.arrayBuffer();
-          const existingWb = XLSX.read(arrayBuffer, { type: "array" });
-          const wsName = existingWb.SheetNames[0];
-          const ws = existingWb.Sheets[wsName];
+            setLoading(true);
 
-          const existingData: string[][] = XLSX.utils.sheet_to_json(ws, {
-            header: 1,
-            defval: ""
-          });
-
-          const lastRowIndex = existingData.length - 1;
-
-          if (lastRowIndex >= 0) {
-            while (existingData[lastRowIndex].length < 27) {
-              existingData[lastRowIndex].push("");
+            if (!currentPatient?.dni) {
+                throw new Error("No se ha seleccionado un paciente");
             }
 
-            existingData[lastRowIndex][25] = averageScore!.toString();
-            existingData[lastRowIndex][26] = totalScore.toString();
-          }
+            const dynamometry = averageScore!.toString();
+            const Balance = totalScore.toString();
 
-          const updatedWs = XLSX.utils.aoa_to_sheet(existingData);
+            await actualizarResultado(
+                currentPatient.dni,
+                currentResultId || "",
+                'dynamometry',
+                dynamometry
+            );
 
-          const updatedWb = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(updatedWb, updatedWs, wsName);
+            await actualizarResultado(
+                currentPatient.dni,
+                currentResultId || "",
+                'Balance',
+                Balance
+            );
 
-          const writable = await fileHandle.createWritable();
-          await writable.write(XLSX.write(updatedWb, {
-            bookType: "xlsx",
-            type: "buffer",
-            bookSST: true
-          }));
-          await writable.close();
+            setAverageScore(0);
+            setTotalScore(0);
 
-          form.resetFields();
-          setAverageScore(0);
-          setTotalScore(0);
-          router.push('/mental');
-          alert("Paciente guardado exitosamente y última fila actualizada");
+            api.success({
+                message: 'Éxito',
+                description: 'Resultados de ABVD y AIVD guardados correctamente',
+                placement: 'topRight'
+            });
+
+
+            router.push('/mental');
 
         } catch (err: unknown) {
-          if (err instanceof Error) {
-            console.error("Error detallado:", err);
-            alert(`Error al guardar: ${err.message}`);
-          } else {
-            console.error("Error desconocido:", err);
-            alert("Error al guardar: Verifique la consola para más detalles");
-          }
+            if (err instanceof Error) {
+                console.error("Error detallado:", err);
+                alert(`Error al guardar: ${err.message}`);
+            } else {
+                console.error("Error desconocido:", err);
+                alert("Error al guardar: Verifique la consola para más detalles");
+            }
         }
     };
 
@@ -433,6 +425,7 @@ const SPPBEvaluation = () => {
 
     return (
         <div className='w-full'>
+            {contextHolder}
             <Title
                 level={3}
                 style={{
@@ -600,10 +593,11 @@ const SPPBEvaluation = () => {
                             size="large"
                             onClick={saveFile}
                             style={{ minWidth: '120px' }}
-                            disabled={!fileHandle}
+                            disabled={!currentPatient?.dni}
+                            loading={loading}
                             icon={<SaveOutlined />}
                         >
-                            {fileHandle ? "Guardar Paciente" : "Seleccione archivo primero"}
+                            {currentPatient?.dni ? "Guardar Paciente" : "Seleccione archivo primero"}
                         </Button>
                     </Col>
                 </Row>

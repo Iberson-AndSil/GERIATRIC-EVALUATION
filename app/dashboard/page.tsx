@@ -5,12 +5,12 @@ import { SearchOutlined } from '@ant-design/icons';
 import { Column, Pie, Bar, Scatter } from '@ant-design/charts';
 import { Paciente } from '../interfaces';
 import { useGlobalContext } from '@/app/context/GlobalContext';
+import { obtenerPacientesConResultadosRecientes } from '../lib/pacienteService';
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-// Tipo para las opciones de métricas
 type MetricOption = {
   value: string;
   label: string;
@@ -22,9 +22,7 @@ const DashboardPacientes: React.FC = () => {
   const [busqueda, setBusqueda] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedMetric, setSelectedMetric] = useState('abvdScore');
-  const { excelData } = useGlobalContext();
 
-  // Opciones para el select de métricas
   const metricOptions: MetricOption[] = [
     { value: 'gijon', label: 'Gijón' },
     { value: 'abvdScore', label: 'ABVD Score' },
@@ -50,47 +48,58 @@ const DashboardPacientes: React.FC = () => {
   ];
 
   useEffect(() => {
-    if (excelData && excelData.length > 0) {
-      const datosFormateados = excelData.map((item: any) => ({
-        ...item,
-        edad: Number(item.edad) || 0,
-        sexo: String(item.sexo) || '',
-        abvdScore: Number(item.abvdScore) || 0,
-        // Asegúrate de que todas las métricas estén formateadas como números
-        gijon: Number(item.gijon) || 0,
-        aivdScore: Number(item.aivdScore) || 0,
-        sarcopenia: Number(item.sarcopenia) || 0,
-        caida: Number(item.caida) || 0,
-        deterioro: Number(item.deterioro) || 0,
-        incontinencia: Number(item.incontinencia) || 0,
-        depresion: Number(item.depresion) || 0,
-        sensorial: Number(item.sensorial) || 0,
-        bristol: Number(item.bristol) || 0,
-        adherencia: Number(item.adherencia) || 0,
-        dynamometry: Number(item.dynamometry) || 0,
-        balance: Number(item.balance) || 0,
-        dimension_fisica: Number(item.dimension_fisica) || 0,
-        dimension_mental: Number(item.dimension_mental) || 0,
-        puntaje_total: Number(item.puntaje_total) || 0,
-        cognitivo_total: Number(item.cognitivo_total) || 0,
-        mmse30: Number(item.mmse30) || 0,
-        moca: Number(item.moca) || 0,
-        afectiva: Number(item.afectiva) || 0,
-        nutricional: Number(item.nutricional) || 0,
-      }));
+    const cargarPacientes = async () => {
+      setLoading(true);
+      try {
+        const datos = await obtenerPacientesConResultadosRecientes();
 
-      setPacientes(datosFormateados);
-      setLoading(false);
-    } else {
-      setLoading(false);
-    }
-  }, [excelData]);
+        const datosFormateados = datos.map(item => {
+          const sexo = typeof item.sexo === 'string' ?
+            (item.sexo.trim().toUpperCase() === 'M' ? 'M' :
+              item.sexo.trim().toUpperCase() === 'F' ? 'F' : item.sexo) :
+            item.sexo;
+          return {
+            ...item,
+            edad: Number(item.edad) || 0,
+            sexo: sexo,
+            abvdScore: Number(item.abvdScore) || 0,
+            gijon: Number(item.gijon) || 0,
+            aivdScore: Number(item.aivdScore) || 0,
+            sarcopenia: Number(item.sarcopenia) || 0,
+            caida: Number(item.caida) || 0,
+            deterioro: Number(item.deterioro) || 0,
+            incontinencia: Number(item.incontinencia) || 0,
+            depresion: Number(item.depresion) || 0,
+            sensorial: Number(item.sensorial) || 0,
+            bristol: Number(item.bristol) || 0,
+            adherencia: Number(item.adherencia) || 0,
+            dynamometry: Number(item.dynamometry) || 0,
+            balance: Number(item.balance) || 0,
+            dimension_fisica: Number(item.dimension_fisica) || 0,
+            dimension_mental: Number(item.dimension_mental) || 0,
+            puntaje_total: Number(item.puntaje_total) || 0,
+            cognitivo_total: Number(item.cognitivo_total) || 0,
+            mmse30: Number(item.mmse30) || 0,
+            moca: Number(item.moca) || 0,
+            afectiva: Number(item.afectiva) || 0,
+          } as Paciente;
+        });
+
+        setPacientes(datosFormateados);
+      } catch (error) {
+        console.error('Error al cargar pacientes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarPacientes();
+  }, []);
 
   const pacientesFiltrados = busqueda
     ? pacientes.filter(p =>
-      p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      p.dni?.includes(busqueda) ||
-      p.codigo?.includes(busqueda)
+      p.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      p.dni?.includes(busqueda)
     )
     : pacientes;
 
@@ -233,13 +242,13 @@ const DashboardPacientes: React.FC = () => {
     return [
       {
         sexo: 'Masculino',
-        promedio: masculinos.length > 0 ? 
+        promedio: masculinos.length > 0 ?
           masculinos.reduce((sum, p) => sum + (Number(p[selectedMetric as keyof Paciente]) || 0), 0) / masculinos.length : 0,
         count: masculinos.length,
       },
       {
         sexo: 'Femenino',
-        promedio: femeninos.length > 0 ? 
+        promedio: femeninos.length > 0 ?
           femeninos.reduce((sum, p) => sum + (Number(p[selectedMetric as keyof Paciente]) || 0), 0) / femeninos.length : 0,
         count: femeninos.length,
       },
@@ -297,7 +306,7 @@ const DashboardPacientes: React.FC = () => {
           <Col span={24}>
             <Input
               size="large"
-              placeholder="Buscar paciente por nombre, DNI o código"
+              placeholder="Buscar paciente por nombre o DNI"
               prefix={<SearchOutlined />}
               onChange={e => setBusqueda(e.target.value)}
               allowClear
@@ -319,7 +328,22 @@ const DashboardPacientes: React.FC = () => {
             </Row>
 
             <Card title={`Paciente: ${pacienteSeleccionado.nombre}`} loading={loading}>
-              {/* Detalles del paciente existentes... */}
+              {/* Detalles del paciente */}
+              <Row gutter={[16, 16]}>
+                <Col span={8}>
+                  <Text strong>DNI: </Text>
+                  <Text>{pacienteSeleccionado.dni}</Text>
+                </Col>
+                <Col span={8}>
+                  <Text strong>Edad: </Text>
+                  <Text>{pacienteSeleccionado.edad}</Text>
+                </Col>
+                <Col span={8}>
+                  <Text strong>Sexo: </Text>
+                  <Text>{pacienteSeleccionado.sexo === 'M' ? 'Masculino' : 'Femenino'}</Text>
+                </Col>
+                {/* Agrega más campos según sea necesario */}
+              </Row>
             </Card>
           </>
         ) : (
@@ -373,15 +397,19 @@ const DashboardPacientes: React.FC = () => {
                   <Table
                     dataSource={pacientesFiltrados}
                     columns={[
-                      { title: 'Código', dataIndex: 'codigo', key: 'codigo' },
                       { title: 'Nombre', dataIndex: 'nombre', key: 'nombre' },
                       { title: 'DNI', dataIndex: 'dni', key: 'dni' },
                       { title: 'Edad', dataIndex: 'edad', key: 'edad' },
-                      { title: 'Sexo', dataIndex: 'sexo', key: 'sexo', render: (sexo) => sexo === 'M' ? 'Masculino' : sexo === 'F' ? 'Femenino' : 'No especificado' },
-                      { 
-                        title: metricOptions.find(m => m.value === selectedMetric)?.label, 
-                        dataIndex: selectedMetric, 
-                        key: selectedMetric 
+                      {
+                        title: 'Sexo',
+                        dataIndex: 'sexo',
+                        key: 'sexo',
+                        render: (sexo) => sexo === 'M' ? 'Masculino' : sexo === 'F' ? 'Femenino' : 'No especificado'
+                      },
+                      {
+                        title: metricOptions.find(m => m.value === selectedMetric)?.label,
+                        dataIndex: selectedMetric,
+                        key: selectedMetric
                       },
                       {
                         title: 'Acciones',
@@ -391,7 +419,7 @@ const DashboardPacientes: React.FC = () => {
                         )
                       }
                     ]}
-                    rowKey="codigo"
+                    rowKey="dni"
                     pagination={{ pageSize: 10 }}
                   />
                 </Card>

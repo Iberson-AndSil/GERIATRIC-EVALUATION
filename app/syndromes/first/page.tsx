@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Row, Col, Typography, Button, Divider } from "antd";
+import { Row, Col, Typography, Button, Divider, notification } from "antd";
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useGlobalContext } from "@/app/context/GlobalContext";
@@ -10,11 +10,17 @@ import FallsCard from "./FallsCard";
 import CognitiveCard from "./CognitiveCard";
 import IncontinenceCard from "./IncontinenceCard";
 import { AllResponses } from "../../type";
-import * as XLSX from "xlsx";
+import { actualizarResultado } from "@/app/lib/pacienteService";
 
 const { Title } = Typography;
 
 export default function SyndromesPage() {
+
+    const [loading, setLoading] = useState(false);
+    const [api, contextHolder] = notification.useNotification();
+    const { currentPatient, currentResultId } = useGlobalContext();
+    const router = useRouter();
+
     const [responses, setResponses] = useState<AllResponses>({
         sarcopenia: {},
         falls: {},
@@ -24,9 +30,6 @@ export default function SyndromesPage() {
             situationsScore: 0
         }
     });
-
-    const { fileHandle } = useGlobalContext();
-    const router = useRouter();
 
     const handleResponseChange = (section: keyof AllResponses, key: string, value: any) => {
         setResponses(prev => ({
@@ -38,80 +41,89 @@ export default function SyndromesPage() {
         }));
     };
 
-    const saveFile = async () => {
+    const saveToFirebase = async () => {
         try {
-            if (!fileHandle) {
-                alert("Por favor seleccione un archivo primero");
-                return;
+            setLoading(true);
+
+            if (!currentPatient?.dni) {
+                throw new Error("No se ha seleccionado un paciente");
             }
+            const sarc = Object.values(responses.sarcopenia).reduce((acc, curr) => acc + (curr || 0), 0);
 
-            const file = await fileHandle.getFile();
-            const arrayBuffer = await file.arrayBuffer();
-            const existingWb = XLSX.read(arrayBuffer, { type: "array" });
-            const wsName = existingWb.SheetNames[0];
-            const ws = existingWb.Sheets[wsName];
+            const sarcopenia = sarc.toString();
 
-            const existingData: string[][] = XLSX.utils.sheet_to_json(ws, {
-                header: 1,
-                defval: ""
+            const fallsScore = [
+                responses.falls.neededMedicalAssistance,
+                responses.falls.couldNotGetUp,
+                responses.falls.fearOfFalling
+            ].filter(Boolean).length;
+
+            const caida = fallsScore.toString();
+
+            const cognitiveScore = [
+                responses.cognitive.rememberQuickly,
+                responses.cognitive.rememberSlowly,
+                responses.cognitive.affectsDailyActivities
+            ].filter(Boolean).length;
+
+            const deterioro = cognitiveScore.toString();
+
+            const incontinenceScore = (responses.incontinence.frequency || 0) +
+                (responses.incontinence.amount || 0) +
+                (responses.incontinence.impact || 0);
+
+            const incontinencia = incontinenceScore.toString();
+
+            await actualizarResultado(
+                currentPatient.dni,
+                currentResultId || "",
+                'sarcopenia',
+                sarcopenia
+            );
+
+            await actualizarResultado(
+                currentPatient.dni,
+                currentResultId || "",
+                'caida',
+                caida
+            );
+
+            await actualizarResultado(
+                currentPatient.dni,
+                currentResultId || "",
+                'deterioro',
+                deterioro
+            );
+
+            await actualizarResultado(
+                currentPatient.dni,
+                currentResultId || "",
+                'incontinencia',
+                incontinencia
+            );
+
+            api.success({
+                message: 'Éxito',
+                description: 'Resultados de ABVD y AIVD guardados correctamente',
+                placement: 'topRight'
             });
 
-            const lastRowIndex = existingData.length - 1;
-
-            if (lastRowIndex >= 0) {
-                while (existingData[lastRowIndex].length < 22) {
-                    existingData[lastRowIndex].push("");
-                }
-
-                const sarcopeniaScore = Object.values(responses.sarcopenia).reduce((acc, curr) => acc + (curr || 0), 0);
-                const fallsScore = [
-                    responses.falls.neededMedicalAssistance,
-                    responses.falls.couldNotGetUp,
-                    responses.falls.fearOfFalling
-                ].filter(Boolean).length;
-                const cognitiveScore = [
-                    responses.cognitive.rememberQuickly,
-                    responses.cognitive.rememberSlowly,
-                    responses.cognitive.affectsDailyActivities
-                ].filter(Boolean).length;
-                const incontinenceScore = (responses.incontinence.frequency || 0) +
-                    (responses.incontinence.amount || 0) +
-                    (responses.incontinence.impact || 0);
-
-                existingData[lastRowIndex][17] = sarcopeniaScore.toString();
-                existingData[lastRowIndex][18] = fallsScore.toString();
-                existingData[lastRowIndex][19] = cognitiveScore.toString();
-                existingData[lastRowIndex][20] = incontinenceScore.toString();
-            }
-
-            const updatedWs = XLSX.utils.aoa_to_sheet(existingData);
-            const updatedWb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(updatedWb, updatedWs, wsName);
-
-            const writable = await fileHandle.createWritable();
-            await writable.write(XLSX.write(updatedWb, {
-                bookType: "xlsx",
-                type: "buffer",
-                bookSST: true
-            }));
-            await writable.close();
-
-            alert("Resultados guardados exitosamente");
             router.push('/syndromes/second');
-
         } catch (err: unknown) {
-            if (err instanceof Error) {
-                console.error("Error detallado:", err);
-                alert(`Error al guardar: ${err.message}`);
-            } else {
-                console.error("Error desconocido:", err);
-                alert("Error al guardar: Verifique la consola para más detalles");
-            }
+            console.error("Error al guardar:", err);
+            api.error({
+                message: 'Error',
+                description: err instanceof Error ? err.message : 'Ocurrió un error al guardar',
+                placement: 'topRight'
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className="w-full">
+            {contextHolder}
             <Title level={3} style={{
                 textAlign: 'center',
                 marginBottom: '24px',
@@ -160,7 +172,8 @@ export default function SyndromesPage() {
                     type="primary"
                     icon={<SaveOutlined />}
                     size="large"
-                    onClick={saveFile}
+                    loading={loading}
+                    onClick={saveToFirebase}
                 >
                     Guardar Todos los Resultados
                 </Button>
