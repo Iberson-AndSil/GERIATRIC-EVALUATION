@@ -100,7 +100,11 @@ export const agregarModuloAArray = async (
   );
 };
 
-export const crearRegistroResultados = async (pacienteId: string) => {
+export const crearRegistroResultados = async (pacienteId: string, gijon:Number) => {
+    if (!pacienteId) {
+    throw new Error("pacienteId no puede estar vacío");
+  }
+  
   try {
     const resultadosRef = collection(db, "pacientes", pacienteId, "resultados");
     const nuevoResultadoRef = doc(resultadosRef);
@@ -108,6 +112,7 @@ export const crearRegistroResultados = async (pacienteId: string) => {
     await setDoc(nuevoResultadoRef, {
       fecha: serverTimestamp(),
       completado: false,
+      gijon: gijon
     });
     
     return nuevoResultadoRef.id;

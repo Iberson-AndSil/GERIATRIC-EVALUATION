@@ -38,7 +38,7 @@ const PatientForm = () => {
       setLoading(true);
       const formData = await form.validateFields();
       const score = obtenerPuntajeTotal();
-      
+
       const fechaNacimiento = new Date(
         parseInt(formData.year),
         parseInt(formData.month) - 1,
@@ -65,24 +65,27 @@ const PatientForm = () => {
       await axios.post("/api/pacientes", patientData);
 
       let resultadoId = currentResultId;
-      
+
       if (!resultadoId) {
         setCurrentPatient(patientData);
-        resultadoId = await crearRegistroResultados(formData.dni);
+        if (!formData.dni || typeof formData.dni !== "string") {
+          throw new Error("El DNI es requerido y debe ser un string válido.");
+        }
+        resultadoId = await crearRegistroResultados(formData.dni, score);
         setCurrentResultId(resultadoId);
+        openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
+        router.push('/funtional/');
       }
-      else{
+      else {
         await actualizarResultado(
           formData.dni,
           resultadoId,
           'gijon',
           score
         );
+        openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
+        router.push('/funtional/');
       }
-
-      openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
-      router.push('/funtional/');
-
     } catch (err: unknown) {
       console.error("Error al guardar:", err);
       openNotification(
