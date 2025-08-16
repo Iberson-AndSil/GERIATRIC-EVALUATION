@@ -100,7 +100,7 @@ export const agregarModuloAArray = async (
   );
 };
 
-export const crearRegistroResultados = async (pacienteId: string, gijon:Number) => {
+export const crearRegistroResultados = async (pacienteId: string, gijon:number) => {
     if (!pacienteId) {
     throw new Error("pacienteId no puede estar vacío");
   }

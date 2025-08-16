@@ -103,7 +103,7 @@ const Home = () => {
   const handleNewEvaluation = async (paciente: Paciente) => {
     try {
       setCurrentPatient(paciente);
-      const nuevoResultadoId = await crearRegistroResultados(paciente.dni);
+      const nuevoResultadoId = await crearRegistroResultados(paciente.dni, 0);
       setCurrentResultId(nuevoResultadoId);
       router.push('/family');
     } catch (error) {
