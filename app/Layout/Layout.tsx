@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "antd/dist/reset.css";
 import { Layout as AntLayout, Menu, Button, ConfigProvider } from "antd";
 import { StyleProvider } from "@ant-design/cssinjs";
@@ -26,6 +26,7 @@ import {
   SmileOutlined,
 } from "@ant-design/icons";
 import { useGlobalContext } from "@/app/context/GlobalContext";
+import MedicalSpinner from "../components/MedicalSpinner";
 
 const { Header, Sider, Content } = AntLayout;
 
@@ -33,6 +34,19 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const { currentPatient } = useGlobalContext();
   const router = useRouter();
+  const [isReady, setIsReady] = useState(false);
+
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsReady(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isReady) {
+    return <MedicalSpinner />;
+  }
 
   const items = [
     { key: "/", icon: <HomeOutlined />, label: "Inicio", onClick: () => router.push("/") },
