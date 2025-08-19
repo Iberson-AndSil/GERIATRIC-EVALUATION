@@ -180,3 +180,8 @@ export const obtenerResultadosPaciente = async (pacienteId: string) => {
     ...doc.data()
   }));
 };
+
+export const eliminarResultado = async (pacienteId: string, resultadoId: string) => {
+  const resultadoRef = doc(db, "pacientes", pacienteId, "resultados", resultadoId)
+  await deleteDoc(resultadoRef)
+}

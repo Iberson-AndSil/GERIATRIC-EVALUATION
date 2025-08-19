@@ -253,6 +253,11 @@ const Home = () => {
       ),
   });
 
+  const patientRecordRedirect = (patient: Paciente) => {
+    setCurrentPatient(patient);
+    router.push(`/record/${patient.dni}`)
+  }
+
   const columns: ColumnType<Paciente>[] = [
     {
       title: 'Nombre',
@@ -324,7 +329,8 @@ const Home = () => {
                 {
                   key: 'view',
                   icon: <SearchOutlined />,
-                  label: <Link href={`/pacientes/${record.dni}`}>Ver Detalles</Link>
+                  label: 'Ver Detalles',
+                  onClick: () => patientRecordRedirect(record)
                 },
                 {
                   type: 'divider',
