@@ -3,36 +3,9 @@ import { useEffect, useState, useCallback } from 'react'
 import { Card, Spin, Empty, Popconfirm, Button, Col, Row, message, Progress, Tag, Collapse, Divider } from 'antd'
 import { eliminarResultado, obtenerResultadosPaciente } from '@/app/lib/pacienteService'
 import { DeleteOutlined, CaretRightOutlined } from "@ant-design/icons"
+import { Resultado } from '@/app/interfaces'
 
 const { Panel } = Collapse
-
-interface Resultado {
-  id: string
-  fecha: any
-  gijon?: number
-  completado?: boolean
-  abvdScore?: number
-  aivdScore?: number
-  sarcopenia?: number
-  caida?: number
-  deterioro?: number
-  incontinencia?: number
-  depresion?: number
-  sensorial?: number
-  bristol?: number
-  adherencia?: number
-  dynamometry?: number
-  balance?: number
-  dimension_fisica?: number
-  dimension_mental?: number
-  puntaje_total?: number
-  cognitivo_total?: number
-  mmse30?: number
-  moca?: number
-  afectiva?: number
-  nutricional?: number
-  [key: string]: any
-}
 
 const MAX_VALUES: Record<string, number> = {
   gijon: 25,
@@ -156,7 +129,6 @@ const ScoreDisplay = ({ value, metricKey }: {
     </div>
   )
 }
-
 
 const SyndromeScoreDisplay = ({ value, metricKey }: { 
   value?: number, 

@@ -1,10 +1,13 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { Layout, Card, Row, Col, Input, Table, Typography, Spin, Select } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
+import { Layout, Card, Row, Col, Input, Table, Typography, Spin, Select, Space, Button } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { Column, Pie, Bar, Scatter } from '@ant-design/charts';
 import { Paciente } from '../interfaces';
 import { obtenerPacientesConResultadosRecientes } from '../lib/pacienteService';
+import { useRouter } from 'next/navigation';
+import Highlighter from 'react-highlight-words';
+import { FilterDropdownProps } from 'antd/es/table/interface';
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
@@ -21,6 +24,10 @@ const DashboardPacientes: React.FC = () => {
   const [busqueda, setBusqueda] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedMetric, setSelectedMetric] = useState('abvdScore');
+  const router = useRouter();
+  const searchInput = useRef<any>(null);
+  const [searchText, setSearchText] = useState<string>("");
+  const [searchedColumn, setSearchedColumn] = useState<keyof Paciente | "">("");
 
   const metricOptions: MetricOption[] = [
     { value: 'gijon', label: 'Gijón' },
@@ -206,6 +213,83 @@ const DashboardPacientes: React.FC = () => {
     ],
   };
 
+  const handleSearch = (
+    selectedKeys: string[],
+    confirm: FilterDropdownProps['confirm'],
+    dataIndex: keyof Paciente,
+  ) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+    const handleReset = (clearFilters: () => void) => {
+    clearFilters();
+    setSearchText('');
+  };
+
+
+  const getColumnSearchProps = (dataIndex: keyof Paciente) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }: FilterDropdownProps) => (
+      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+        <Input
+          ref={searchInput}
+          placeholder={`Buscar ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Buscar
+          </Button>
+          <Button
+            onClick={() => clearFilters && handleReset(clearFilters)}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Reiniciar
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              close();
+            }}
+          >
+            Cerrar
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered: boolean) => (
+      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+    ),
+    onFilter: (value: any, record: any) =>
+      record[dataIndex]
+        ?.toString()
+        ?.toLowerCase()
+        ?.includes((value as string).toLowerCase()),
+    render: (text: string) =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      ),
+  });
+
   const configEdadPuntuacionScatter = {
     data: pacientes
       .filter(p => !isNaN(Number(p[selectedMetric as keyof Paciente])))
@@ -293,6 +377,11 @@ const DashboardPacientes: React.FC = () => {
     );
   }
 
+  const patientRecordRedirect = (patient: Paciente) => {
+    // setCurrentPatient(patient);
+    router.push(`/record/${patient.dni}`)
+  }
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Header style={{ background: '#fff', padding: 0 }}>
@@ -313,119 +402,90 @@ const DashboardPacientes: React.FC = () => {
           </Col>
         </Row>
 
-        {pacienteSeleccionado ? (
-          <>
-            <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-              <Title level={4}>Detalles del Paciente</Title>
-              <Text
-                strong
-                style={{ cursor: 'pointer', color: '#1890ff' }}
-                onClick={() => setPacienteSeleccionado(null)}
-              >
-                Volver al resumen
-              </Text>
-            </Row>
 
-            <Card title={`Paciente: ${pacienteSeleccionado.nombre}`} loading={loading}>
-              {/* Detalles del paciente */}
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <Text strong>DNI: </Text>
-                  <Text>{pacienteSeleccionado.dni}</Text>
-                </Col>
-                <Col span={8}>
-                  <Text strong>Edad: </Text>
-                  <Text>{pacienteSeleccionado.edad}</Text>
-                </Col>
-                <Col span={8}>
-                  <Text strong>Sexo: </Text>
-                  <Text>{pacienteSeleccionado.sexo === 'M' ? 'Masculino' : 'Femenino'}</Text>
-                </Col>
-                {/* Agrega más campos según sea necesario */}
-              </Row>
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col span={12}>
+            <Card title="Distribución por Sexo (Gráfico de torta)" loading={loading}>
+              <Pie {...configSexoPie} />
             </Card>
-          </>
-        ) : (
-          <>
-            <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-              <Col span={12}>
-                <Card title="Distribución por Sexo (Gráfico de torta)" loading={loading}>
-                  <Pie {...configSexoPie} />
-                </Card>
-              </Col>
-              <Col span={12}>
-                <Card title="Distribución por Rango de Edad" loading={loading}>
-                  <Column {...configEdadRangos} />
-                </Card>
-              </Col>
-            </Row>
-            <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-              <Col span={24}>
-                <Card title="Seleccionar Métrica" loading={loading}>
-                  <Select
-                    style={{ width: '100%' }}
-                    value={selectedMetric}
-                    onChange={(value) => setSelectedMetric(value)}
-                  >
-                    {metricOptions.map(option => (
-                      <Option key={option.value} value={option.value}>
-                        {option.label}
-                      </Option>
-                    ))}
-                  </Select>
-                </Card>
-              </Col>
-            </Row>
+          </Col>
+          <Col span={12}>
+            <Card title="Distribución por Rango de Edad" loading={loading}>
+              <Column {...configEdadRangos} />
+            </Card>
+          </Col>
+        </Row>
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col span={24}>
+            <Card title="Seleccionar Métrica" loading={loading}>
+              <Select
+                style={{ width: '100%' }}
+                value={selectedMetric}
+                onChange={(value) => setSelectedMetric(value)}
+              >
+                {metricOptions.map(option => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
+            </Card>
+          </Col>
+        </Row>
 
-            <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-              <Col span={12}>
-                <Card title={`Edad vs. Puntuación ${metricOptions.find(m => m.value === selectedMetric)?.label}`} loading={loading}>
-                  <Scatter {...configEdadPuntuacionScatter} />
-                </Card>
-              </Col>
-              <Col span={12}>
-                <Card title={`Promedio de ${metricOptions.find(m => m.value === selectedMetric)?.label} por Sexo`} loading={loading}>
-                  <Bar {...configPromedioSexoBar} />
-                </Card>
-              </Col>
-            </Row>
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col span={12}>
+            <Card title={`Edad vs. Puntuación ${metricOptions.find(m => m.value === selectedMetric)?.label}`} loading={loading}>
+              <Scatter {...configEdadPuntuacionScatter} />
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card title={`Promedio de ${metricOptions.find(m => m.value === selectedMetric)?.label} por Sexo`} loading={loading}>
+              <Bar {...configPromedioSexoBar} />
+            </Card>
+          </Col>
+        </Row>
 
-            <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-              <Col span={24}>
-                <Card title="Lista de Pacientes" loading={loading}>
-                  <Table
-                    dataSource={pacientesFiltrados}
-                    columns={[
-                      { title: 'Nombre', dataIndex: 'nombre', key: 'nombre' },
-                      { title: 'DNI', dataIndex: 'dni', key: 'dni' },
-                      { title: 'Edad', dataIndex: 'edad', key: 'edad' },
-                      {
-                        title: 'Sexo',
-                        dataIndex: 'sexo',
-                        key: 'sexo',
-                        render: (sexo) => sexo === 'M' ? 'Masculino' : sexo === 'F' ? 'Femenino' : 'No especificado'
-                      },
-                      {
-                        title: metricOptions.find(m => m.value === selectedMetric)?.label,
-                        dataIndex: selectedMetric,
-                        key: selectedMetric
-                      },
-                      {
-                        title: 'Acciones',
-                        key: 'acciones',
-                        render: (_, record) => (
-                          <a onClick={() => setPacienteSeleccionado(record)}>Ver detalles</a>
-                        )
-                      }
-                    ]}
-                    rowKey="dni"
-                    pagination={{ pageSize: 10 }}
-                  />
-                </Card>
-              </Col>
-            </Row>
-          </>
-        )}
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col span={24}>
+            <Card title="Lista de Pacientes" loading={loading}>
+              <Table
+                dataSource={pacientesFiltrados}
+                columns={[
+                  { title: 'Nombre', dataIndex: 'nombre', key: 'nombre' },
+                  {
+                    title: 'DNI',
+                    dataIndex: 'dni',
+                    key: 'dni',
+                    ...getColumnSearchProps('dni'),
+                    render: (text: string) => <Text code>{text}</Text>
+                  },
+                  { title: 'Edad', dataIndex: 'edad', key: 'edad' },
+                  {
+                    title: 'Sexo',
+                    dataIndex: 'sexo',
+                    key: 'sexo',
+                    render: (sexo) => sexo === 'M' ? 'Masculino' : sexo === 'F' ? 'Femenino' : 'No especificado'
+                  },
+                  {
+                    title: metricOptions.find(m => m.value === selectedMetric)?.label,
+                    dataIndex: selectedMetric,
+                    key: selectedMetric
+                  },
+                  {
+                    title: 'Acciones',
+                    key: 'acciones',
+                    render: (_, record) => (
+                      <a onClick={() => patientRecordRedirect(record)}>Ver detalles</a>
+                    )
+                  }
+                ]}
+                rowKey="dni"
+                pagination={{ pageSize: 10 }}
+              />
+            </Card>
+          </Col>
+        </Row>
       </Content>
     </Layout>
   );

@@ -74,6 +74,34 @@ export interface Paciente {
 // afectiva:number;
 // nutricional:number;
 
+export interface Resultado {
+  id: string
+  fecha: any
+  gijon?: number
+  completado?: boolean
+  abvdScore?: number
+  aivdScore?: number
+  sarcopenia?: number
+  caida?: number
+  deterioro?: number
+  incontinencia?: number
+  depresion?: number
+  sensorial?: number
+  bristol?: number
+  adherencia?: number
+  dynamometry?: number
+  balance?: number
+  dimension_fisica?: number
+  dimension_mental?: number
+  puntaje_total?: number
+  cognitivo_total?: number
+  mmse30?: number
+  moca?: number
+  afectiva?: number
+  nutricional?: number
+  [key: string]: any
+}
+
 export interface GijonCategory {
   key: string;
   title: string;
