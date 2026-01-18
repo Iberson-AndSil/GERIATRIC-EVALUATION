@@ -20,7 +20,6 @@ type MetricOption = {
 
 const DashboardPacientes: React.FC = () => {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
-  const [pacienteSeleccionado, setPacienteSeleccionado] = useState<Paciente | null>(null);
   const [busqueda, setBusqueda] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedMetric, setSelectedMetric] = useState('abvdScore');

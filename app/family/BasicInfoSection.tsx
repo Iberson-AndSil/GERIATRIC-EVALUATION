@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Input, InputNumber, Radio, Row, Col, Typography, Card, Select } from "antd";
 import {
     UserOutlined,
@@ -18,23 +18,18 @@ const { Text } = Typography;
 
 interface BasicInfoSectionProps {
     form: any;
+    date:any;
     handleDayChange: () => void;
     handleMonthChange: () => void;
     handleYearChange: () => void;
 }
 
-export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
-    form,
-    handleDayChange,
-    handleMonthChange,
-    handleYearChange,
-}) => {
+export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({form,date,handleDayChange,handleMonthChange,handleYearChange}) => {
+    const [fechaActual, setFechaActual] = useState('');
     const { currentPatient } = useGlobalContext();
 
     React.useEffect(() => {
         if (currentPatient) {
-            console.log("Setting form values from currentPatient:", currentPatient);
-
             let birthDay, birthMonth, birthYear;
             if (currentPatient.fecha_nacimiento) {
                 const dateObject = new Date(currentPatient.fecha_nacimiento);
@@ -66,13 +61,18 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
 
     const isDisabled = !!currentPatient;
 
-    console.log("currentPatient", currentPatient);
+    useEffect(() => {
+        const today = new Date();
+        date=today; 
+        setFechaActual(today.toLocaleDateString());
+    }, []);
 
 
     return (
         <Card
-            title="INFORMACIÓN BÁSICA"
+            title="INFORMACIÓN SOCIOECONÓMICA"
             className="!mb-4 !rounded-2xl !shadow-lg !h-full !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300"
+            extra={<span className="font-semibold">Evaluación: {fechaActual}</span>}
         >
             <Row gutter={[16, 16]}>
                 <Col xs={24} md={16}>

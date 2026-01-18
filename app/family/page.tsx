@@ -16,6 +16,7 @@ const { Title } = Typography;
 
 const PatientForm = () => {
   const [form] = Form.useForm();
+  const date = new Date();
   const router = useRouter();
   const [api, contextHolder] = notification.useNotification();
   const [loading, setLoading] = useState(false);
@@ -47,6 +48,7 @@ const PatientForm = () => {
 
       const patientData = {
         id: formData.dni,
+        date: date.toISOString(),
         nombre: formData.nombre,
         dni: formData.dni,
         fecha_nacimiento: fechaNacimiento,
@@ -132,6 +134,7 @@ const PatientForm = () => {
           <Col xs={24} md={16}>
             <BasicInfoSection
               form={form}
+              date={date}
               handleDayChange={handleDayChange}
               handleMonthChange={handleMonthChange}
               handleYearChange={handleYearChange}
