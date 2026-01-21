@@ -64,7 +64,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({form,date,han
     useEffect(() => {
         const today = new Date();
         date=today; 
-        setFechaActual(today.toLocaleDateString());
+        setFechaActual(date.toLocaleDateString());
     }, []);
 
 
