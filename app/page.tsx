@@ -11,11 +11,12 @@ import type { ColumnType } from 'antd/es/table/interface';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
 import moment from 'moment';
 import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import { db } from './lib/firebaseConfig';
 import { crearRegistroResultados } from './lib/pacienteService';
+import { useRouter } from 'next/navigation';
+
 
 const { Title, Text } = Typography;
 interface PacienteWithStatus extends Paciente {
@@ -105,20 +106,21 @@ const Home = () => {
       setCurrentPatient(paciente);
       const nuevoResultadoId = await crearRegistroResultados(paciente.dni, 0);
       setCurrentResultId(nuevoResultadoId);
-      router.push('/family');
+      router.push('/funtional');
     } catch (error) {
       console.error("Error al crear registro de resultados:", error);
     }
   };
 
   const showEditModal = (paciente: Paciente) => {
+    setCurrentPatient(paciente);
     setEditingPatient(paciente);
     const pacienteWithMoment = {
       ...paciente,
       fecha_nacimiento: paciente.fecha_nacimiento ? moment(paciente.fecha_nacimiento) : null
     };
     form.setFieldsValue(pacienteWithMoment);
-    setIsModalVisible(true);
+    router.push('/family?isMember=true');
   };
 
   const handleEditOk = async () => {
@@ -450,116 +452,6 @@ const Home = () => {
             </Link>
           </Col>
         </Row>
-
-        <Modal
-          title={`Editar Paciente: ${editingPatient?.nombre}`}
-          open={isModalVisible}
-          onOk={handleEditOk}
-          onCancel={handleEditCancel}
-          okText="Guardar"
-          cancelText="Cancelar"
-          width={700}
-        >
-          <Form form={form} layout="vertical">
-            <Row gutter={16}>
-              <Col span={16}>
-                <Form.Item
-                  name="nombre"
-                  label="Apellidos y Nombres"
-                  rules={[{ required: true, message: 'Ingrese nombre completo' }]}
-                >
-                  <Input placeholder="Nombre completo" prefix={<UserOutlined />} size="large" />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item
-                  name="dni"
-                  label="DNI"
-                  rules={[
-                    { required: true, message: 'Ingrese DNI' },
-                    { pattern: /^\d{8}$/, message: 'DNI debe tener 8 dígitos' }
-                  ]}
-                >
-                  <Input disabled={true} placeholder="DNI" prefix={<IdcardOutlined />} size="large" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="fecha_nacimiento"
-                  label="Fecha de Nacimiento"
-                  rules={[{ required: true, message: 'Ingrese fecha de nacimiento' }]}
-                >
-                  <DatePicker style={{ width: '100%' }} size="large" />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="sexo"
-                  label="Sexo"
-                  rules={[{ required: true, message: 'Seleccione sexo' }]}
-                >
-                  <Radio.Group size="large" className="w-full">
-                    <Radio.Button value="F"><WomanOutlined /> F</Radio.Button>
-                    <Radio.Button value="M"><ManOutlined /> M</Radio.Button>
-                  </Radio.Group>
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="zona_residencia"
-                  label="Zona Residencia"
-                  rules={[{ required: true, message: 'Seleccione zona' }]}
-                >
-                  <Select
-                    placeholder="Zona"
-                    size="large"
-                    options={[
-                      { value: 'rural', label: 'Rural' },
-                      { value: 'urbano', label: 'Urbano' }
-                    ]}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Form.Item
-              name="domicilio"
-              label="Domicilio"
-              rules={[{ required: true, message: 'Ingrese domicilio' }]}
-            >
-              <Input placeholder="Domicilio" prefix={<HomeOutlined />} size="large" />
-            </Form.Item>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="ocupacion"
-                  label="Ocupación"
-                  rules={[{ required: true, message: 'Ingrese ocupación' }]}
-                >
-                  <Input placeholder="Ocupación" size="large" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="ingreso_economico"
-                  label="Ingreso Económico"
-                  rules={[{ required: true, message: 'Ingrese ingreso' }]}
-                >
-                  <InputNumber
-                    placeholder="Ingreso"
-                    prefix={<DollarOutlined />}
-                    style={{ width: '100%' }}
-                    size="large"
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
-        </Modal>
       </div>
     </ConfigProvider>
   );

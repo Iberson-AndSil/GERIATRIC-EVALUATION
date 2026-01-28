@@ -1,3 +1,12 @@
+export type NivelEducativoOption = {
+    value: string;
+    label: string;
+    children: {
+        value: string;
+        label: string;
+    }[];
+};
+
 export type PuntajesType = {
   comer: number | null;
   trasladarse: number | null;

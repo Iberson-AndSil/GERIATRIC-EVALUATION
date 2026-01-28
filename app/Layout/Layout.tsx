@@ -118,7 +118,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </Sider>
 
             <AntLayout>
-              <Content style={{ margin: "20px", padding: "20px", background: "#fff", borderRadius: "8px" }}>
+              <Content style={{ margin: "0px", padding: "20px", background: "#fff", borderRadius: "8px" }}>
                 {children}
               </Content>
             </AntLayout>

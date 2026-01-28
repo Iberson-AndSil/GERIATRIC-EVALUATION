@@ -1,81 +1,301 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { Form, Input, InputNumber, Radio, Row, Col, Typography, Card, Select } from "antd";
+import React, { useEffect, useState, useCallback } from "react";
+import { NivelEducativoOption } from "@/app/type"
+import { Form, Input, InputNumber, Radio, Row, Col, Typography, Card, Select, Divider, Space, Cascader, Button } from "antd";
 import {
     UserOutlined,
     IdcardOutlined,
     ManOutlined,
     WomanOutlined,
     HomeOutlined,
-    TeamOutlined,
     SolutionOutlined,
     DollarOutlined,
-    CalendarOutlined
+    CalendarOutlined,
+    EnvironmentOutlined,
+    BankOutlined,
+    PhoneOutlined,
+    MailOutlined,
+    EditOutlined,
+    CloseOutlined,
+    CheckOutlined
 } from "@ant-design/icons";
+import dayjs from 'dayjs';
 import { useGlobalContext } from "@/app/context/GlobalContext";
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const { Text } = Typography;
 
 interface BasicInfoSectionProps {
     form: any;
-    date:any;
-    handleDayChange: () => void;
-    handleMonthChange: () => void;
-    handleYearChange: () => void;
+    onValuesChange?: (changedValues: any, allValues: any) => void;
 }
 
-export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({form,date,handleDayChange,handleMonthChange,handleYearChange}) => {
-    const [fechaActual, setFechaActual] = useState('');
+export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValuesChange }) => {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const isMember = searchParams?.get('isMember') === 'true';
+    const [age, setAge] = useState<number | null>(null);
     const { currentPatient } = useGlobalContext();
+    const [isEditing, setIsEditing] = useState(false);
 
-    React.useEffect(() => {
+    const calculateAge = useCallback((day?: number, month?: string, year?: number) => {
+        if (day && month && year) {
+            const birthDate = new Date(year, parseInt(month) - 1, day);
+            const today = new Date();
+            let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                calculatedAge--;
+            }
+            setAge(calculatedAge);
+            form.setFieldsValue({ edad: calculatedAge });
+            const fechaNacimiento = dayjs(birthDate).format('YYYY-MM-DD');
+            form.setFieldsValue({ fecha_nacimiento: fechaNacimiento });
+            return calculatedAge;
+        }
+        return null;
+    }, [form]);
+
+    const handleDateChange = useCallback(() => {
+        const day = form.getFieldValue('birth_day');
+        const month = form.getFieldValue('birth_month');
+        const year = form.getFieldValue('birth_year');
+
+        if (day && month && year) {
+            calculateAge(day, month, year);
+        } else {
+            setAge(null);
+            form.setFieldsValue({ edad: undefined, fecha_nacimiento: '' });
+        }
+    }, [form, calculateAge]);
+
+    const generateGrades = (count: number) =>
+        Array.from({ length: count }, (_, i) => ({
+            value: String(i + 1),
+            label: `${i + 1}°`
+        }));
+
+    const nivelEducativoOptions: NivelEducativoOption[] = [
+        {
+            value: 'sin_nivel',
+            label: 'Sin nivel/Inicial',
+            children: [{ value: '0', label: '0°' }]
+        },
+        {
+            value: 'primaria',
+            label: 'Primaria',
+            children: generateGrades(6)
+        },
+        {
+            value: 'secundaria',
+            label: 'Secundaria',
+            children: generateGrades(5)
+        },
+        {
+            value: 'tecnica',
+            label: 'Técnica (SNU)',
+            children: generateGrades(3)
+        },
+        {
+            value: 'universitaria',
+            label: 'Universitaria',
+            children: generateGrades(7)
+        },
+        {
+            value: 'postgrado',
+            label: 'Postgrado',
+            children: generateGrades(5)
+        }
+    ];
+
+    useEffect(() => {
         if (currentPatient) {
+            console.log("el paciente existe");
             let birthDay, birthMonth, birthYear;
             if (currentPatient.fecha_nacimiento) {
                 const dateObject = new Date(currentPatient.fecha_nacimiento);
                 birthDay = dateObject.getDate();
-                birthMonth = dateObject.getMonth() + 1;
+                birthMonth = String(dateObject.getMonth() + 1).padStart(2, '0');
                 birthYear = dateObject.getFullYear();
             }
 
-            form.setFieldsValue({
+            const formData = {
                 nombre: currentPatient.nombre || '',
                 dni: currentPatient.dni || '',
-                birth_day: birthDay || undefined,
-                birth_month: birthMonth ? String(birthMonth).padStart(2, '0') : undefined,
-                birth_year: birthYear || undefined,
+                birth_day: currentPatient.birth_day || undefined,
+                birth_month: currentPatient.birth_month || undefined,
+                birth_year: currentPatient.birth_year || undefined,
                 edad: currentPatient.edad || '',
+                economic_activity: currentPatient.economic_activity || [],
                 sexo: currentPatient.sexo || '',
                 zona_residencia: currentPatient.zona_residencia || '',
                 fecha_nacimiento: currentPatient.fecha_nacimiento || '',
                 domicilio: currentPatient.domicilio || '',
-                con_quien_vive: currentPatient.con_quien_vive || '',
+                con_quien_vive: Array.isArray(currentPatient.con_quien_vive)
+                    ? currentPatient.con_quien_vive
+                    : (currentPatient.con_quien_vive ? [currentPatient.con_quien_vive] : []),
                 ocupacion: currentPatient.ocupacion || '',
                 relacion: currentPatient.relacion || '',
                 ingreso_economico: currentPatient.ingreso_economico || undefined,
                 nivel_educativo: currentPatient.nivel_educativo || [],
-                sistema_pension: currentPatient.sistema_pension || []
+                sistema_pension: currentPatient.sistema_pension || [],
+                ipress: currentPatient.ipress || '',
+                telefono: currentPatient.phone || '',
+                email: currentPatient.email || '',
+                numero_historia: currentPatient.numero_historia || '',
+                nameDoctor: currentPatient.nameDoctor || "POVES REQUENA, LORENZO SEGUNDO",
+                nameLicensed: currentPatient.nameLicensed || "",
+                dateEvaluation: currentPatient.dateEvaluation || dayjs().format('DD/MM/YYYY')
+            };
+            form.setFieldsValue(formData);
+            if (birthDay && birthMonth && birthYear) calculateAge(birthDay, birthMonth, birthYear);
+        } else {
+            form.resetFields();
+            setAge(null);
+            form.setFieldsValue({
+                dateEvaluation: dayjs().format('DD/MM/YYYY'),
+                nameDoctor: "POVES REQUENA, LORENZO SEGUNDO",
+                zona_residencia: 'urbano',
+                con_quien_vive: []
             });
         }
     }, [currentPatient, form]);
 
-    const isDisabled = !!currentPatient;
+    const monthOptions = [
+        { value: '01', label: 'Enero' },
+        { value: '02', label: 'Febrero' },
+        { value: '03', label: 'Marzo' },
+        { value: '04', label: 'Abril' },
+        { value: '05', label: 'Mayo' },
+        { value: '06', label: 'Junio' },
+        { value: '07', label: 'Julio' },
+        { value: '08', label: 'Agosto' },
+        { value: '09', label: 'Setiembre' },
+        { value: '10', label: 'Octubre' },
+        { value: '11', label: 'Noviembre' },
+        { value: '12', label: 'Diciembre' },
+    ];
+
+    const zonaResidenciaOptions = [
+        { value: 'rural', label: 'Rural' },
+        { value: 'urbano', label: 'Urbano' }
+    ];
+
+    const sistemaPensionOptions = [
+        { value: 'onp', label: 'ONP' },
+        { value: 'afp', label: 'AFP' },
+        { value: 'ninguno', label: 'Ninguno' }
+    ];
+
+    const relacionOptions = [
+        { value: 'soltero', label: 'Soltero(a)' },
+        { value: 'casado', label: 'Casado(a)' },
+        { value: 'divorciado', label: 'Divorciado(a)' },
+        { value: 'viudo', label: 'Viudo(a)' },
+        { value: 'conviviente', label: 'Conviviente' }
+    ];
+
+    const conQuienViveOptions = [
+        { value: 'Conyugue', label: 'Conyugue' },
+        { value: 'Hijos', label: 'Hijos' },
+        { value: 'Hermanos', label: 'Hermanos' },
+        { value: 'Otros familiares', label: 'Otros familiares' },
+        { value: 'Amigos', label: 'Amigos' },
+        { value: 'Solo (a)', label: 'Solo (a)' },
+    ];
+
+    const economicActivityOptions = [
+        { value: 'dependient', label: 'Dependiente' },
+        { value: 'independient', label: 'Independiente' },
+        { value: 'ninguno', label: 'Ninguno' }
+    ];
 
     useEffect(() => {
-        const today = new Date();
-        date=today; 
-        setFechaActual(date.toLocaleDateString());
-    }, []);
+        setIsEditing(isMember);
+    }, [isMember]);
 
+    const editModal = () => {
+        setIsEditing(true);
+    }
+
+    const handleClose=()=>{
+        router.push('/');
+    }
 
     return (
-        <Card
-            title="INFORMACIÓN SOCIOECONÓMICA"
-            className="!mb-4 !rounded-2xl !shadow-lg !h-full !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300"
-            extra={<span className="font-semibold">Evaluación: {fechaActual}</span>}
-        >
-            <Row gutter={[16, 16]}>
-                <Col xs={24} md={16}>
+        <Card className="!mb-4 !rounded-2xl !shadow-lg !h-full !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300">
+            <div className="flex justify-end gap-2">
+                <Button
+                    color="cyan" variant="solid"
+                    icon={<CheckOutlined />}
+                    // onClick={() => handleSave()} 
+                    style={{ color: '#ffffff' }}
+                />
+                <Button
+                    type="primary"
+                    icon={<EditOutlined />}
+                    onClick={() => editModal()}
+                    // disabled={isEditing}
+                />
+                <Button
+                    color="danger" variant="solid"
+                    icon={<CloseOutlined />}
+                    onClick={() => handleClose()}
+                    style={{ color: '#ffffff' }}
+                />
+            </div>
+            <Divider orientation="left" orientationMargin="0" className="!mt-0">
+                <Text strong>Evaluadores</Text>
+            </Divider>
+            <Row gutter={[16, 0]} className="!m-0">
+                <Col xs={24} md={8} >
+                    <Form.Item
+                        name="nameDoctor"
+                        label={<Text strong>Médico Tratante</Text>}
+                        rules={[{ required: true, message: 'Requerido' }]}
+                        className="!mb-0 !pb-0 block"
+                    >
+                        <Input
+                            size="large"
+                            placeholder="Dr. Nombre Apellido"
+                            prefix={<span className="text-gray-400 font-semibold text-sm mr-1 select-none">Dr.</span>}
+                            disabled={!isEditing}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                    <Form.Item
+                        name="nameLicensed"
+                        label={<Text strong>Licenciado</Text>}
+                        rules={[{ required: true, message: 'Requerido' }]}
+                    >
+                        <Input
+                            placeholder="Ingrese su nombre completo"
+                            size="large"
+                            prefix={<span className="text-gray-400 font-semibold text-sm mr-1 select-none">Lic.</span>}
+                            disabled={!isEditing}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                    <Form.Item
+                        name="dateEvaluation"
+                        label={<Text strong>Fecha de Evaluación</Text>}
+                        rules={[{ required: true, message: 'Requerido' }]}
+                    >
+                        <Input
+                            size="large"
+                            prefix={<CalendarOutlined className="text-gray-400" />}
+                            disabled
+                        />
+                    </Form.Item>
+                </Col>
+            </Row>
+            <Divider orientation="left" orientationMargin="0" className="!mt-0">
+                <Text strong>Identificación del Paciente</Text>
+            </Divider>
+            <Row gutter={[16, 0]}>
+                <Col xs={24} md={8}>
                     <Form.Item
                         label={<Text strong>Apellidos y Nombres</Text>}
                         name="nombre"
@@ -84,12 +304,12 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({form,date,han
                         <Input
                             placeholder="Ingrese su nombre completo"
                             size="large"
-                            prefix={<UserOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-                            disabled={isDisabled}
+                            prefix={<UserOutlined className="text-gray-400" />}
+                            disabled={!isEditing}
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={8}>
+                <Col xs={24} md={4}>
                     <Form.Item
                         label={<Text strong>DNI</Text>}
                         name="dni"
@@ -101,28 +321,21 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({form,date,han
                         <Input
                             placeholder="Ingrese su DNI"
                             size="large"
-                            prefix={<IdcardOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-                            disabled={isDisabled}
+                            prefix={<IdcardOutlined className="text-gray-400" />}
+                            disabled={!isEditing}
                         />
                     </Form.Item>
                 </Col>
-            </Row>
-
-            <Row gutter={[16, 16]}>
-                <Form.Item name="fecha_nacimiento" hidden>
-                    <Input />
-                </Form.Item>
-
-                <Col xs={24} sm={12} md={10}>
+                <Col xs={24} md={6}>
                     <Form.Item
-                        label={<Text strong className="!truncate">Fecha de nacimiento</Text>}
+                        label={<Text strong>Fecha de Nacimiento</Text>}
                         required
                     >
-                        <Input.Group compact>
+                        <Space.Compact block>
                             <Form.Item
                                 name="birth_day"
                                 rules={[
-                                    { required: !isDisabled, message: 'Requerido' },
+                                    { required: true, message: 'Requerido' },
                                     { type: 'number', min: 1, max: 31, message: 'Día inválido' },
                                 ]}
                                 noStyle
@@ -132,45 +345,33 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({form,date,han
                                     max={31}
                                     style={{ width: '30%' }}
                                     size="large"
-                                    onChange={handleDayChange}
+                                    onChange={handleDateChange}
                                     placeholder="Día"
-                                    disabled={isDisabled}
-                                    prefix={<CalendarOutlined />}
+                                    disabled={!isEditing}
+                                    className="!rounded-r-none"
                                 />
                             </Form.Item>
 
                             <Form.Item
                                 name="birth_month"
-                                rules={[{ required: !isDisabled, message: 'Requerido' }]}
+                                rules={[{ required: true, message: 'Requerido' }]}
                                 noStyle
                             >
                                 <Select
                                     size="large"
                                     placeholder="Mes"
-                                    onChange={handleMonthChange}
+                                    onChange={handleDateChange}
                                     style={{ width: '40%' }}
-                                    disabled={isDisabled}
-                                    options={[
-                                        { value: '01', label: 'Enero' },
-                                        { value: '02', label: 'Febrero' },
-                                        { value: '03', label: 'Marzo' },
-                                        { value: '04', label: 'Abril' },
-                                        { value: '05', label: 'Mayo' },
-                                        { value: '06', label: 'Junio' },
-                                        { value: '07', label: 'Julio' },
-                                        { value: '08', label: 'Agosto' },
-                                        { value: '09', label: 'Setiembre' },
-                                        { value: '10', label: 'Octubre' },
-                                        { value: '11', label: 'Noviembre' },
-                                        { value: '12', label: 'Diciembre' },
-                                    ]}
+                                    disabled={!isEditing}
+                                    className="!rounded-none"
+                                    options={monthOptions}
                                 />
                             </Form.Item>
 
                             <Form.Item
                                 name="birth_year"
                                 rules={[
-                                    { required: !isDisabled, message: 'Requerido' },
+                                    { required: true, message: 'Requerido' },
                                     { type: 'number', min: 1900, max: new Date().getFullYear(), message: 'Año inválido' },
                                 ]}
                                 noStyle
@@ -180,185 +381,260 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({form,date,han
                                     max={new Date().getFullYear()}
                                     style={{ width: '30%' }}
                                     size="large"
-                                    onChange={handleYearChange}
+                                    onChange={handleDateChange}
                                     placeholder="Año"
-                                    disabled={isDisabled}
+                                    disabled={!isEditing}
+                                    className="!rounded-l-none"
                                 />
                             </Form.Item>
-                        </Input.Group>
+                        </Space.Compact>
                     </Form.Item>
                 </Col>
-
-                <Col xs={24} sm={12} md={2}>
+                <Col xs={24} md={2}>
                     <Form.Item
-                        label={<Text strong className="!truncate">Edad</Text>}
+                        label={<Text strong>Edad</Text>}
                         name="edad"
                     >
                         <InputNumber
-                            className="!truncate"
                             style={{ width: "100%" }}
                             size="large"
                             disabled
+                            value={age || undefined}
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} sm={12} md={6}>
+                <Col xs={24} md={4}>
                     <Form.Item
-                        label={<Text strong className="!truncate">Sexo</Text>}
+                        label={<Text strong>Sexo</Text>}
                         name="sexo"
-                        rules={[{ required: !isDisabled, message: 'Por favor seleccione su sexo' }]}
+                        rules={[{ required: true, message: 'Por favor seleccione su sexo' }]}
                     >
-                        <Radio.Group size="large" className="w-full" disabled={isDisabled}>
-                            <Radio.Button value="F" className="!truncate w-1/2">
+                        <Radio.Group
+                            size="large"
+                            className="w-full"
+                            disabled={!isEditing}
+                            buttonStyle="solid"
+                        >
+                            <Radio.Button value="F" className="w-1/2 text-center">
                                 <WomanOutlined /> F
                             </Radio.Button>
-                            <Radio.Button value="M" className="!truncate w-1/2">
+                            <Radio.Button value="M" className="w-1/2 text-center">
                                 <ManOutlined /> M
                             </Radio.Button>
                         </Radio.Group>
                     </Form.Item>
                 </Col>
-                <Col xs={24} sm={12} md={6}>
+            </Row>
+            <Divider orientation="left" orientationMargin="0" className="!mt-0">
+                <Text strong>Información Demográfica</Text>
+            </Divider>
+            <Row gutter={[16, 0]}>
+                <Form.Item name="fecha_nacimiento" hidden>
+                    <Input />
+                </Form.Item>
+                <Col xs={24} md={7}>
                     <Form.Item
                         label={<Text strong>Zona Residencia</Text>}
                         name="zona_residencia"
-                        rules={[{ required: !isDisabled, message: 'Por favor seleccione su zona de residencia' }]}
+                        rules={[{ required: true, message: 'Por favor seleccione su zona de residencia' }]}
                     >
                         <Select
                             placeholder="Seleccione zona"
                             size="large"
-                            disabled={isDisabled}
-                            options={[
-                                { value: 'rural', label: 'Rural' },
-                                { value: 'urbano', label: 'Urbano' }
-                            ]}
+                            disabled={!isEditing}
+                            options={zonaResidenciaOptions}
+                            suffixIcon={<EnvironmentOutlined />}
                         />
                     </Form.Item>
                 </Col>
-            </Row>
-
-            <Row gutter={[16, 16]}>
-                <Col xs={24}>
-                    <Form.Item
-                        label={<Text strong>Domicilio</Text>}
-                        name="domicilio"
-                        rules={[{ required: !isDisabled, message: 'Por favor ingrese su domicilio' }]}
-                    >
-                        <Input
-                            placeholder="Ingrese su domicilio"
-                            size="large"
-                            prefix={<HomeOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-                            disabled={isDisabled}
-                        />
-                    </Form.Item>
-                </Col>
-            </Row>
-
-            <Row gutter={[16, 16]}>
-                <Col xs={24} md={12}>
-                    <Form.Item
-                        label={<Text strong>¿Con quién vive?</Text>}
-                        name="con_quien_vive"
-                        rules={[{ required: !isDisabled, message: 'Por favor especifique con quién vive' }]}
-                    >
-                        <Input
-                            placeholder="Ej: Solo, con familia, etc."
-                            size="large"
-                            prefix={<TeamOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-                            disabled={isDisabled}
-                        />
-                    </Form.Item>
-                </Col>
-                <Col xs={24} md={12}>
-                    <Form.Item
-                        label={<Text strong>Ocupación</Text>}
-                        name="ocupacion"
-                        rules={[{ required: !isDisabled, message: 'Por favor ingrese su ocupación' }]}
-                    >
-                        <Input
-                            placeholder="Ingrese su ocupación"
-                            size="large"
-                            prefix={<SolutionOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-                            disabled={isDisabled}
-                        />
-                    </Form.Item>
-                </Col>
-            </Row>
-
-            <Row gutter={[16, 16]}>
-                <Col xs={24} md={12}>
+                <Col xs={24} md={7}>
                     <Form.Item
                         label={<Text strong>Relación</Text>}
                         name="relacion"
-                        rules={[{ required: !isDisabled, message: 'Por favor especifique su relación' }]}
+                        rules={[{ required: true, message: 'Por favor especifique su relación' }]}
                     >
-                        <Input
-                            placeholder="Ej: Soltero, casado, etc."
+                        <Select
+                            placeholder="Seleccione estado"
                             size="large"
-                            prefix={<TeamOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-                            disabled={isDisabled}
+                            disabled={!isEditing}
+                            options={relacionOptions}
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={12}>
+                <Col xs={24} md={10}>
                     <Form.Item
-                        label={<Text strong>Ingreso Económico</Text>}
-                        name="ingreso_economico"
-                        rules={[{ required: !isDisabled, message: 'Por favor ingrese su ingreso económico' }]}
+                        label={<Text strong>Domicilio</Text>}
+                        name="domicilio"
+                        rules={[{ required: true, message: 'Por favor ingrese su domicilio' }]}
                     >
-                        <InputNumber
-                            style={{ width: '100%' }}
-                            placeholder="Ingrese monto"
+                        <Input
+                            placeholder="Ingrese su domicilio completo"
                             size="large"
-                            prefix={<DollarOutlined style={{ color: 'rgba(0,0,0,.25)' }} />}
-                            disabled={isDisabled}
+                            prefix={<HomeOutlined className="text-gray-400" />}
+                            disabled={!isEditing}
                         />
                     </Form.Item>
                 </Col>
             </Row>
-
             <Row gutter={[16, 16]}>
-                <Col xs={24} md={12}>
+                <Col xs={24} md={7}>
                     <Form.Item
-                        label={<Text strong>Nivel Educativo</Text>}
-                        name="nivel_educativo"
-                        rules={[{ required: !isDisabled, message: 'Por favor seleccione su nivel educativo' }]}
+                        label={<Text strong>Teléfono</Text>}
+                        name="telefono"
+                        rules={[{ pattern: /^\d{9}$/, message: 'Ingrese 9 dígitos' }]}
                     >
-                        <Select
-                            mode="multiple"
-                            placeholder="Seleccione nivel educativo"
+                        <Input
+                            placeholder="Ingrese su teléfono"
                             size="large"
-                            disabled={isDisabled}
-                            options={[
-                                { value: 'p', label: 'Primaria' },
-                                { value: 's', label: 'Secundaria' },
-                                { value: 't', label: 'Técnico' },
-                                { value: 'u', label: 'Universitario' },
-                                { value: 'pg', label: 'Postgrado' }
-                            ]}
+                            prefix={<PhoneOutlined className="text-gray-400" />}
+                            disabled={!isEditing}
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={12}>
+                <Col xs={24} md={7}>
                     <Form.Item
-                        label={<Text strong>Sistema de Pensión</Text>}
-                        name="sistema_pension"
-                        rules={[{ required: !isDisabled, message: 'Por favor seleccione su sistema de pensión' }]}
+                        label={<Text strong>Email</Text>}
+                        name="email"
+                        rules={[{ type: 'email', message: 'Email inválido' }]}
+                    >
+                        <Input
+                            placeholder="Ingrese su email"
+                            size="large"
+                            prefix={<MailOutlined className="text-gray-400" />}
+                            disabled={!isEditing}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} md={10}>
+                    <Form.Item
+                        label={<Text strong>¿Con quién vive?</Text>}
+                        name="con_quien_vive"
+                    // rules={[{ required: true, message: 'Por favor especifique con quién vive' }]}
+                    >
+                        <Select
+                            mode="multiple"
+                            placeholder="Seleccione opciones"
+                            size="large"
+                            disabled={!isEditing}
+                            options={conQuienViveOptions}
+                            maxTagCount="responsive"
+                            allowClear
+                        />
+                    </Form.Item>
+                </Col>
+            </Row>
+            <Divider orientation="left" orientationMargin="0" className="!mt-0">
+                <Text strong>Información Socioeconómica</Text>
+            </Divider>
+            <Row gutter={[16, 16]}>
+                <Col xs={24} md={8}>
+                    <Form.Item
+                        label={<Text strong>Actividad Económica</Text>}
+                        name="economic_activity"
+                        rules={[{ required: true, message: 'Por favor seleccione su sistema de pensión' }]}
                     >
                         <Select
                             mode="multiple"
                             placeholder="Seleccione sistema de pensión"
                             size="large"
-                            disabled={isDisabled}
-                            options={[
-                                { value: 'onp', label: 'ONP' },
-                                { value: 'afp', label: 'AFP' },
-                                { value: 'ninguno', label: 'Ninguno' }
-                            ]}
+                            disabled={!isEditing}
+                            options={economicActivityOptions}
+                            maxTagCount={2}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                    <Form.Item
+                        label={<Text strong>Ocupación Económica</Text>}
+                        name="ocupacion"
+                        rules={[{ required: true, message: 'Por favor ingrese su ocupación' }]}
+                    >
+                        <Input
+                            placeholder="Ingrese su ocupación"
+                            size="large"
+                            prefix={<SolutionOutlined className="text-gray-400" />}
+                            disabled={!isEditing}
+                        />
+                    </Form.Item>
+                </Col>
+
+                <Col xs={24} md={8}>
+                    <Form.Item
+                        label={<Text strong>IPRESS</Text>}
+                        name="ipress"
+                        rules={[{ required: true, message: 'Ingrese IPRESS' }]}
+                    >
+                        <Input
+                            placeholder="Nombre de la IPRESS"
+                            size="large"
+                            prefix={<BankOutlined className="text-gray-400" />}
+                            disabled={!isEditing}
                         />
                     </Form.Item>
                 </Col>
             </Row>
+            <Row gutter={[16, 16]}>
+                <Col xs={24} md={8}>
+                    <Form.Item
+                        label={<Text strong>Ingreso Económico (S/.)</Text>}
+                        name="ingreso_economico"
+                        rules={[{ required: true, message: 'Por favor ingrese su ingreso económico' }]}
+                    >
+                        <InputNumber<number>
+                            style={{ width: '100%' }}
+                            placeholder="0.00"
+                            size="large"
+                            min={0}
+                            formatter={(value) => `S/. ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            parser={(value) => Number(value?.replace(/\D/g, '') || 0)}
+                            prefix={<DollarOutlined className="text-gray-400" />}
+                            disabled={!isEditing}
+                        />
+                    </Form.Item>
+                </Col>
+
+                <Col xs={24} md={8}>
+                    <Form.Item
+                        label={<Text strong>Nivel Educativo</Text>}
+                        name="nivel_educativo"
+                        rules={[{ required: true, message: 'Por favor seleccione nivel y grado' }]}
+                    >
+                        <Cascader
+                            options={nivelEducativoOptions}
+                            placeholder="Seleccione nivel y grado"
+                            size="large"
+                            disabled={!isEditing}
+                            expandTrigger="hover"
+                            showSearch
+                            changeOnSelect={false}
+                        />
+                    </Form.Item>
+                </Col>
+
+                <Col xs={24} md={8}>
+                    <Form.Item
+                        label={<Text strong>Sistema de Pensión</Text>}
+                        name="sistema_pension"
+                        rules={[{ required: true, message: 'Por favor seleccione su sistema de pensión' }]}
+                    >
+                        <Select
+                            mode="multiple"
+                            placeholder="Seleccione sistema de pensión"
+                            size="large"
+                            disabled={!isEditing}
+                            options={sistemaPensionOptions}
+                            maxTagCount={2}
+                        />
+                    </Form.Item>
+                </Col>
+            </Row>
+
+            {/* <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <Text type="secondary" className="text-sm">
+                    <strong>Nota:</strong> Los campos marcados con * son obligatorios.
+                    La edad se calcula automáticamente al ingresar la fecha de nacimiento.
+                </Text>
+            </div> */}
         </Card>
     );
-}
+};

@@ -38,8 +38,8 @@ const PatientForm = () => {
     try {
       setLoading(true);
       const formData = await form.validateFields();
-      const score = obtenerPuntajeTotal();
-
+      console.log("datoos:  ",formData);
+      // const score = obtenerPuntajeTotal();
       const fechaNacimiento = new Date(
         parseInt(formData.year),
         parseInt(formData.month) - 1,
@@ -48,7 +48,16 @@ const PatientForm = () => {
 
       const patientData = {
         id: formData.dni,
-        date: date.toISOString(),
+        birth_day:formData.birth_day,
+        birth_month:formData.birth_month,
+        birth_year:formData.birth_year,
+        dateEvaluation:formData.dateEvaluation,
+        economic_activity:formData.economic_activity,
+        email:formData.email,
+        ipress:formData.ipress,
+        nameDoctor:formData.nameDoctor,
+        nameLicensed:formData.nameLicensed,
+        phone:formData.telefono,
         nombre: formData.nombre,
         dni: formData.dni,
         fecha_nacimiento: fechaNacimiento,
@@ -65,29 +74,29 @@ const PatientForm = () => {
       };
 
       await axios.post("/api/pacientes", patientData);
+      openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
+      // let resultadoId = currentResultId;
 
-      let resultadoId = currentResultId;
-
-      if (!resultadoId) {
-        setCurrentPatient(patientData);
-        if (!formData.dni || typeof formData.dni !== "string") {
-          throw new Error("El DNI es requerido y debe ser un string válido.");
-        }
-        resultadoId = await crearRegistroResultados(formData.dni, score);
-        setCurrentResultId(resultadoId);
-        openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
-        router.push('/funtional/');
-      }
-      else {
-        await actualizarResultado(
-          formData.dni,
-          resultadoId,
-          'gijon',
-          score
-        );
-        openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
-        router.push('/funtional/');
-      }
+      // if (!resultadoId) {
+      //   setCurrentPatient(patientData);
+      //   if (!formData.dni || typeof formData.dni !== "string") {
+      //     throw new Error("El DNI es requerido y debe ser un string válido.");
+      //   }
+      //   resultadoId = await crearRegistroResultados(formData.dni, score);
+      //   setCurrentResultId(resultadoId);
+      //   openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
+      //   router.push('/funtional/');
+      // }
+      // else {
+      //   await actualizarResultado(
+      //     formData.dni,
+      //     resultadoId,
+      //     'gijon',
+      //     score
+      //   );
+      //   openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
+      //   router.push('/funtional/');
+      // }
     } catch (err: unknown) {
       console.error("Error al guardar:", err);
       openNotification(
@@ -122,32 +131,32 @@ const PatientForm = () => {
           level={3}
           style={{
             textAlign: 'center',
-            marginBottom: '24px',
+            marginBottom: '10px',
             color: '#1890ff',
             fontWeight: 500
           }}
         >
-          VALORACIÓN SOCIO FAMILIAR
+          INFORMACION SOCIOECONÓMICA 
         </Title>
 
         <div className="flex">
-          <Col xs={24} md={16}>
+          <Col xs={24} md={24}>
             <BasicInfoSection
               form={form}
-              date={date}
-              handleDayChange={handleDayChange}
-              handleMonthChange={handleMonthChange}
-              handleYearChange={handleYearChange}
+              // date={date}
+              // handleDayChange={handleDayChange}
+              // handleMonthChange={handleMonthChange}
+              // handleYearChange={handleYearChange}
             />
           </Col>
-          <Col xs={24} md={8}>
+          {/* <Col xs={24} md={8}>
             <GijonScaleSection
               categories={gijonCategories}
               handleChange={handleScoreChange}
               puntajes={puntajes}
               obtenerPuntajeTotal={obtenerPuntajeTotal}
             />
-          </Col>
+          </Col> */}
         </div>
 
         <Row className="flex justify-center mt-12 gap-4">
