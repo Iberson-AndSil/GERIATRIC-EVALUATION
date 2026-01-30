@@ -45,3 +45,5 @@ export const useSensory = () => {
     handleSensoryChange
   };
 };
+
+export type { SensoryData };

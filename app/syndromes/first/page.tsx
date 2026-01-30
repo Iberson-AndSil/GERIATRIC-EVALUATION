@@ -1,21 +1,21 @@
 "use client";
 import { useState } from "react";
-import { Row, Col, Typography, Button, Divider, notification } from "antd";
-import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
+import { Row, Col, Typography, Button, notification, Space, Divider } from "antd";
+import { ArrowLeftOutlined, SaveOutlined, MedicineBoxOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { useRouter } from 'next/navigation';
+import { actualizarResultado } from "@/app/lib/pacienteService";
+import { AllResponses } from "../../type";
+
 import SarcopeniaCard from "./SarcopeniaCard";
 import FallsCard from "./FallsCard";
 import CognitiveCard from "./CognitiveCard";
 import IncontinenceCard from "./IncontinenceCard";
-import { AllResponses } from "../../type";
-import { actualizarResultado } from "@/app/lib/pacienteService";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 export default function SyndromesPage() {
-
     const [loading, setLoading] = useState(false);
     const [api, contextHolder] = notification.useNotification();
     const { currentPatient, currentResultId } = useGlobalContext();
@@ -23,34 +23,25 @@ export default function SyndromesPage() {
 
     const [responses, setResponses] = useState<AllResponses>({
         sarcopenia: {},
-        falls: {},
-        cognitive: {},
-        incontinence: {
-            situations: [],
-            situationsScore: 0
-        }
+        falls: { hasFallen: false },
+        cognitive: { forgetsRecentEvents: false },
+        incontinence: { situations: [] }
     });
 
     const handleResponseChange = (section: keyof AllResponses, key: string, value: any) => {
         setResponses(prev => ({
             ...prev,
-            [section]: {
-                ...prev[section],
-                [key]: value
-            }
+            [section]: { ...prev[section], [key]: value }
         }));
     };
 
     const saveToFirebase = async () => {
+        if (!currentPatient?.dni) return api.error({ message: "Error", description: "No hay paciente seleccionado" });
+
+        setLoading(true);
         try {
-            setLoading(true);
-
-            if (!currentPatient?.dni) {
-                throw new Error("No se ha seleccionado un paciente");
-            }
-            const sarc = Object.values(responses.sarcopenia).reduce((acc, curr) => acc + (curr || 0), 0);
-
-            const sarcopenia = sarc.toString();
+            // Cálculos
+            const sarcScore = Object.values(responses.sarcopenia).reduce((acc, curr) => acc + (curr || 0), 0);
 
             const fallsScore = [
                 responses.falls.neededMedicalAssistance,
@@ -58,124 +49,95 @@ export default function SyndromesPage() {
                 responses.falls.fearOfFalling
             ].filter(Boolean).length;
 
-            const caida = fallsScore.toString();
-
             const cognitiveScore = [
                 responses.cognitive.rememberQuickly,
                 responses.cognitive.rememberSlowly,
                 responses.cognitive.affectsDailyActivities
             ].filter(Boolean).length;
 
-            const deterioro = cognitiveScore.toString();
-
             const incontinenceScore = (responses.incontinence.frequency || 0) +
                 (responses.incontinence.amount || 0) +
-                (responses.incontinence.impact || 0);
+                (responses.incontinence.impact || 0) +
+                (responses.incontinence.situations?.length || 0);
 
-            const incontinencia = incontinenceScore.toString();
+            await Promise.all([
+                actualizarResultado(currentPatient.dni, currentResultId || "", 'sarcopenia', sarcScore.toString()),
+                actualizarResultado(currentPatient.dni, currentResultId || "", 'caida', fallsScore.toString()),
+                actualizarResultado(currentPatient.dni, currentResultId || "", 'deterioro', cognitiveScore.toString()),
+                actualizarResultado(currentPatient.dni, currentResultId || "", 'incontinencia', incontinenceScore.toString())
+            ]);
 
-            await actualizarResultado(
-                currentPatient.dni,
-                currentResultId || "",
-                'sarcopenia',
-                sarcopenia
-            );
-
-            await actualizarResultado(
-                currentPatient.dni,
-                currentResultId || "",
-                'caida',
-                caida
-            );
-
-            await actualizarResultado(
-                currentPatient.dni,
-                currentResultId || "",
-                'deterioro',
-                deterioro
-            );
-
-            await actualizarResultado(
-                currentPatient.dni,
-                currentResultId || "",
-                'incontinencia',
-                incontinencia
-            );
-
-            api.success({
-                message: 'Éxito',
-                description: 'Resultados de ABVD y AIVD guardados correctamente',
-                placement: 'topRight'
-            });
-
+            api.success({ message: 'Guardado exitoso', description: 'Evaluación registrada correctamente.' });
             router.push('/syndromes/second');
-        } catch (err: unknown) {
-            console.error("Error al guardar:", err);
-            api.error({
-                message: 'Error',
-                description: err instanceof Error ? err.message : 'Ocurrió un error al guardar',
-                placement: 'topRight'
-            });
+
+        } catch (err: any) {
+            console.error(err);
+            api.error({ message: 'Error', description: err.message || 'Intente nuevamente.' });
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="w-full">
+        <div className="w-full max-w-7xl mx-auto p-4 bg-gray-50">
             {contextHolder}
-            <Title level={3} style={{
-                textAlign: 'center',
-                marginBottom: '24px',
-                color: '#1890ff',
-                fontWeight: 500
-            }}>
-                SÍNDROMES GERIÁTRICOS
-            </Title>
+            <div className="text-center mb-8">
+                <Title level={3} style={{ color: '#0050b3', margin: 0 }}>
+                    <MedicineBoxOutlined className="mr-2" />
+                    Valoración de Síndromes Geriátricos
+                </Title>
+                <Text type="secondary" className="text-lg">Evaluación de síndromes clínicos</Text>
+                <Divider />
+            </div>
 
-            <Row gutter={[16, 16]}>
-                <Col xs={24} md={8}>
-                    <SarcopeniaCard
-                        responses={responses.sarcopenia}
-                        onResponseChange={(key, value) => handleResponseChange('sarcopenia', key, value)}
-                    />
+            <Row gutter={[24, 24]}>
+                <Col xs={24} lg={8} className="flex flex-col h-full">
+                    <div className="h-full">
+                        <SarcopeniaCard
+                            responses={responses.sarcopenia}
+                            onResponseChange={(k, v) => handleResponseChange('sarcopenia', k, v)}
+                        />
+                    </div>
                 </Col>
-
-                <Col xs={24} md={8}>
-                    <FallsCard
-                        responses={responses.falls}
-                        onResponseChange={(key, value) => handleResponseChange('falls', key, value)}
-                    />
-                    <Divider />
-                    <CognitiveCard
-                        responses={responses.cognitive}
-                        onResponseChange={(key, value) => handleResponseChange('cognitive', key, value)}
-                    />
+                <Col xs={24} lg={8}>
+                    <div className="flex flex-col gap-6 h-full">
+                        <div className="flex-1">
+                            <FallsCard
+                                responses={responses.falls}
+                                onResponseChange={(k, v) => handleResponseChange('falls', k, v)}
+                            />
+                        </div>
+                        <div className="flex-1">
+                            <CognitiveCard
+                                responses={responses.cognitive}
+                                onResponseChange={(k, v) => handleResponseChange('cognitive', k, v)}
+                            />
+                        </div>
+                    </div>
                 </Col>
-
-                <Col xs={24} md={8}>
-                    <IncontinenceCard
-                        responses={responses.incontinence}
-                        onResponseChange={(key, value) => handleResponseChange('incontinence', key, value)}
-                    />
+                <Col xs={24} lg={8} className="flex flex-col">
+                    <div className="h-full">
+                        <IncontinenceCard
+                            responses={responses.incontinence}
+                            onResponseChange={(k, v) => handleResponseChange('incontinence', k, v)}
+                        />
+                    </div>
                 </Col>
             </Row>
-
-            <div className="flex justify-center gap-4 mt-8">
+            <Divider className="my-8" />
+            <div className="flex justify-center gap-4 pb-8">
                 <Link href="/">
-                    <Button type="default" icon={<ArrowLeftOutlined />} size="large">
-                        Volver
-                    </Button>
+                    <Button size="large" icon={<ArrowLeftOutlined />}>Volver</Button>
                 </Link>
-
                 <Button
                     type="primary"
                     icon={<SaveOutlined />}
                     size="large"
                     loading={loading}
                     onClick={saveToFirebase}
+                    className="bg-blue-600 hover:bg-blue-500 shadow-md"
                 >
-                    Guardar Todos los Resultados
+                    Guardar Resultados
                 </Button>
             </div>
         </div>

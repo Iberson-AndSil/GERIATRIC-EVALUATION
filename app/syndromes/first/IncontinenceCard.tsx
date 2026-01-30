@@ -1,126 +1,80 @@
-import React, { useState } from "react";
-import { Card, Form, Select, Slider, Checkbox, Button, Typography, Alert } from "antd";
+import React from "react";
+import { Card, Form, Select, Slider, Checkbox, Typography, Divider, Alert } from "antd";
 import { IncontinenceResponses } from "../../type";
 import { frequencyOptions, amountOptions, situationOptions, interpretICIQ } from "../../utils/syndromes/first";
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
-interface IncontinenceCardProps {
+interface Props {
   responses: IncontinenceResponses;
   onResponseChange: (key: string, value: any) => void;
 }
 
-const IncontinenceCard: React.FC<IncontinenceCardProps> = ({ responses, onResponseChange }) => {
-  const [showResult, setShowResult] = useState(false);
-
-  const handleSituationChange = (values: string[]) => {
-    onResponseChange("situations", values);
-  };
-
-  const handleCalculateScore = () => {
-    const situationsScore = responses.situations?.length || 0;
-    onResponseChange("situationsScore", situationsScore);
-    setShowResult(true);
-  };
-
-  const calculateTotalScore = () => {
-    return (responses.frequency || 0) + 
-           (responses.amount || 0) + 
-           (responses.impact || 0) + 
-           (responses.situations?.length || 0);
-  };
+const IncontinenceCard: React.FC<Props> = ({ responses, onResponseChange }) => {
+  // Cálculo derivado (no necesita estado)
+  const totalScore = (responses.frequency || 0) + 
+                     (responses.amount || 0) + 
+                     (responses.impact || 0) + 
+                     (responses.situations?.length || 0);
 
   return (
-    <Card title="INCONTINENCIA URINARIA (ICIQ-SF)" className="!rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300">
+    <Card 
+        title={<span className="text-blue-600 font-bold">4. INCONTINENCIA (ICIQ-SF)</span>} 
+        className="shadow-md rounded-xl border-t-4 border-t-blue-500"
+    >
       <Form layout="vertical">
-        <Form.Item label="1. ¿Con qué frecuencia pierde orina?">
-          <Select
-            placeholder="Seleccione una opción"
-            onChange={(value) => onResponseChange("frequency", value)}
-            value={responses.frequency}
-            options={frequencyOptions}
+        <Form.Item label="Frecuencia de pérdida">
+          <Select 
+            options={frequencyOptions} 
+            value={responses.frequency} 
+            onChange={(v) => onResponseChange("frequency", v)} 
+            placeholder="Seleccione..."
+          />
+        </Form.Item>
+        
+        <Form.Item label="Cantidad habitual">
+          <Select 
+            options={amountOptions} 
+            value={responses.amount} 
+            onChange={(v) => onResponseChange("amount", v)} 
+            placeholder="Seleccione..."
           />
         </Form.Item>
 
-        <Form.Item label="2. ¿Qué cantidad de orina cree que pierde habitualmente?">
-          <Select
-            placeholder="Seleccione una opción"
-            onChange={(value) => onResponseChange("amount", value)}
-            value={responses.amount}
-            options={amountOptions}
+        <Form.Item label={`Impacto en vida diaria (0-10): ${responses.impact || 0}`}>
+          <Slider 
+            min={0} max={10} 
+            value={responses.impact} 
+            onChange={(v) => onResponseChange("impact", v)} 
+            trackStyle={{ backgroundColor: '#1890ff' }}
           />
         </Form.Item>
 
-        <Form.Item label="3. ¿En qué medida estos escapes de orina afectan su vida diaria?">
-          <Slider
-            min={1}
-            max={10}
-            marks={{
-              1: '1 (Nada)',
-              5: '5',
-              10: '10 (Mucho)'
-            }}
-            onChange={(value) => onResponseChange("impact", value)}
-            value={responses.impact}
-          />
-        </Form.Item>
-
-        <Form.Item label="4. ¿Cuándo pierde orina? (Cada selección suma 1 punto)">
-          <Checkbox.Group
-            options={situationOptions.map(option => ({
-              label: option,
-              value: option
-            }))}
-            onChange={handleSituationChange}
-            value={responses.situations}
-            style={{ display: "flex", flexDirection: "column" }}
-          />
-          {responses.situations && (
-            <Text type="secondary" style={{ marginTop: 8 }}>
-              Seleccionadas: {responses.situations.length} (+{responses.situations.length} puntos)
-            </Text>
-          )}
-        </Form.Item>
-
-        <Button
-          type="primary"
-          onClick={handleCalculateScore}
-          block
-        >
-          Calcular Puntuación
-        </Button>
-
-        {showResult && (
-          <div className="mt-6 p-4 bg-gray-50 rounded">
-            <Title level={4} className="!mb-2">Resultados ICIQ-SF</Title>
-            <Text strong>Puntuación Total: </Text>
-            <Text>{calculateTotalScore()} puntos</Text>
-            <br />
-            <Text strong>Desglose: </Text>
-            <ul>
-              <li>Frecuencia: {responses.frequency || 0} puntos</li>
-              <li>Cantidad: {responses.amount || 0} puntos</li>
-              <li>Impacto: {responses.impact || 0} puntos</li>
-              <li>Situaciones: {responses.situations?.length || 0} puntos</li>
-            </ul>
-            <br />
-            <Text strong>Interpretación: </Text>
-            <Text>{interpretICIQ(calculateTotalScore())}</Text>
-
-            {calculateTotalScore() > 5 && (
-              <Alert
-                message="Recomendación"
-                description="Se sugiere evaluación urológica/geriátrica adicional."
-                type="info"
-                showIcon
-                className="mt-4"
-              />
-            )}
+        <Form.Item label="Momentos de pérdida (Marque todas las que apliquen)">
+          <div className="max-h-40 overflow-y-auto p-2 bg-gray-50 rounded border border-gray-200">
+            <Checkbox.Group 
+                className="flex flex-col gap-2"
+                options={situationOptions}
+                value={responses.situations}
+                onChange={(v) => onResponseChange("situations", v)}
+            />
           </div>
-        )}
+        </Form.Item>
+
+        <Divider className="my-3" />
+        
+        <div className="flex justify-between items-center bg-blue-50 p-3 rounded-lg">
+            <div>
+                <Text type="secondary" className="block text-xs">PUNTAJE TOTAL</Text>
+                <Text className="text-2xl font-bold text-blue-700">{totalScore}</Text>
+            </div>
+            <div className="text-right">
+                <Text strong className="block">{interpretICIQ(totalScore)}</Text>
+                {totalScore > 0 && <Text type="warning" className="text-xs">Requiere evaluación</Text>}
+            </div>
+        </div>
       </Form>
     </Card>
   );
 };
-
 export default IncontinenceCard;

@@ -38,3 +38,5 @@ export const useDepression = () => {
         handleDepresionChange
     };
 };
+
+export type { DepressionData };

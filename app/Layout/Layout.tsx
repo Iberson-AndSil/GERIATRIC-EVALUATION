@@ -50,17 +50,18 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const items = [
     { key: "/", icon: <HomeOutlined />, label: "Inicio", onClick: () => router.push("/") },
-    { key: "/family", icon: <TeamOutlined />, label: "Socio Familiar", onClick: () => router.push("/family") },
-    { key: "/assessment", icon: <AuditOutlined />, label: "Valoración Funcional", onClick: () => router.push("/funtional") },
+    // { key: "/family", icon: <TeamOutlined />, label: "Socio Familiar", onClick: () => router.push("/family") },
     {
       key: "/syndromes",
       icon: <FileSearchOutlined />,
       label: "Síndromes Geriátricos",
       children: [
-        { key: "/first", icon: <HeartOutlined />, label: "Primera Parte", onClick: () => router.push("/syndromes/first") },
-        { key: "/second", icon: <MedicineBoxOutlined />, label: "Segunda Parte", onClick: () => router.push("/syndromes/second") },
+        { key: "/first", icon: <HeartOutlined />, label: "Riesgo Funcional", onClick: () => router.push("/syndromes/first") },
+        { key: "/second", icon: <MedicineBoxOutlined />, label: "Evaluación Clínica", onClick: () => router.push("/syndromes/second") },
       ],
     },
+    { key: "/social", icon: <AuditOutlined />, label: "Valoración Social", onClick: () => router.push("/social") },
+    { key: "/assessment", icon: <AuditOutlined />, label: "Valoración Funcional", onClick: () => router.push("/funtional") },
     { key: "/physical", icon: <ExperimentOutlined />, label: "Valoración Física", onClick: () => router.push("/physical") },
     { key: "/mental", icon: <MailOutlined />, label: "Valoración Mental", onClick: () => router.push("/mental") },
     { key: "/cognitive", icon: <ReadOutlined />, label: "Valoración Cognitiva", onClick: () => router.push("/cognitive") },

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { eliminarPaciente, obtenerPacientePorId, actualizarPaciente } from '@/app/lib/pacienteService';
+import context from 'antd/es/app/context';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,13 +28,16 @@ export async function PUT(request: any, context: any) {
   }
 }
 
-export async function DELETE(request: any, context: any) {
-  const { dni } = context.params;
+export async function DELETE(request: Request,context: { params: Promise<{ dni: string }> }) {
+  const { dni } = await context.params;;
   try {
     await eliminarPaciente(dni);
-    return NextResponse.json({ message: 'Paciente eliminado' });
+    return NextResponse.json({ message: "Paciente eliminado" });
   } catch (error) {
     console.error("Error en DELETE:", error);
-    return NextResponse.json({ status: 500 });
+    return NextResponse.json(
+      { error: "Error eliminando paciente" },
+      { status: 500 }
+    );
   }
 }

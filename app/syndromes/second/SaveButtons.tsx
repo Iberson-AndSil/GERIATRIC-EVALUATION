@@ -4,18 +4,14 @@ import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 
 interface SaveButtonsProps {
   loading: boolean;
-  allResultsReady: any;
+  allResultsReady: boolean;
   onSave: () => void;
 }
 
-export const SaveButtons = ({ 
-  loading, 
-  allResultsReady, 
-  onSave 
-}: SaveButtonsProps) => (
-  <div className="flex justify-center gap-4 mt-8">
+export const SaveButtons = ({ loading, allResultsReady, onSave }: SaveButtonsProps) => (
+  <div className="flex justify-center gap-6 mt-8">
     <Link href="/">
-      <Button type="default" icon={<ArrowLeftOutlined />} size="large">
+      <Button size="large" icon={<ArrowLeftOutlined />} className="rounded-lg px-8">
         Volver
       </Button>
     </Link>
@@ -27,8 +23,9 @@ export const SaveButtons = ({
       onClick={onSave}
       loading={loading}
       disabled={!allResultsReady}
+      className="bg-blue-600 hover:bg-blue-500 rounded-lg px-8 shadow-lg shadow-blue-200"
     >
-      Guardar Todos los Resultados
+      Guardar Evaluación
     </Button>
   </div>
 );

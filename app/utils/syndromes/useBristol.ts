@@ -3,7 +3,7 @@ import { BristolData } from '../../type';
 
 export const useBristol = () => {
   const [bristolData, setBristolData] = useState<BristolData>({
-    bristolType: null,
+    bristolType: '1',
     effort: false,
     hardStool: false,
     incomplete: false,

@@ -60,13 +60,8 @@ const Home = () => {
 
   const handleDelete = async (dni: string) => {
     try {
-      const response = await fetch(`/api/pacientes/${dni}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error('Error en la respuesta del servidor');
-      }
+      const response = await fetch(`/api/pacientes/${dni}`, {method: 'DELETE'});
+      if (!response.ok) throw new Error('Error en la respuesta del servidor');
       openNotification("success", "Éxito", "Paciente eliminado correctamente", "topRight");
       fetchPacientes();
     } catch (error) {
@@ -378,7 +373,7 @@ const Home = () => {
 
   const newPatient = () => {
     setCurrentPatient(null);
-    router.push('/family/');
+    router.push('/family?isMember=true');
   }
 
   return (

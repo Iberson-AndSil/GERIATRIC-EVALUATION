@@ -184,7 +184,12 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
     const sistemaPensionOptions = [
         { value: 'onp', label: 'ONP' },
         { value: 'afp', label: 'AFP' },
-        { value: 'ninguno', label: 'Ninguno' }
+        { value: 'pension65', label: 'PENSION 65' },
+        { value: 'derechohabbiente', label: 'DERECHOHABIENTE' },
+        { value: 'cedula', label: 'CEDULA VIVA (DL: 20530)' },
+        { value: 'cpmp', label: 'CPMP (DL: 1133)' },
+        { value: 'reja', label: 'REJA (LEY: 30425)' },
+        { value: 'notiene', label: 'NO TIENE' }
     ];
 
     const relacionOptions = [

@@ -1,55 +1,118 @@
 'use client';
-import { Card, Space, Radio, Typography } from 'antd';
+import { Card, Form, Radio, Typography } from 'antd';
+import { EyeOutlined } from '@ant-design/icons';
+// 1. IMPORTA EL TIPO (Asegúrate que la ruta sea correcta)
+import { SensoryData } from '@/app/utils/syndromes/useSensory';
+
 const { Text } = Typography;
 
 interface SensoryCardProps {
-  sensoryResult: string | null;
-  handleSensoryChange: (field: any, value: any) => void;
+   sensoryResult: string | null;
+   // 2. TIPO ESTRICTO: Usamos keyof SensoryData en lugar de string
+   handleSensoryChange: (field: keyof SensoryData, value: string) => void;
 }
 
-export const SensoryCard = ({ 
-  sensoryResult, 
-  handleSensoryChange 
-}: SensoryCardProps) => (
-  <Card title="DETERIORO SENSORIAL (Geriatric Depression Scale 4 - UPCH)" className='!rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300'>
-    <Space direction="vertical" size="large" style={{ width: '100%' }}>
-      <div>
-        <Text>¿Tiene dificultad para ver la televisión, leer o para ejecutar cualquier actividad de la vida diaria a causa de su vista?</Text><br />
-        <Radio.Group onChange={e => handleSensoryChange('dificultadVista', e.target.value)}>
-          <Radio value="si">Sí</Radio>
-          <Radio value="no">No</Radio>
-        </Radio.Group>
-      </div>
+export const SensoryCard = ({ sensoryResult, handleSensoryChange }: SensoryCardProps) => {
+   return (
+      <Card
+         title={<span className="text-teal-600 font-bold"><EyeOutlined className="mr-2" />DETERIORO SENSORIAL</span>}
+         className="h-full shadow-md rounded-xl border-t-4 border-t-teal-500 hover:shadow-lg transition-all"
+      >
+         <Form layout="vertical">
 
-      <div>
-        <Text>¿Usa anteojos?</Text><br />
-        <Radio.Group onChange={e => handleSensoryChange('usaAnteojos', e.target.value)}>
-          <Radio value="si">Sí</Radio>
-          <Radio value="no">No</Radio>
-        </Radio.Group>
-      </div>
+            {/* SECCIÓN VISIÓN */}
+            <div className="bg-teal-50 p-2 rounded-md mb-3 border border-teal-100">
+               <Text type="secondary" strong className="text-teal-800 text-xs uppercase tracking-wider">
+                  Visión
+               </Text>
+            </div>
 
-      <div>
-        <Text>¿Tiene usted problemas para escuchar o tiene dificultad para entender la conversación?</Text><br />
-        <Radio.Group onChange={e => handleSensoryChange('dificultadEscucha', e.target.value)}>
-          <Radio value="si">Sí</Radio>
-          <Radio value="no">No</Radio>
-        </Radio.Group>
-      </div>
+            <Form.Item className="mb-3">
+               <div className="flex items-center justify-between gap-4">
+                  <Text strong className="w-1/2">
+                     ¿Dificultad para ver TV, leer o ejecutar actividades?
+                  </Text>
 
-      <div>
-        <Text>¿Usa audífonos?</Text><br />
-        <Radio.Group onChange={e => handleSensoryChange('usaAudifonos', e.target.value)}>
-          <Radio value="si">Sí</Radio>
-          <Radio value="no">No</Radio>
-        </Radio.Group>
-      </div>
+                  <Radio.Group
+                     onChange={e => handleSensoryChange('dificultadVista', e.target.value)}
+                     optionType="button"
+                     buttonStyle="solid"
+                     className="flex text-center"
+                  >
+                     <Radio.Button value="si" className="w-1/2">Sí</Radio.Button>
+                     <Radio.Button value="no" className="w-1/2">No</Radio.Button>
+                  </Radio.Group>
+               </div>
+            </Form.Item>
 
-      {sensoryResult && (
-        <Card style={{ marginTop: 16, backgroundColor: '#e6f7ff', borderColor: '#91d5ff' }}>
-          <Text strong>{sensoryResult}</Text>
-        </Card>
-      )}
-    </Space>
-  </Card>
-);
+            <Form.Item className="mb-6">
+               <div className="flex items-center justify-between gap-4">
+                  <Text strong className="w-1/2">
+                     ¿Usa anteojos?
+                  </Text>
+
+                  <Radio.Group
+                     onChange={e => handleSensoryChange('usaAnteojos', e.target.value)}
+                     optionType="button"
+                     buttonStyle="solid"
+                     className="flex text-center"
+                  >
+                     <Radio.Button value="si" className="w-1/2">Sí</Radio.Button>
+                     <Radio.Button value="no" className="w-1/2">No</Radio.Button>
+                  </Radio.Group>
+               </div>
+            </Form.Item>
+
+            {/* SECCIÓN AUDICIÓN */}
+            <div className="bg-teal-50 p-2 rounded-md mb-3 border border-teal-100">
+               <Text type="secondary" strong className="text-teal-800 text-xs uppercase tracking-wider">
+                  Audición
+               </Text>
+            </div>
+
+            <Form.Item className="mb-3">
+               <div className="flex items-center justify-between gap-4">
+                  <Text strong className="w-1/2">
+                     ¿Problemas para escuchar o entender conversaciones?
+                  </Text>
+
+                  <Radio.Group
+                     onChange={e => handleSensoryChange('dificultadEscucha', e.target.value)}
+                     optionType="button"
+                     buttonStyle="solid"
+                     className="flex text-center"
+                  >
+                     <Radio.Button value="si" className="w-1/2">Sí</Radio.Button>
+                     <Radio.Button value="no" className="w-1/2">No</Radio.Button>
+                  </Radio.Group>
+               </div>
+            </Form.Item>
+
+            <Form.Item className="mb-0">
+               <div className="flex items-center justify-between gap-4">
+                  <Text strong className="w-1/2">
+                     ¿Usa audífonos?
+                  </Text>
+
+                  <Radio.Group
+                     onChange={e => handleSensoryChange('usaAudifonos', e.target.value)}
+                     optionType="button"
+                     buttonStyle="solid"
+                     className="flex text-center"
+                  >
+                     <Radio.Button value="si" className="w-1/2">Sí</Radio.Button>
+                     <Radio.Button value="no" className="w-1/2">No</Radio.Button>
+                  </Radio.Group>
+               </div>
+            </Form.Item>
+
+         </Form>
+
+         {sensoryResult && (
+            <div className={`mt-6 p-3 rounded-lg border ${sensoryResult.includes('Normal') ? 'bg-green-50 border-green-200 text-green-800' : 'bg-orange-50 border-orange-200 text-orange-800'}`}>
+               <Text strong className="text-inherit">{sensoryResult}</Text>
+            </div>
+         )}
+      </Card>
+   );
+};
