@@ -10,7 +10,7 @@ interface SaveButtonsProps {
 
 export const SaveButtons = ({ loading, allResultsReady, onSave }: SaveButtonsProps) => (
   <div className="flex justify-center gap-6 mt-8">
-    <Link href="/">
+    <Link href="/syndromes/first" passHref>
       <Button size="large" icon={<ArrowLeftOutlined />} className="rounded-lg px-8">
         Volver
       </Button>

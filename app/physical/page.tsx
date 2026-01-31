@@ -1,11 +1,12 @@
 "use client";
 import React, { useState } from 'react';
-import { Steps, Form, InputNumber, Button, Card, Row, Col, Typography, Result, Radio, Space, Tag, notification } from 'antd';
-import { UserOutlined, ClockCircleOutlined, ArrowUpOutlined, ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
+import { Steps, Form, InputNumber, Button, Card, Typography, Result, Radio, Tag, notification, Badge, Divider } from 'antd';
+import { UserOutlined, ClockCircleOutlined, ArrowUpOutlined, ArrowLeftOutlined, SaveOutlined, ThunderboltOutlined, CheckCircleOutlined, InfoCircleOutlined, CheckOutlined, CloseOutlined, MedicineBoxOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useGlobalContext } from '../context/GlobalContext';
 import { useRouter } from 'next/navigation';
 import { actualizarResultado } from '../lib/pacienteService';
+
 const { Step } = Steps;
 const { Title, Text } = Typography;
 
@@ -27,23 +28,13 @@ const SPPBEvaluation = () => {
     const [api, contextHolder] = notification.useNotification();
 
     const steps = [
-        {
-            title: 'Prueba de Balance',
-            icon: <UserOutlined />,
-        },
-        {
-            title: 'Levantarse de la Silla',
-            icon: <ArrowUpOutlined />,
-        },
-        {
-            title: 'Velocidad de la Marcha',
-            icon: <ClockCircleOutlined />,
-        },
-        {
-            title: 'Resultados',
-        },
+        { title: 'Balance', icon: <UserOutlined /> },
+        { title: 'Silla', icon: <ArrowUpOutlined /> },
+        { title: 'Marcha', icon: <ClockCircleOutlined /> },
+        { title: 'Fin', icon: <CheckCircleOutlined /> },
     ];
 
+    // --- LÓGICA DE CÁLCULO (Sin cambios) ---
     const calculateChairStandScore = (time: any) => {
         if (time <= 11.19) return 4;
         if (time <= 13.69) return 3;
@@ -64,12 +55,10 @@ const SPPBEvaluation = () => {
         if (first !== null && second !== null) {
             const avg = (first + second) / 2;
             setAverageScore(avg);
-
             if (avg >= 40) setStrengthCategory('Excelente');
             else if (avg >= 30) setStrengthCategory('Buena');
             else if (avg >= 20) setStrengthCategory('Normal');
             else setStrengthCategory('Baja');
-
         } else {
             setAverageScore(null);
             setStrengthCategory('');
@@ -91,7 +80,6 @@ const SPPBEvaluation = () => {
             else if (values.fiveRepsTime < 16.7) score += 1;
         }
 
-
         setTotalScore(score);
         setEvaluationCompleted(true);
         setCurrentStep(3);
@@ -99,50 +87,18 @@ const SPPBEvaluation = () => {
 
     const saveFile = async () => {
         try {
-
             setLoading(true);
-
-            if (!currentPatient?.dni) {
-                throw new Error("No se ha seleccionado un paciente");
-            }
-
-            const dynamometry = averageScore!.toString();
+            if (!currentPatient?.dni) throw new Error("No se ha seleccionado un paciente");
+            const dynamometry = averageScore?.toString() || "0";
             const Balance = totalScore.toString();
-
-            await actualizarResultado(
-                currentPatient.dni,
-                currentResultId || "",
-                'dynamometry',
-                dynamometry
-            );
-
-            await actualizarResultado(
-                currentPatient.dni,
-                currentResultId || "",
-                'Balance',
-                Balance
-            );
-
-            setAverageScore(0);
-            setTotalScore(0);
-
-            api.success({
-                message: 'Éxito',
-                description: 'Resultados de ABVD y AIVD guardados correctamente',
-                placement: 'topRight'
-            });
-
-
+            await actualizarResultado(currentPatient.dni, currentResultId || "", 'dynamometry', dynamometry);
+            await actualizarResultado(currentPatient.dni, currentResultId || "", 'Balance', Balance);
+            api.success({ message: 'Éxito', description: 'Datos guardados correctamente' });
             router.push('/mental');
-
-        } catch (err: unknown) {
-            if (err instanceof Error) {
-                console.error("Error detallado:", err);
-                alert(`Error al guardar: ${err.message}`);
-            } else {
-                console.error("Error desconocido:", err);
-                alert("Error al guardar: Verifique la consola para más detalles");
-            }
+        } catch (err: any) {
+            api.error({ message: 'Error', description: err.message || 'Error desconocido' });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -152,455 +108,309 @@ const SPPBEvaluation = () => {
         return 0;
     };
 
-    const nextStep = () => {
-        setCurrentStep(currentStep + 1);
-    };
+    const nextStep = () => setCurrentStep(currentStep + 1);
+    const prevStep = () => setCurrentStep(currentStep - 1);
 
-    const prevStep = () => {
-        setCurrentStep(currentStep - 1);
-    };
-
-    const renderStepContent = (step: any) => {
+    // --- RENDERIZADO DE PASOS ---
+    const renderStepContent = (step: number) => {
         switch (step) {
-            case 0:
+            case 0: // BALANCE
                 return (
-                    <Card title="Prueba de Balance" className='!rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300'>
-                        <Form.Item
-                            name="parallelPosition"
-                            label="Posición paralela (pies juntos por 10 segundos)"
-                        >
-                            <Radio.Group>
-                                <Radio value={1}>Completado (1 punto)</Radio>
-                                <Radio value={0}>No completado (0 puntos)</Radio>
-                            </Radio.Group>
-                        </Form.Item>
+                    <div className="animate-fadeIn flex flex-col h-full space-y-5">
+                        <Title level={5} className="text-blue-700 uppercase tracking-wide text-xs border-gray-300 border-b pb-2 mb-0">Prueba de Equilibrio</Title>
 
-                        <Form.Item
-                            name="semiTandemPosition"
-                            label="Posición semi-tandem (talón de un pie al lado del dedo del otro pie por 10 segundos)"
-                        >
-                            <Radio.Group>
-                                <Radio value={1}>Completado (1 punto)</Radio>
-                                <Radio value={0}>No completado (0 puntos)</Radio>
-                            </Radio.Group>
-                        </Form.Item>
-                        <Form.Item
-                            name="tandemPositionTime"
-                            label="Posición tandem (talón directamente frente a dedos del otro pie)"
-                            className="w-full"
-                        >
-                            <div className="flex gap-4">
-                                <div className="w-1/2">
-                                    <InputNumber
-                                        min={0}
-                                        max={30}
-                                        step={0.1}
-                                        addonAfter="segundos"
-                                        style={{ width: '100%' }}
-                                        onChange={(value) => {
-                                            setTandemScore(calculateTandemScore(value));
-                                        }}
-                                    />
-                                    <Text type="secondary">
-                                        ≥10 seg: 2 puntos | 3-9.99 seg: 1 punto | {'<'}3 seg: 0 puntos
-                                    </Text>
-                                </div>
-                                <div className="w-1/2 p-2 text-center">
-                                    <Text strong>Puntaje calculado: </Text>
-                                    <Tag color={tandemScore === 2 ? 'green' : tandemScore === 1 ? 'orange' : 'red'}>
-                                        {tandemScore} punto{tandemScore !== 1 ? 's' : ''}
-                                    </Tag>
-                                </div>
+                        {/* Preguntas compactas */}
+                        <div className="space-y-4">
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex items-center justify-between">
+                                <Text strong className="text-gray-700 text-sm">1. Pies paralelos (10s)</Text>
+                                <Form.Item name="parallelPosition" className="mb-0">
+                                    <Radio.Group buttonStyle="solid" size="middle">
+                                        <Radio.Button value={1} className="text-green-600 font-medium">
+                                            Logrado (+1)
+                                        </Radio.Button>
+                                        <Radio.Button value={0} className="text-red-500">
+                                            Falló (0)
+                                        </Radio.Button>
+                                    </Radio.Group>
+                                </Form.Item>
+
                             </div>
-                        </Form.Item>
 
-                        <Form.Item
-                            noStyle
-                            shouldUpdate={(prevValues, currentValues) =>
-                                prevValues.parallelPosition !== currentValues.parallelPosition ||
-                                prevValues.semiTandemPosition !== currentValues.semiTandemPosition
-                            }
-                        >
-                            {({ getFieldValue }) => {
-                                const parallelScore = getFieldValue('parallelPosition') || 0;
-                                const semiTandemScore = getFieldValue('semiTandemPosition') || 0;
-                                const totalBalanceScore = parallelScore + semiTandemScore + tandemScore;
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex items-center justify-between">
+                                <Text strong className="text-gray-700 text-sm">2. Semi-Tandem (10s)</Text>
+                                <Form.Item name="semiTandemPosition" className="mb-0">
+                                    <Radio.Group buttonStyle="solid" size="middle">
+                                        <Radio.Button value={1} className="text-green-600 font-medium">Logrado (+1)</Radio.Button>
+                                        <Radio.Button value={0} className="text-red-500">Falló (0)</Radio.Button>
+                                    </Radio.Group>
+                                </Form.Item>
+                            </div>
 
-                                return (
-                                    <div style={{ marginTop: 16, padding: '8px 16px', background: '#f6f6f6', borderRadius: 4 }}>
-                                        <Text strong>Puntaje total de Balance: </Text>
-                                        <Tag color={totalBalanceScore >= 3 ? 'green' : totalBalanceScore >= 1 ? 'orange' : 'red'}>
-                                            {totalBalanceScore}/4 puntos
+                            <div className="flex justify-between items-center border border-gray-200 rounded-lg p-3">
+                                <Text strong className="block mb-2 text-sm">3. Posición Tandem</Text>
+                                <Form.Item name="tandemPositionTime" className="mb-0">
+                                    <div className="flex items-center gap-3">
+                                        <InputNumber
+                                            min={0} max={30} step={0.1}
+                                            placeholder="0.0"
+                                            className="w-32"
+                                            onChange={(val) => setTandemScore(calculateTandemScore(val))}
+                                            addonAfter="seg"
+                                        />
+                                        <Tag color={tandemScore === 2 ? 'success' : tandemScore === 1 ? 'warning' : 'error'}>
+                                            {tandemScore} Puntos
                                         </Tag>
                                     </div>
-                                );
-                            }}
-                        </Form.Item>
-                    </Card>
+                                    <Text type="secondary" className="text-xs mt-2 block">
+                                        ≥10s: 2pts | 3-9.9s: 1pt | &lt;3s: 0pts
+                                    </Text>
+                                </Form.Item>
+                            </div>
+                        </div>
+                    </div>
                 );
-            case 1:
+            case 1: // SILLA
                 return (
-                    <Card title="Prueba de Levantarse de la Silla" className='!rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300'>
-                        <Form.Item
-                            name="standUpTest"
-                            label="¿Puede el paciente levantarse una vez sin usar los brazos?"
-                        >
-                            <Radio.Group onChange={() => setChairStandScore(0)}>
-                                <Radio value="able">Si pudo (continuar prueba)</Radio>
-                                <Radio value="unable">No pudo (0 puntos en esta sección)</Radio>
-                            </Radio.Group>
-                        </Form.Item>
+                    <div className="animate-fadeIn flex flex-col h-full space-y-5">
+                        <Title level={5} className="text-blue-700 uppercase tracking-wide text-xs border-gray-100 border-b pb-2 mb-0">Levantarse de la Silla</Title>
 
-                        <Form.Item
-                            noStyle
-                            shouldUpdate={(prevValues, currentValues) =>
-                                prevValues.standUpTest !== currentValues.standUpTest ||
-                                prevValues.fiveRepsTime !== currentValues.fiveRepsTime
-                            }
-                        >
-                            {({ getFieldValue }) => {
-                                const standUpTest = getFieldValue('standUpTest');
-                                const fiveRepsTime = getFieldValue('fiveRepsTime');
+                        <div className="space-y-5">
+                            <div>
+                                <Text className="block mb-2 font-medium text-sm">¿Capaz de levantarse sin brazos?</Text>
+                                <Form.Item name="standUpTest" className="mb-0">
+                                    <Radio.Group onChange={() => setChairStandScore(0)} buttonStyle="solid" className="w-full flex">
+                                        <Radio.Button value="able" className="flex-1 text-center font-medium">SÍ PUEDE</Radio.Button>
+                                        <Radio.Button value="unable" className="flex-1 text-center">NO PUEDE</Radio.Button>
+                                    </Radio.Group>
+                                </Form.Item>
+                            </div>
 
-                                if (standUpTest === 'able' && fiveRepsTime) {
-                                    setChairStandScore(calculateChairStandScore(fiveRepsTime));
-                                } else if (standUpTest === 'unable') {
-                                    setChairStandScore(0);
-                                }
-
-                                return (
-                                    <>
-                                        {standUpTest === 'able' && (
-                                            <Form.Item
-                                                name="fiveRepsTime"
-                                                label="Tiempo para 5 repeticiones de levantarse (segundos)"
-                                                rules={[{ required: true, message: 'Por favor ingrese el tiempo' }]}
-                                            >
-                                                <div className="flex gap-4">
-                                                    <div className="w-1/2">
-                                                        <InputNumber
-                                                            min={0}
-                                                            step={0.1}
-                                                            addonAfter="segundos"
-                                                            style={{ width: '100%' }}
-                                                            onChange={(value) => {
-                                                                setChairStandScore(calculateChairStandScore(value));
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <div className="w-1/2 p-2 text-center">
-                                                        <Text strong>Puntaje calculado: </Text>
-                                                        <Tag color={
-                                                            chairStandScore === 4 ? 'green' :
-                                                                chairStandScore === 3 ? 'blue' :
-                                                                    chairStandScore === 2 ? 'orange' :
-                                                                        chairStandScore === 1 ? 'gold' : 'red'
-                                                        }>
-                                                            {chairStandScore} puntos
-                                                        </Tag>
-                                                    </div>
-                                                </div>
-                                            </Form.Item>
-                                        )}
-                                        <div style={{ marginTop: 16, padding: '8px 16px', background: '#f6f6f6', borderRadius: 4 }}>
-                                            <Text type="secondary">Criterios:</Text>
-                                            <ul style={{ marginTop: 4, marginBottom: 0 }}>
-                                                <li>≤11.19 seg: 4 puntos</li>
-                                                <li>11.20-13.69 seg: 3 puntos</li>
-                                                <li>13.70-16.69 seg: 2 puntos</li>
-                                                <li>16.7-60 seg: 1 punto</li>
-                                                <li>{'>'}60 seg o no puede: 0 puntos</li>
-                                            </ul>
+                            <Form.Item noStyle shouldUpdate={(prev, curr) => prev.standUpTest !== curr.standUpTest}>
+                                {({ getFieldValue }) => getFieldValue('standUpTest') === 'able' && (
+                                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 animate-slideDown">
+                                        <Form.Item
+                                            name="fiveRepsTime"
+                                            label="Tiempo 5 repeticiones (seg)"
+                                            className="mb-0"
+                                            rules={[{ required: true, message: 'Requerido' }]}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <InputNumber
+                                                    min={0} step={0.1}
+                                                    className="w-full"
+                                                    onChange={(val) => setChairStandScore(calculateChairStandScore(val))}
+                                                    addonAfter="seg"
+                                                />
+                                                <Badge count={chairStandScore} showZero color="blue" title="Puntos" />
+                                            </div>
+                                        </Form.Item>
+                                        <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-500 bg-white p-2 rounded border border-blue-100">
+                                            <span>≤11.19: <b>4pts</b></span>
+                                            <span>11.2-13.69: <b>3pts</b></span>
+                                            <span>13.7-16.69: <b>2pts</b></span>
+                                            <span>&gt;16.7: <b>1pt</b></span>
                                         </div>
-                                    </>
-                                );
-                            }}
-                        </Form.Item>
-                    </Card>
+                                    </div>
+                                )}
+                            </Form.Item>
+                        </div>
+                    </div>
                 );
             case 2:
                 return (
-                    <Card title="Prueba de Velocidad de la Marcha" className='!rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300'>
-                        <Form.Item
-                            name="walkTime"
-                            label="Tiempo para caminar 4 metros (segundos)"
-                            rules={[{ required: true, message: 'Por favor ingrese el tiempo' }]}
-                        >
-                            <div className="flex gap-4">
-                                <div className="w-1/2">
+                    <div className="animate-fadeIn flex flex-col h-full space-y-5">
+                        <Title level={5} className="text-blue-700 uppercase tracking-wide text-xs border-gray-100 border-b pb-2 mb-0">Velocidad de Marcha (4m)</Title>
+
+                        <div className="space-y-4">
+                            <Form.Item
+                                name="walkTime"
+                                label="Tiempo registrado"
+                                className="mb-0"
+                                rules={[{ required: true, message: 'Requerido' }]}
+                            >
+                                <div className="flex items-center gap-3">
                                     <InputNumber
-                                        min={0}
-                                        step={0.1}
-                                        addonAfter="segundos"
-                                        style={{ width: '100%' }}
-                                        onChange={(value) => {
-                                            setWalkScore(calculateWalkScore(value));
-                                        }}
+                                        min={0} step={0.1}
+                                        className="w-full"
+                                        placeholder="0.0"
+                                        onChange={(val) => setWalkScore(calculateWalkScore(val))}
+                                        addonAfter="seg"
                                     />
+                                    <div className="flex flex-col items-center px-2 bg-gray-50 rounded border border-gray-200">
+                                        <span className="text-[10px] uppercase font-bold text-gray-400">Puntos</span>
+                                        <span className={`text-lg font-bold ${walkScore >= 3 ? 'text-green-600' : 'text-orange-500'}`}>{walkScore}</span>
+                                    </div>
                                 </div>
-                                <div className="w-1/2 p-2 text-center">
-                                    <Text strong>Puntaje calculado: </Text>
-                                    <Tag color={
-                                        walkScore === 4 ? 'green' :
-                                            walkScore === 3 ? 'blue' :
-                                                walkScore === 2 ? 'orange' :
-                                                    walkScore === 1 ? 'gold' : 'red'
-                                    }>
-                                        {walkScore} puntos
-                                    </Tag>
+                            </Form.Item>
+
+                            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden text-xs">
+                                <div className="bg-gray-50 px-3 py-1 border-b border-gray-200 font-semibold text-gray-500">Referencia</div>
+                                <div className={`flex justify-between p-2 border-b border-gray-100 ${walkScore === 4 ? 'bg-green-50' : ''}`}>
+                                    <span>&lt; 7.24 s</span> <b>4 pts</b>
+                                </div>
+                                <div className={`flex justify-between p-2 border-b border-gray-100 ${walkScore === 3 ? 'bg-blue-50' : ''}`}>
+                                    <span>7.24 - 9.32 s</span> <b>3 pts</b>
+                                </div>
+                                <div className={`flex justify-between p-2 border-b border-gray-100 ${walkScore === 2 ? 'bg-orange-50' : ''}`}>
+                                    <span>9.32 - 13.04 s</span> <b>2 pts</b>
+                                </div>
+                                <div className={`flex justify-between p-2 ${walkScore === 1 ? 'bg-red-50' : ''}`}>
+                                    <span>&gt; 13.04 s</span> <b>1 pt</b>
                                 </div>
                             </div>
-                        </Form.Item>
-                        <div style={{ marginTop: 16, padding: '8px 16px', background: '#f6f6f6', borderRadius: 4 }}>
-                            <Text strong>Criterios de puntuación:</Text>
-                            <ul style={{ marginTop: 4, marginBottom: 0 }}>
-                                <li>{'>'}13.04 seg: 1 punto</li>
-                                <li>9.32-13.04 seg: 2 puntos</li>
-                                <li>7.24-9.32 seg: 3 puntos</li>
-                                <li>{'<'}7.24 seg: 4 puntos</li>
-                            </ul>
                         </div>
-                    </Card>
+                    </div>
                 );
             case 3:
                 return (
-                    <Card className='!rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300'>
+                    <div className="animate-fadeIn h-full flex flex-col justify-center items-center">
                         <Result
-                            status="success"
-                            title={`Puntaje Total SPPB: ${totalScore}/12`}
+                            status={totalScore >= 10 ? "success" : "warning"}
+                            title={<span className="text-xl font-bold">Evaluación Completada</span>}
                             subTitle={
-                                totalScore >= 10 ? "Rendimiento físico normal" :
-                                    totalScore >= 7 ? "Limitación física moderada" :
-                                        "Limitación física severa"
+                                <div className="mt-2">
+                                    <div className="text-4xl font-bold text-gray-800 mb-1">{totalScore} <span className="text-xl text-gray-400 font-light">/ 12</span></div>
+                                    <Tag color={totalScore >= 10 ? 'green' : totalScore >= 7 ? 'orange' : 'red'}>
+                                        {totalScore >= 10 ? 'Normal' : totalScore >= 7 ? 'Moderado' : 'Severo'}
+                                    </Tag>
+                                </div>
                             }
-                            extra={[
-                                <Button type="primary" key="new" onClick={() => {
-                                    form.resetFields();
-                                    setCurrentStep(0);
-                                    setEvaluationCompleted(false);
-                                    setTandemScore(0);
-                                    setChairStandScore(0);
-                                    setWalkScore(0);
-                                }}>
-                                    Nueva Evaluación
-                                </Button>,
-                            ]}
+                            className="p-0"
                         />
-
-                        <Row gutter={16}>
-                            <Col span={8}>
-                                <Card title="Balance" bordered={false}>
-                                    <Title level={2}>
-                                        {form.getFieldValue('parallelPosition') ? 1 : 0} +
-                                        {form.getFieldValue('semiTandemPosition') ? 1 : 0} +
-                                        {tandemScore}
-                                    </Title>
-                                    <Text>/4 puntos</Text>
-                                </Card>
-                            </Col>
-                            <Col span={8}>
-                                <Card title="Levantarse" bordered={false}>
-                                    <Title level={2}>
-                                        {chairStandScore}
-                                    </Title>
-                                    <Text>/4 puntos</Text>
-                                </Card>
-                            </Col>
-                            <Col span={8}>
-                                <Card title="Marcha" bordered={false}>
-                                    <Title level={2}>
-                                        {walkScore}
-                                    </Title>
-                                    <Text>/4 puntos</Text>
-                                </Card>
-                            </Col>
-                        </Row>
-                    </Card>
+                        <Button type="dashed" size="small" className="mt-6" onClick={() => {
+                            form.resetFields(); setCurrentStep(0); setEvaluationCompleted(false);
+                            setTandemScore(0); setChairStandScore(0); setWalkScore(0);
+                        }}>
+                            Nueva Evaluación
+                        </Button>
+                    </div>
                 );
-            default:
-                return null;
+            default: return null;
         }
     };
 
     return (
-        <div className='w-full'>
+        <div className="min-h-screen w-full bg-gray-50/50 p-6">
             {contextHolder}
-            <Title
-                level={3}
-                style={{
-                    textAlign: 'center',
-                    marginBottom: '24px',
-                    color: '#1890ff',
-                    fontWeight: 500
-                }}
-            >
-                DESEMPEÑO FÍSICO
-            </Title>
+            <div className="max-w-[1200px] mx-auto">
 
-            <Row>
-                <Col xs={24} md={8}>
-                    <Card
-                        title="Dinamometría Digital de Mano Dominante"
-                        className='h-full !rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300 !mr-4'
-                    >
-                        <Form layout="vertical">
-                            <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                                <div style={{ display: 'flex', gap: 16 }}>
-                                    <Form.Item
-                                        label="Primera Medida (kg)"
-                                        style={{ flex: 1 }}
-                                    >
-                                        <InputNumber
-                                            min={0}
-                                            max={100}
-                                            step={0.1}
-                                            addonAfter="kg"
-                                            style={{ width: '100%' }}
-                                            onChange={(value) => {
-                                                setFirstMeasure(value);
-                                                calculateResults(value, secondMeasure);
-                                            }}
-                                        />
-                                    </Form.Item>
+                <div className="text-center mb-8">
+                    <Title level={3} style={{ color: '#0050b3', margin: 0 }}>
+                        <MedicineBoxOutlined className="mr-2" />
+                        DESEMPEÑO FÍSICO
+                    </Title>
+                    <Text type="secondary" className="text-lg">Batería Corta de Desempeño Físico (SPPB)</Text>
+                    <Divider />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
 
-                                    <Form.Item
-                                        label="Segunda Medida (kg)"
-                                        style={{ flex: 1 }}
-                                    >
-                                        <InputNumber
-                                            min={0}
-                                            max={100}
-                                            step={0.1}
-                                            addonAfter="kg"
-                                            style={{ width: '100%' }}
-                                            onChange={(value) => {
-                                                setSecondMeasure(value);
-                                                calculateResults(firstMeasure, value);
-                                            }}
-                                        />
-                                    </Form.Item>
+                    {/* COLUMNA IZQUIERDA: SPPB */}
+                    <div className="md:col-span-2 flex flex-col">
+                        <Card
+                            title={<span className="text-blue-600 font-bold text-base"><ClockCircleOutlined className="mr-2" /> Batería SPPB</span>}
+                            className="shadow-sm rounded-xl border-t-4 border-t-blue-500 h-full flex flex-col"
+                            bodyStyle={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px' }}
+                            size="small"
+                        >
+                            <Steps current={currentStep} size="small" className="mb-6" items={steps} />
+
+                            <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ parallelPosition: false, semiTandemPosition: false, standUpTest: 'able' }} className="flex-1 flex flex-col">
+                                {/* Altura mínima controlada pero razonable */}
+                                <div className="flex-1 min-h-[320px]">
+                                    {renderStepContent(currentStep)}
                                 </div>
 
-                                {averageScore && (
-                                    <div style={{
-                                        padding: 16,
-                                        backgroundColor: '#f6f6f6',
-                                        borderRadius: 4,
-                                        borderLeft: `4px solid ${strengthCategory === 'Excelente' ? '#52c41a' :
-                                            strengthCategory === 'Buena' ? '#1890ff' :
-                                                strengthCategory === 'Normal' ? '#faad14' : '#ff4d4f'
-                                            }`
-                                    }}>
-                                        <Text strong>Resultados:</Text>
-                                        <div style={{ marginTop: 8 }}>
-                                            <Space size="large">
-                                                <div>
-                                                    <Text>Promedio: </Text>
-                                                    <Tag color="processing">{averageScore} kg</Tag>
-                                                </div>
-                                                <div>
-                                                    <Text>Fuerza: </Text>
-                                                    <Tag
-                                                        color={
-                                                            strengthCategory === 'Excelente' ? 'success' :
-                                                                strengthCategory === 'Buena' ? 'blue' :
-                                                                    strengthCategory === 'Normal' ? 'warning' : 'error'
-                                                        }
-                                                    >
-                                                        {strengthCategory}
-                                                    </Tag>
-                                                </div>
-                                            </Space>
-                                        </div>
+                                {currentStep < 3 && (
+                                    <div className="flex justify-between mt-4 pt-4 border-t border-gray-100">
+                                        <Button disabled={currentStep === 0} onClick={prevStep} icon={<ArrowLeftOutlined />}>
+                                            Atrás
+                                        </Button>
+                                        {currentStep < steps.length - 2 ? (
+                                            <Button type="primary" onClick={nextStep}>
+                                                Siguiente
+                                            </Button>
+                                        ) : (
+                                            <Button type="primary" htmlType="submit">
+                                                Calcular
+                                            </Button>
+                                        )}
                                     </div>
                                 )}
+                            </Form>
+                        </Card>
+                    </div>
 
-                                <div style={{ marginTop: 8 }}>
-                                    <Text type="secondary">Instrucciones:</Text>
-                                    <ul style={{ marginTop: 4 }}>
-                                        <li>Realizar dos mediciones con el dinamómetro digital</li>
-                                        <li>El paciente debe estar sentado con el brazo en ángulo de 90°</li>
-                                        <li>Registrar ambas medidas en kilogramos</li>
-                                        <li>El sistema calculará automáticamente el promedio</li>
+                    {/* COLUMNA DERECHA: Dinamometría */}
+                    <div className="md:col-span-1 flex flex-col">
+                        <Card
+                            title={<span className="text-purple-600 font-bold text-base"><ThunderboltOutlined className="mr-2" /> Dinamometría</span>}
+                            className="shadow-sm rounded-xl border-t-4 border-t-purple-500 h-full flex flex-col"
+                            bodyStyle={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px' }}
+                            size="small"
+                        >
+                            <Form layout="vertical" className="flex-1 flex flex-col space-y-4">
+                                <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                                    <Text type="secondary" className="text-xs uppercase font-bold block mb-3 text-purple-800">Mano Dominante</Text>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-gray-600">1ª Medida</span>
+                                            <InputNumber min={0} max={100} step={0.1} placeholder="0.0" className="w-24" size="middle"
+                                                onChange={(val) => { setFirstMeasure(val); calculateResults(val, secondMeasure); }}
+                                            />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-gray-600">2ª Medida</span>
+                                            <InputNumber min={0} max={100} step={0.1} placeholder="0.0" className="w-24" size="middle"
+                                                onChange={(val) => { setSecondMeasure(val); calculateResults(firstMeasure, val); }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Resultado Promedio */}
+                                <div className="p-4 bg-white rounded-lg border border-gray-200 text-center flex-1 flex flex-col justify-center items-center">
+                                    <div className="text-xs text-gray-400 uppercase font-bold mb-1">Promedio</div>
+                                    <div className="text-3xl font-bold text-gray-700 mb-2">{averageScore ? averageScore.toFixed(1) : '--'} <span className="text-sm font-normal text-gray-400">kg</span></div>
+
+                                    {strengthCategory ? (
+                                        <Tag color={strengthCategory === 'Excelente' ? 'success' : strengthCategory === 'Buena' ? 'blue' : strengthCategory === 'Normal' ? 'warning' : 'error'}>
+                                            {strengthCategory}
+                                        </Tag>
+                                    ) : (
+                                        <span className="text-xs text-gray-300">-</span>
+                                    )}
+                                </div>
+
+                                {/* Protocolo Compacto */}
+                                <div className="mt-auto pt-4 border-t border-gray-100">
+                                    <div className="flex items-center gap-1 mb-2 text-purple-700">
+                                        <InfoCircleOutlined className="text-xs" /> <span className="font-bold text-xs">Protocolo</span>
+                                    </div>
+                                    <ul className="text-xs text-gray-500 space-y-1 pl-1 list-none">
+                                        <li>• Codo a 90°, muñeca neutral.</li>
+                                        <li>• 3 intentos, usar mejores.</li>
                                     </ul>
                                 </div>
-                            </Space>
-                        </Form>
-                    </Card>
-                </Col>
-                <Col xs={24} md={16}>
-                    <Steps current={currentStep} style={{ marginBottom: 40 }} className='!px-4'>
-                        {steps.map((item) => (
-                            <Step key={item.title} title={item.title} icon={item.icon} />
-                        ))}
-                    </Steps>
+                            </Form>
+                        </Card>
+                    </div>
+                </div>
 
-                    <Form
-                        form={form}
-                        layout="vertical"
-                        onFinish={onFinish}
-                        initialValues={{
-                            parallelPosition: false,
-                            semiTandemPosition: false,
-                            tandemPositionTime: 0,
-                            standUpTest: 'able',
-                            fiveRepsTime: 0,
-                            walkTime: 0,
-                        }}
+                <div className="flex justify-center gap-4 pb-8 mt-10">
+                    <Link href="/funtional">
+                        <Button icon={<ArrowLeftOutlined />}>Volver</Button>
+                    </Link>
+                    <Button
+                        type="primary" icon={<SaveOutlined />}
+                        onClick={saveFile} loading={loading} disabled={!currentPatient?.dni}
+                        className="bg-blue-600 hover:bg-blue-500 shadow-md"
+
                     >
-                        {renderStepContent(currentStep)}
-
-                        {currentStep < 3 && (
-                            <Card className='!rounded-2xl !shadow-lg !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300 !mt-4'>
-                                <div style={{ textAlign: 'right' }}>
-                                    {currentStep > 0 && !evaluationCompleted && (
-                                        <Button style={{ marginRight: 8 }} onClick={prevStep}>
-                                            Anterior
-                                        </Button>
-                                    )}
-                                    {currentStep < steps.length - 2 && (
-                                        <Button type="primary" onClick={nextStep}>
-                                            Siguiente
-                                        </Button>
-                                    )}
-                                    {currentStep === steps.length - 2 && (
-                                        <Button type="primary" htmlType="submit">
-                                            Calcular Puntaje
-                                        </Button>
-                                    )}
-                                </div>
-                            </Card>
-                        )}
-                    </Form>
-                </Col>
-                <Row key="actions" justify="center" className="m-12 w-full">
-                    <Col>
-                        <Link href="" passHref>
-                            <Button
-                                type="default"
-                                icon={<ArrowLeftOutlined />}
-                                size="large"
-                                style={{ minWidth: '120px' }}
-                            >
-                                Atrás
-                            </Button>
-                        </Link>
-                    </Col>
-                    <Col>
-                        <Button className="!ml-3"
-                            type="primary"
-                            size="large"
-                            onClick={saveFile}
-                            style={{ minWidth: '120px' }}
-                            disabled={!currentPatient?.dni}
-                            loading={loading}
-                            icon={<SaveOutlined />}
-                        >
-                            {currentPatient?.dni ? "Guardar Paciente" : "Seleccione archivo primero"}
-                        </Button>
-                    </Col>
-                </Row>
-            </Row>
+                        {currentPatient?.dni ? "Guardar Todo" : "Seleccione Paciente"}
+                    </Button>
+                </div>
+                <div className="h-8" />
+            </div>
         </div>
     );
 };

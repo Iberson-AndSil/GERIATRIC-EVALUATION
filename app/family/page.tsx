@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { NotificationPlacement } from "antd/es/notification/interface";
 import { usePatientForm } from "../utils/family/usePatientForm";
 import { BasicInfoSection } from "./BasicInfoSection";
-import { GijonScaleSection } from "./GijonScaleSection";
+// import { GijonScaleSection } from "./GijonScaleSection";
 import axios from "axios";
 import { actualizarResultado, crearRegistroResultados } from "../lib/pacienteService";
 import { useGlobalContext } from "../context/GlobalContext";

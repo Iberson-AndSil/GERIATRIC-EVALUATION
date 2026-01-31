@@ -86,7 +86,7 @@ export const useSaveData = () => {
         placement: 'topRight'
       });
 
-      router.push('/physical');
+      router.push('/social');
 
     } catch (error) {
       console.error("Error al guardar datos:", error);

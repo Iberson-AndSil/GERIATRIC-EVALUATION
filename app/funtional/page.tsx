@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
-import { Form, Typography, Button, Row, Col, notification } from "antd";
-import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
+import { Form, Typography, Button, Row, Col, notification, Divider } from "antd";
+import { ArrowLeftOutlined, MedicineBoxOutlined, SaveOutlined } from "@ant-design/icons";
 import Link from "next/link";
 
 import ABVDForm from "./ABVDForm";
@@ -11,7 +11,7 @@ import { PuntajesType, RespuestasType } from "../type";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { actualizarResultado } from "../lib/pacienteService";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 export default function FunctionalAssessmentPage() {
   const [puntajes, setPuntajes] = useState<PuntajesType>({
@@ -79,7 +79,7 @@ export default function FunctionalAssessmentPage() {
         orina: null,
       });
 
-      router.push('/syndromes/first');
+      router.push('/physical');
     } catch (err: unknown) {
       console.error("Error al guardar:", err);
       api.error({
@@ -122,41 +122,41 @@ export default function FunctionalAssessmentPage() {
   return (
     <div className="p-4 w-full flex flex-col items-center">
       {contextHolder}
-      <Title
-        level={3}
-        style={{
-          textAlign: 'center',
-          marginBottom: '24px',
-          color: '#1890ff',
-          fontWeight: 500
-        }}
-      >
-        VALORACIÓN FUNCIONAL
-      </Title>
+      <div className="text-center mb-8">
+          <Title level={3} style={{ color: '#0050b3', margin: 0 }}>
+            <MedicineBoxOutlined className="mr-2" />
+            Valoración Funcional
+          </Title>
+          <Text type="secondary" className="text-lg">Evaluación de síndromes clínicos</Text>
+        </div>
 
-      <div className="flex w-full">
-        <Col xs={24} md={12}>
-          <ABVDForm
-            puntajes={puntajes}
-            setPuntajes={setPuntajes}
-            total={obtenerPuntajeTotal()}
-            interpretacion={obtenerInterpretacion()}
-          />
-        </Col>
+      <Row gutter={[32, 32]} align="stretch">
+          <Col xs={24} xl={12}>
+            <div className="h-full">
+              <ABVDForm
+                puntajes={puntajes}
+                setPuntajes={setPuntajes}
+                total={obtenerPuntajeTotal()}
+                interpretacion={obtenerInterpretacion()}
+              />
+            </div>
+          </Col>
 
-        <Col xs={24} md={12}>
-          <AIVDForm
-            respuestas={respuestas}
-            setRespuestas={setRespuestas}
-            total={puntajeTotal()}
-            interpretacion={interpretacionAIVD()}
-          />
-        </Col>
-      </div>
+          <Col xs={24} xl={12}>
+            <div className="h-full">
+              <AIVDForm
+                respuestas={respuestas}
+                setRespuestas={setRespuestas}
+                total={puntajeTotal()}
+                interpretacion={interpretacionAIVD()}
+              />
+            </div>
+          </Col>
+        </Row>
 
       <Row key="actions" justify="space-between" className="m-12">
         <Col>
-          <Link href="/family/personals" passHref>
+          <Link href="/social" passHref>
             <Button
               type="default"
               icon={<ArrowLeftOutlined />}
