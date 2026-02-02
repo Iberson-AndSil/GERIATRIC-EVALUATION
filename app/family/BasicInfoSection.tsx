@@ -24,6 +24,7 @@ import { useGlobalContext } from "@/app/context/GlobalContext";
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const { Text } = Typography;
+const { Option } = Select
 
 interface BasicInfoSectionProps {
     form: any;
@@ -37,6 +38,53 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
     const [age, setAge] = useState<number | null>(null);
     const { currentPatient } = useGlobalContext();
     const [isEditing, setIsEditing] = useState(false);
+    
+    const [departments, setDepartments] = useState<string[]>([])
+    const [provinces, setProvinces] = useState<string[]>([])
+    const [districts, setDistricts] = useState<string[]>([])
+    const [department, setDepartment] = useState<string | null>(currentPatient?.department || null)
+    const [province, setProvince] = useState<string | null>(currentPatient?.province || null)
+
+    const [loadingDept, setLoadingDept] = useState(false)
+    const [loadingProv, setLoadingProv] = useState(false)
+    const [loadingDist, setLoadingDist] = useState(false)
+
+    useEffect(() => {
+        setLoadingDept(true)
+
+        fetch('/api/cities/departments')
+            .then(res => res.json())
+            .then(data => setDepartments(data))
+            .catch(err => console.error('Error fetching departments:', err))
+            .finally(() => setLoadingDept(false))
+    }, [])
+
+
+    useEffect(() => {
+        if (!department) return
+        
+        setProvince(null)
+        setDistricts([])
+        setLoadingProv(true)
+
+        fetch(`/api/cities/provinces?department=${department}`)
+            .then(res => res.json())
+            .then(setProvinces)
+            .finally(() => setLoadingProv(false))
+    }, [department])
+
+    useEffect(() => {
+        if (!department || !province) return
+
+        setLoadingDist(true)
+
+        fetch(
+            `/api/cities/districts?department=${department}&province=${province}`
+        )
+            .then(res => res.json())
+            .then(setDistricts)
+            .finally(() => setLoadingDist(false))
+    }, [province, department])
 
     const calculateAge = useCallback((day?: number, month?: string, year?: number) => {
         if (day && month && year) {
@@ -131,11 +179,13 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 zona_residencia: currentPatient.zona_residencia || '',
                 fecha_nacimiento: currentPatient.fecha_nacimiento || '',
                 domicilio: currentPatient.domicilio || '',
+                department: currentPatient.department || '',
+                province: currentPatient.province || '',
+                district: currentPatient.district || '',
                 con_quien_vive: Array.isArray(currentPatient.con_quien_vive)
                     ? currentPatient.con_quien_vive
                     : (currentPatient.con_quien_vive ? [currentPatient.con_quien_vive] : []),
                 ocupacion: currentPatient.ocupacion || '',
-                relacion: currentPatient.relacion || '',
                 ingreso_economico: currentPatient.ingreso_economico || undefined,
                 nivel_educativo: currentPatient.nivel_educativo || [],
                 sistema_pension: currentPatient.sistema_pension || [],
@@ -223,7 +273,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
         setIsEditing(true);
     }
 
-    const handleClose=()=>{
+    const handleClose = () => {
         router.push('/');
     }
 
@@ -231,16 +281,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
         <Card className="!mb-4 !rounded-2xl !shadow-lg !h-full !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300">
             <div className="flex justify-end gap-2">
                 <Button
-                    color="cyan" variant="solid"
-                    icon={<CheckOutlined />}
-                    // onClick={() => handleSave()} 
-                    style={{ color: '#ffffff' }}
-                />
-                <Button
                     type="primary"
                     icon={<EditOutlined />}
                     onClick={() => editModal()}
-                    // disabled={isEditing}
                 />
                 <Button
                     color="danger" variant="solid"
@@ -272,7 +315,6 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                     <Form.Item
                         name="nameLicensed"
                         label={<Text strong>Licenciado</Text>}
-                        rules={[{ required: true, message: 'Requerido' }]}
                     >
                         <Input
                             placeholder="Ingrese su nombre completo"
@@ -437,7 +479,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 <Form.Item name="fecha_nacimiento" hidden>
                     <Input />
                 </Form.Item>
-                <Col xs={24} md={7}>
+                <Col xs={24} md={6}>
                     <Form.Item
                         label={<Text strong>Zona Residencia</Text>}
                         name="zona_residencia"
@@ -452,37 +494,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={7}>
-                    <Form.Item
-                        label={<Text strong>Relación</Text>}
-                        name="relacion"
-                        rules={[{ required: true, message: 'Por favor especifique su relación' }]}
-                    >
-                        <Select
-                            placeholder="Seleccione estado"
-                            size="large"
-                            disabled={!isEditing}
-                            options={relacionOptions}
-                        />
-                    </Form.Item>
-                </Col>
-                <Col xs={24} md={10}>
-                    <Form.Item
-                        label={<Text strong>Domicilio</Text>}
-                        name="domicilio"
-                        rules={[{ required: true, message: 'Por favor ingrese su domicilio' }]}
-                    >
-                        <Input
-                            placeholder="Ingrese su domicilio completo"
-                            size="large"
-                            prefix={<HomeOutlined className="text-gray-400" />}
-                            disabled={!isEditing}
-                        />
-                    </Form.Item>
-                </Col>
-            </Row>
-            <Row gutter={[16, 16]}>
-                <Col xs={24} md={7}>
+                <Col xs={24} md={6}>
                     <Form.Item
                         label={<Text strong>Teléfono</Text>}
                         name="telefono"
@@ -496,7 +508,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={7}>
+                <Col xs={24} md={6}>
                     <Form.Item
                         label={<Text strong>Email</Text>}
                         name="email"
@@ -510,11 +522,11 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={10}>
+                <Col xs={24} md={6}>
                     <Form.Item
                         label={<Text strong>¿Con quién vive?</Text>}
                         name="con_quien_vive"
-                    // rules={[{ required: true, message: 'Por favor especifique con quién vive' }]}
+                        rules={[{ required: true, message: 'Por favor especifique con quién vive' }]}
                     >
                         <Select
                             mode="multiple"
@@ -524,6 +536,104 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                             options={conQuienViveOptions}
                             maxTagCount="responsive"
                             allowClear
+                        />
+                    </Form.Item>
+                </Col>
+            </Row>
+            <Row gutter={[16, 0]}>
+                <Col xs={24} md={5}>
+                    <Form.Item
+                        label={<Text strong>Departamento</Text>}
+                        name="department"
+                    >
+                        <Select
+                            showSearch
+                            allowClear
+                            size="large"
+                            placeholder="Seleccione departamento"
+                            loading={loadingDept}
+                            style={{ width: '100%', marginBottom: 16 }}
+                            options={departments.map(dep => ({
+                                label: dep,
+                                value: dep
+                            }))}
+                            filterOption={(input, option) =>
+                                (option?.label as string)
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                            onChange={value => setDepartment(value)}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} md={5}>
+                    <Form.Item
+                        label={<Text strong>Provincia</Text>}
+                        name="province"
+                    >
+                        <Select
+                            showSearch
+                            allowClear
+                            size="large"
+                            placeholder="Seleccione provincia"
+                            loading={loadingProv}
+                            disabled={!department && !isEditing}
+                            style={{ width: '100%', marginBottom: 16 }}
+                            onChange={value => setProvince(value)}
+                            filterOption={(input: any, option: any) =>
+                                option?.children
+                                    ?.toString()
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        >
+                            {provinces.map(prov => (
+                                <Option key={prov} value={prov}>
+                                    {prov}
+                                </Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                </Col>
+                <Col xs={24} md={5}>
+                    <Form.Item
+                        label={<Text strong>Distrito</Text>}
+                        name="district"
+                    >
+                        <Select
+                            showSearch
+                            allowClear
+                            size="large"
+                            placeholder="Seleccione distrito"
+                            loading={loadingDist}
+                            disabled={!province && !isEditing}
+                            style={{ width: '100%' }}
+                            filterOption={(input: any, option: any) =>
+                                option?.children
+                                    ?.toString()
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                            }
+                        >
+                            {districts.map(dist => (
+                                <Option key={dist} value={dist}>
+                                    {dist}
+                                </Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                </Col>
+                <Col xs={24} md={9}>
+                    <Form.Item
+                        label={<Text strong>Domicilio</Text>}
+                        name="domicilio"
+                        rules={[{ required: true, message: 'Por favor ingrese su domicilio' }]}
+                    >
+                        <Input
+                            placeholder="Ingrese su domicilio completo"
+                            size="large"
+                            prefix={<HomeOutlined className="text-gray-400" />}
+                            disabled={!isEditing}
                         />
                     </Form.Item>
                 </Col>
@@ -633,13 +743,6 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                     </Form.Item>
                 </Col>
             </Row>
-
-            {/* <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <Text type="secondary" className="text-sm">
-                    <strong>Nota:</strong> Los campos marcados con * son obligatorios.
-                    La edad se calcula automáticamente al ingresar la fecha de nacimiento.
-                </Text>
-            </div> */}
         </Card>
     );
 };

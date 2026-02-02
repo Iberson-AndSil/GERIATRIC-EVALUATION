@@ -85,12 +85,7 @@ const Home = () => {
       } else {
         console.log("No hay resultados para este paciente");
       }
-      openNotification(
-        "success",
-        "Paciente seleccionado",
-        `Has seleccionado a ${paciente.nombre}`,
-        "topRight"
-      );
+      router.push('/family?isMember=false');
     } catch (error) {
       console.error("Error al obtener último resultado:", error);
     }
@@ -101,7 +96,7 @@ const Home = () => {
       setCurrentPatient(paciente);
       const nuevoResultadoId = await crearRegistroResultados(paciente.dni, 0);
       setCurrentResultId(nuevoResultadoId);
-      router.push('/funtional');
+      router.push('/syndromes/first/');
     } catch (error) {
       console.error("Error al crear registro de resultados:", error);
     }

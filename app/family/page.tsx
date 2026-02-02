@@ -1,45 +1,24 @@
 "use client";
 import { Form, Typography, Button, notification, Row, Col } from "antd";
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
-import React, { useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from 'next/navigation';
 import { NotificationPlacement } from "antd/es/notification/interface";
-import { usePatientForm } from "../utils/family/usePatientForm";
 import { BasicInfoSection } from "./BasicInfoSection";
-// import { GijonScaleSection } from "./GijonScaleSection";
 import axios from "axios";
-import { actualizarResultado, crearRegistroResultados } from "../lib/pacienteService";
-import { useGlobalContext } from "../context/GlobalContext";
+import router from "next/router";
 
 const { Title } = Typography;
 
 const PatientForm = () => {
   const [form] = Form.useForm();
-  const date = new Date();
-  const router = useRouter();
   const [api, contextHolder] = notification.useNotification();
   const [loading, setLoading] = useState(false);
-  const { setCurrentResultId, currentResultId, setCurrentPatient } = useGlobalContext();
-
-  const {
-    puntajes,
-    handleScoreChange,
-    obtenerPuntajeTotal,
-    updateBirthDate,
-    gijonCategories,
-  } = usePatientForm();
-
-  const handleDayChange = () => updateBirthDate(form);
-  const handleMonthChange = () => updateBirthDate(form);
-  const handleYearChange = () => updateBirthDate(form);
 
   const savePatientToFirebase = async () => {
     try {
       setLoading(true);
       const formData = await form.validateFields();
-      console.log("datoos:  ",formData);
-      // const score = obtenerPuntajeTotal();
       const fechaNacimiento = new Date(
         parseInt(formData.year),
         parseInt(formData.month) - 1,
@@ -48,16 +27,16 @@ const PatientForm = () => {
 
       const patientData = {
         id: formData.dni,
-        birth_day:formData.birth_day,
-        birth_month:formData.birth_month,
-        birth_year:formData.birth_year,
-        dateEvaluation:formData.dateEvaluation,
-        economic_activity:formData.economic_activity,
-        email:formData.email,
-        ipress:formData.ipress,
-        nameDoctor:formData.nameDoctor,
-        nameLicensed:formData.nameLicensed,
-        phone:formData.telefono,
+        birth_day: formData.birth_day,
+        birth_month: formData.birth_month,
+        birth_year: formData.birth_year,
+        dateEvaluation: formData.dateEvaluation,
+        economic_activity: formData.economic_activity,
+        email: formData.email,
+        ipress: formData.ipress,
+        nameDoctor: formData.nameDoctor,
+        nameLicensed: formData.nameLicensed,
+        phone: formData.telefono,
         nombre: formData.nombre,
         dni: formData.dni,
         fecha_nacimiento: fechaNacimiento,
@@ -65,38 +44,18 @@ const PatientForm = () => {
         edad: formData.edad,
         zona_residencia: formData.zona_residencia,
         domicilio: formData.domicilio,
+        department: formData.department,
+        province: formData.province,
+        district: formData.district,
         nivel_educativo: formData.nivel_educativo,
         ocupacion: formData.ocupacion,
         sistema_pension: formData.sistema_pension,
         ingreso_economico: formData.ingreso_economico,
         con_quien_vive: formData.con_quien_vive,
-        relacion: formData.relacion,
       };
-
       await axios.post("/api/pacientes", patientData);
       openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
-      // let resultadoId = currentResultId;
-
-      // if (!resultadoId) {
-      //   setCurrentPatient(patientData);
-      //   if (!formData.dni || typeof formData.dni !== "string") {
-      //     throw new Error("El DNI es requerido y debe ser un string válido.");
-      //   }
-      //   resultadoId = await crearRegistroResultados(formData.dni, score);
-      //   setCurrentResultId(resultadoId);
-      //   openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
-      //   router.push('/funtional/');
-      // }
-      // else {
-      //   await actualizarResultado(
-      //     formData.dni,
-      //     resultadoId,
-      //     'gijon',
-      //     score
-      //   );
-      //   openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
-      //   router.push('/funtional/');
-      // }
+      router.push('/syndromes/first/');
     } catch (err: unknown) {
       console.error("Error al guardar:", err);
       openNotification(
@@ -136,29 +95,14 @@ const PatientForm = () => {
             fontWeight: 500
           }}
         >
-          INFORMACION SOCIOECONÓMICA 
+          INFORMACION SOCIOECONÓMICA
         </Title>
 
         <div className="flex">
           <Col xs={24} md={24}>
-            <BasicInfoSection
-              form={form}
-              // date={date}
-              // handleDayChange={handleDayChange}
-              // handleMonthChange={handleMonthChange}
-              // handleYearChange={handleYearChange}
-            />
+            <BasicInfoSection form={form}/>
           </Col>
-          {/* <Col xs={24} md={8}>
-            <GijonScaleSection
-              categories={gijonCategories}
-              handleChange={handleScoreChange}
-              puntajes={puntajes}
-              obtenerPuntajeTotal={obtenerPuntajeTotal}
-            />
-          </Col> */}
         </div>
-
         <Row className="flex justify-center mt-12 gap-4">
           <Col>
             <Link href="/" passHref>
