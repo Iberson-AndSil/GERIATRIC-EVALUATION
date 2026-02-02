@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Form, Select, Slider, Checkbox, Typography, Divider, Alert } from "antd";
+import { Card, Form, Select, Slider, Checkbox, Typography, Divider, Alert, Badge } from "antd";
 import { IncontinenceResponses } from "../../type";
 import { frequencyOptions, amountOptions, situationOptions, interpretICIQ } from "../../utils/syndromes/first";
 
@@ -66,7 +66,7 @@ const IncontinenceCard: React.FC<Props> = ({ responses, onResponseChange }) => {
         <div className="flex justify-between items-center bg-blue-50 p-3 rounded-lg">
             <div>
                 <Text type="secondary" className="block text-xs">PUNTAJE TOTAL</Text>
-                <Text className="text-2xl font-bold text-blue-700">{totalScore}</Text>
+                <Badge count={totalScore} color={totalScore > 0 ? "blue" : "danger"} />
             </div>
             <div className="text-right">
                 <Text strong className="block">{interpretICIQ(totalScore)}</Text>

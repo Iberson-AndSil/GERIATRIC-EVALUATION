@@ -1,26 +1,24 @@
 'use client';
-import { Card, Form, Radio, Typography } from 'antd';
+import { Badge, Card, Form, Radio, Typography } from 'antd';
 import { EyeOutlined } from '@ant-design/icons';
-// 1. IMPORTA EL TIPO (Asegúrate que la ruta sea correcta)
 import { SensoryData } from '@/app/utils/syndromes/useSensory';
 
 const { Text } = Typography;
 
 interface SensoryCardProps {
    sensoryResult: string | null;
-   // 2. TIPO ESTRICTO: Usamos keyof SensoryData en lugar de string
+   score: number;
    handleSensoryChange: (field: keyof SensoryData, value: string) => void;
 }
 
-export const SensoryCard = ({ sensoryResult, handleSensoryChange }: SensoryCardProps) => {
+
+export const SensoryCard = ({ sensoryResult, score, handleSensoryChange }: SensoryCardProps) => {
    return (
       <Card
          title={<span className="text-teal-600 font-bold"><EyeOutlined className="mr-2" />DETERIORO SENSORIAL</span>}
          className="h-full shadow-md rounded-xl border-t-4 border-t-teal-500 hover:shadow-lg transition-all"
       >
          <Form layout="vertical">
-
-            {/* SECCIÓN VISIÓN */}
             <div className="bg-teal-50 p-2 rounded-md mb-3 border border-teal-100">
                <Text type="secondary" strong className="text-teal-800 text-xs uppercase tracking-wider">
                   Visión
@@ -62,8 +60,6 @@ export const SensoryCard = ({ sensoryResult, handleSensoryChange }: SensoryCardP
                   </Radio.Group>
                </div>
             </Form.Item>
-
-            {/* SECCIÓN AUDICIÓN */}
             <div className="bg-teal-50 p-2 rounded-md mb-3 border border-teal-100">
                <Text type="secondary" strong className="text-teal-800 text-xs uppercase tracking-wider">
                   Audición
@@ -109,10 +105,22 @@ export const SensoryCard = ({ sensoryResult, handleSensoryChange }: SensoryCardP
          </Form>
 
          {sensoryResult && (
-            <div className={`mt-6 p-3 rounded-lg border ${sensoryResult.includes('Normal') ? 'bg-green-50 border-green-200 text-green-800' : 'bg-orange-50 border-orange-200 text-orange-800'}`}>
-               <Text strong className="text-inherit">{sensoryResult}</Text>
+            <div
+               className={`mt-6 p-3 rounded-lg border flex items-center justify-between gap-3 ${score === 0
+                     ? 'bg-green-50 border-green-200 text-green-800'
+                     : 'bg-orange-50 border-orange-200 text-orange-800'
+                  }`}
+            >
+               <Text strong className="text-inherit">
+                  {sensoryResult}
+               </Text>
+               <Badge
+                  count={score}
+                  color={score > 0 ? 'orange' : 'green'}
+               />
             </div>
          )}
+
       </Card>
    );
 };

@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Form, Select, Typography, Tag, Progress } from "antd";
+import { Card, Form, Select, Typography, Tag, Progress, Badge } from "antd";
 import { sarcopeniaQuestions, calculateSarcopeniaScore, interpretSarcopenia } from "../../utils/syndromes/first";
 import { SarcopeniaResponses } from "../../type";
 
@@ -36,8 +36,9 @@ const SarcopeniaCard: React.FC<Props> = ({ responses, onResponseChange }) => {
       <div className={`mt-10 p-3 rounded-lg ${isHighRisk ? 'bg-red-50 border border-red-100' : 'bg-green-50 border border-green-100'}`}>
         <div className="flex justify-between items-center mb-1">
             <Text type={isHighRisk ? "danger" : "success"} strong>Interpretación:</Text>
-            <Text strong>{interpretSarcopenia(score)}</Text>
+            <Badge count={score} color={score > 0 ? "volcano" : "danger"} />
         </div>
+            <Text strong>{interpretSarcopenia(score)}</Text>
         <Progress 
             percent={(score / 10) * 100} 
             showInfo={false} 

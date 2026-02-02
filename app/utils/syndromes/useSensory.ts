@@ -8,7 +8,9 @@ export const useSensory = () => {
     dificultadEscucha: null,
     usaAudifonos: null,
   });
+
   const [sensoryResult, setSensoryResult] = useState<string | null>(null);
+  const [score, setScore] = useState<number>(0);
 
   const handleSensoryChange = (field: keyof SensoryData, value: string) => {
     const newData = { ...sensoryData, [field]: value };
@@ -19,8 +21,12 @@ export const useSensory = () => {
   const evaluateSensory = (data: SensoryData) => {
     if (Object.values(data).some(v => v === null)) {
       setSensoryResult(null);
+      setScore(0);
       return;
     }
+
+    const totalScore = Object.values(data).filter(v => v === 'si').length;
+    setScore(totalScore);
 
     const problemasVista = data.dificultadVista === 'si';
     const problemasOido = data.dificultadEscucha === 'si';
@@ -42,8 +48,9 @@ export const useSensory = () => {
   return {
     sensoryData,
     sensoryResult,
+    score,
     handleSensoryChange
   };
 };
-
 export type { SensoryData };
+

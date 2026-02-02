@@ -1,5 +1,5 @@
 'use client';
-import { Card, Form, Radio, Typography } from 'antd';
+import { Badge, Card, Form, Radio, Typography } from 'antd';
 import { FrownOutlined, SmileOutlined } from '@ant-design/icons';
 import { DepressionData } from '@/app/utils/syndromes/useDepression';
 
@@ -7,10 +7,12 @@ const { Text } = Typography;
 
 interface DepressionCardProps {
   depresionResult: string | null;
+  score: number;
   handleDepresionChange: (field: keyof DepressionData, value: string) => void;
 }
 
-export const DepressionCard = ({ depresionResult, handleDepresionChange }: DepressionCardProps) => {
+
+export const DepressionCard = ({ depresionResult, score, handleDepresionChange }: DepressionCardProps) => {
 
   const questions: { key: keyof DepressionData; label: string; reverse?: boolean }[] = [
     { key: 'vidaSatisfecha', label: '1. ¿Está satisfecho con su vida?', reverse: true },
@@ -52,11 +54,28 @@ export const DepressionCard = ({ depresionResult, handleDepresionChange }: Depre
 
 
       {depresionResult && (
-        <div className={`mt-4 p-3 rounded-lg border flex items-center gap-3 ${depresionResult.includes('Depresión') ? 'bg-red-50 border-red-200 text-red-700' : 'bg-green-50 border-green-200 text-green-700'}`}>
-          {depresionResult.includes('Depresión') ? <FrownOutlined className="text-xl" /> : <SmileOutlined className="text-xl" />}
-          <Text strong className="text-inherit">{depresionResult}</Text>
+        <div
+          className={`mt-4 p-3 rounded-lg border flex items-center justify-between gap-3 ${depresionResult.includes('Depresión')
+            ? 'bg-red-50 border-red-200 text-red-700'
+            : 'bg-green-50 border-green-200 text-green-700'
+            }`}
+        >
+          <div className="flex items-center gap-2">
+            {depresionResult.includes('Depresión')
+              ? <FrownOutlined className="text-xl" />
+              : <SmileOutlined className="text-xl" />
+            }
+            <Text strong className="text-inherit">
+              {depresionResult}
+            </Text>
+          </div>
+          <Badge
+            count={score}
+            color={score >= 2 ? 'red' : 'green'}
+          />
         </div>
       )}
+
     </Card>
   );
 };

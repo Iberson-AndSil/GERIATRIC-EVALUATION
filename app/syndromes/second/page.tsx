@@ -16,10 +16,11 @@ const { Title, Text } = Typography;
 
 
 export default function Home() {
-  const { depresionData, depresionResult, handleDepresionChange } = useDepression();
-  const { sensoryData, sensoryResult, handleSensoryChange } = useSensory();
-  const { bristolData, bristolResult, handleBristolChange } = useBristol();
-  const { adherenciaData, adherenciaResult, handleAdherenciaChange } = useAdherence();
+  const { depresionData, depresionResult, score, handleDepresionChange } = useDepression();
+  const { sensoryData, sensoryResult, score: sensoryScore, handleSensoryChange } = useSensory();
+  const { bristolData, bristolResult, score: bristolScore, handleBristolChange } = useBristol();
+  const { adherenciaData, adherenciaResult, score: adherenciaScore, handleAdherenciaChange } = useAdherence();
+
   const { loading, guardarDatos } = useSaveData();
 
   const handleSave = async () => {
@@ -52,6 +53,7 @@ export default function Home() {
           <Col xs={24} lg={12}>
             <DepressionCard
               depresionResult={depresionResult}
+              score={score}
               handleDepresionChange={handleDepresionChange}
             />
           </Col>
@@ -59,18 +61,21 @@ export default function Home() {
             <AdherenceCard
               adherenciaData={adherenciaData}
               adherenciaResult={adherenciaResult}
+              score={adherenciaScore}
               handleAdherenciaChange={handleAdherenciaChange}
             />
           </Col>
           <Col xs={24} lg={12}>
             <SensoryCard
               sensoryResult={sensoryResult}
+              score={sensoryScore}
               handleSensoryChange={handleSensoryChange}
             />
           </Col>
           <Col xs={24} lg={12}>
             <BristolCard
               bristolResult={bristolResult}
+              score={bristolScore}
               handleBristolChange={handleBristolChange}
             />
           </Col>

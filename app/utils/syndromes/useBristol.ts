@@ -11,7 +11,9 @@ export const useBristol = () => {
     manualAid: false,
     lessThanThree: false,
   });
+
   const [bristolResult, setBristolResult] = useState<string | null>(null);
+  const [score, setScore] = useState<number>(0);
 
   const handleBristolChange = (field: keyof BristolData, value: any) => {
     const newData = { ...bristolData, [field]: value };
@@ -20,13 +22,7 @@ export const useBristol = () => {
   };
 
   const evaluateBristol = (data: BristolData) => {
-    if (data.bristolType === null) {
-      setBristolResult(null);
-      return;
-    }
-
-    const bristolType = parseInt(data.bristolType);
-    const symptomsCount = [
+    const symptomsScore = [
       data.effort,
       data.hardStool,
       data.incomplete,
@@ -35,18 +31,21 @@ export const useBristol = () => {
       data.lessThanThree
     ].filter(Boolean).length;
 
-    const isConstipation = (bristolType === 1 || bristolType === 2) && symptomsCount >= 2;
+    setScore(symptomsScore);
+
+    const isConstipation = symptomsScore >= 2;
 
     setBristolResult(
       isConstipation
-        ? 'Resultado: Probable estreñimiento funcional (cumple criterios Roma IV)'
-        : 'Resultado: No se detectan signos claros de estreñimiento.'
+        ? 'Resultado: Estreñimiento funcional (cumple criterios Roma IV)'
+        : 'Resultado: No cumple criterios Roma IV para estreñimiento'
     );
   };
 
   return {
     bristolData,
     bristolResult,
+    score,
     handleBristolChange
   };
 };

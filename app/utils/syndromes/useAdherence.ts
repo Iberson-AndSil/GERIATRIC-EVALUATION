@@ -8,7 +8,9 @@ export const useAdherence = () => {
     dejarMedicacion: null,
     sientaMal: null,
   });
+
   const [adherenciaResult, setAdherenciaResult] = useState<string | null>(null);
+  const [score, setScore] = useState<number>(0);
 
   const handleAdherenciaChange = (field: keyof AdherenceData, value: string) => {
     const newData = { ...adherenciaData, [field]: value };
@@ -19,6 +21,7 @@ export const useAdherence = () => {
   const evaluateAdherencia = (data: AdherenceData) => {
     if (Object.values(data).some(v => v === null)) {
       setAdherenciaResult(null);
+      setScore(0);
       return;
     }
 
@@ -28,15 +31,16 @@ export const useAdherence = () => {
     if (data.dejarMedicacion === 'si') puntuacion++;
     if (data.sientaMal === 'si') puntuacion++;
 
+    setScore(puntuacion);
+
     let resultado = 'Resultado: ';
     if (puntuacion === 0) {
-      resultado += 'Sin problemas de adherencia';
-    } else if (puntuacion >= 2) {
-      resultado += 'Problemas de adherencia';
+      resultado += 'Buena adherencia al tratamiento';
+    } else if (puntuacion === 1) {
+      resultado += 'Riesgo de baja adherencia';
     } else {
-      resultado += 'Baja adherencia';
+      resultado += 'No adherente al tratamiento';
     }
-    resultado += ` (Puntuación: ${puntuacion})`;
 
     setAdherenciaResult(resultado);
   };
@@ -44,6 +48,7 @@ export const useAdherence = () => {
   return {
     adherenciaData,
     adherenciaResult,
+    score,
     handleAdherenciaChange
   };
 };
