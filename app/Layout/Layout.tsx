@@ -56,8 +56,8 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       icon: <FileSearchOutlined />,
       label: "Síndromes Geriátricos",
       children: [
-        { key: "/first", icon: <HeartOutlined />, label: "Riesgo Funcional", onClick: () => router.push("/syndromes/first") },
-        { key: "/second", icon: <MedicineBoxOutlined />, label: "Evaluación Clínica", onClick: () => router.push("/syndromes/second") },
+        { key: "/first", icon: <HeartOutlined />, label: "Primera Parte", onClick: () => router.push("/syndromes/first") },
+        { key: "/second", icon: <MedicineBoxOutlined />, label: "Segunda Parte", onClick: () => router.push("/syndromes/second") },
       ],
     },
     { key: "/social", icon: <AuditOutlined />, label: "Valoración Social", onClick: () => router.push("/social") },

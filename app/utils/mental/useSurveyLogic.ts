@@ -67,7 +67,7 @@ const useSurveyLogic = (
         };
     };
 
-    const handleNext = async () => {
+    const handleNext = async (answer: any) => {
         try {
             const values = await form.validateFields();
             const newAnswers = { ...answers, [`q${currentQuestion}`]: values.answer };

@@ -239,7 +239,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
         { value: 'cedula', label: 'CEDULA VIVA (DL: 20530)' },
         { value: 'cpmp', label: 'CPMP (DL: 1133)' },
         { value: 'reja', label: 'REJA (LEY: 30425)' },
-        { value: 'notiene', label: 'NO TIENE' }
+        { value: 'otros', label: 'Otros' }
     ];
 
     const relacionOptions = [

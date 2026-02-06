@@ -59,9 +59,9 @@ export const frequencyOptions: OptionType[] = [
 
 export const amountOptions: OptionType[] = [
     { label: "No se me escapa nada", value: 0 },
-    { label: "Muy poca cantidad", value: 1 },
-    { label: "Una cantidad moderada", value: 2 },
-    { label: "Mucha cantidad", value: 3 }
+    { label: "Muy poca cantidad", value: 2 },
+    { label: "Una cantidad moderada", value: 4 },
+    { label: "Mucha cantidad", value: 6 }
 ];
 
 export const situationOptions = [

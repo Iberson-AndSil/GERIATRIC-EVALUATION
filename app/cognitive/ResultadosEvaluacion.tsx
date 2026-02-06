@@ -1,3 +1,4 @@
+'use client';
 import { Card, Typography, Button, Row, Col, Statistic, Alert, Space, Divider, notification } from 'antd';
 import { useRouter } from 'next/navigation';
 import {
@@ -11,7 +12,6 @@ import {
 import {
   calcularPuntajeParte1,
   calcularPuntajeParte2,
-  calcularPuntajeParte3,
   interpretarResultado
 } from '../utils/cognitive/utils';
 import { useGlobalContext } from '../context/GlobalContext';
@@ -40,25 +40,46 @@ export default function ResultadosEvaluacion({
   resetEvaluation
 }: ResultadosEvaluacionProps) {
   const router = useRouter();
+  const [api, contextHolder] = notification.useNotification();
+  const { currentPatient, currentResultId } = useGlobalContext();
+
+  // --- Lógica de Puntuación Parte 3 (Recuerdo) Corregida ---
+  const calcularPuntajeRecuerdoLocal = () => {
+    let puntaje = 0;
+
+    // Pregunta 1: Cantidad correcta (11) -> Suma 1
+    if (recuerdo.cantidadMonedas === '11') puntaje += 1;
+
+    // Pregunta 2: Total dinero correcto (9) -> Suma 1
+    if (recuerdo.totalDinero === '9') puntaje += 1;
+
+    // Pregunta 3: Items correctos -> Suma 2 cada uno
+    // Valores correctos: 5 de 0.20, 2 de 0.50, 1 de 1.00, 3 de 2.00
+    if (Number(recuerdo.monedasRecordadas.centimos20) === 5) puntaje += 2;
+    if (Number(recuerdo.monedasRecordadas.centimos50) === 2) puntaje += 2;
+    if (Number(recuerdo.monedasRecordadas.sol1) === 1) puntaje += 2;
+    if (Number(recuerdo.monedasRecordadas.soles2) === 3) puntaje += 2;
+
+    // Restamos intrusiones al final (opcional, pero estándar en Eurotest)
+    // Usamos Math.max para que no de negativo
+    return Math.max(0, puntaje - intrusiones.recuerdo);
+  };
+
   const puntajeParte1 = calcularPuntajeParte1(monedasCorrectas, billetesCorrectos, intrusiones);
   const puntajeParte2 = calcularPuntajeParte2(calculos);
-  const puntajeParte3 = calcularPuntajeParte3(recuerdo, intrusiones);
+  const puntajeParte3 = calcularPuntajeRecuerdoLocal(); 
+  
   const puntajeTotal = puntajeParte1 + puntajeParte2 + puntajeParte3;
   const interpretacion = interpretarResultado(puntajeTotal);
-  const { currentPatient, currentResultId } = useGlobalContext();
-   const [api, contextHolder] = notification.useNotification();
 
-  const totalMonedasCorrectas = Math.max(0,
-    Object.values(monedasCorrectas)
-      .filter(val => val === true).length - intrusiones.monedas);
+  const totalMonedasCorrectas = Math.max(0, 
+    Object.values(monedasCorrectas).filter(val => val === true).length - intrusiones.monedas);
 
-  const totalBilletesCorrectos = Math.max(0,
-    Object.values(billetesCorrectos)
-      .filter(val => val === true).length - intrusiones.billetes);
+  const totalBilletesCorrectos = Math.max(0, 
+    Object.values(billetesCorrectos).filter(val => val === true).length - intrusiones.billetes);
 
   const handleSaveData = async () => {
     try {
-
       await actualizarResultado(
         currentPatient!.dni,
         currentResultId || "",
@@ -68,20 +89,16 @@ export default function ResultadosEvaluacion({
 
       api.success({
         message: 'Éxito',
-        description: 'Resultados de ABVD y AIVD guardados correctamente',
+        description: 'Resultados de valoración cognitiva guardados correctamente',
         placement: 'topRight'
       });
 
       router.push('/mmse30');
 
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error("Error detallado:", err);
-        alert(`Error al guardar: ${err.message}`);
-      } else {
-        console.error("Error desconocido:", err);
-        alert("Error al guardar: Verifique la consola para más detalles");
-      }
+        // Manejo de error simplificado
+        console.error(err);
+        api.error({ message: 'Error al guardar datos' });
     }
   };
 
@@ -113,7 +130,8 @@ export default function ResultadosEvaluacion({
             <Statistic
               title="Parte III: Recuerdo"
               value={puntajeParte3}
-              suffix={`/10`}
+              suffix={`/10`} 
+              valueStyle={{ color: '#1890ff' }}
             />
           </Card>
         </Col>
@@ -123,11 +141,12 @@ export default function ResultadosEvaluacion({
 
       <Row gutter={16} style={{ marginBottom: '20px' }}>
         <Col span={24}>
-          <Card>
+          <Card className={interpretacion.color === "red" ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}>
             <Statistic
               title="Puntuación Total"
               value={puntajeTotal}
               suffix={`/31`}
+              valueStyle={{ color: interpretacion.color === "red" ? '#cf1322' : '#3f8600' }}
             />
           </Card>
         </Col>
@@ -143,70 +162,55 @@ export default function ResultadosEvaluacion({
           <>
             <p>{interpretacion.descripcion}</p>
             <p><strong>Recomendación:</strong> {interpretacion.recomendacion}</p>
-            <p><em>Punto de corte: ≤24 puntos (Sensibilidad: 90.5%, Especificidad: 83.3%)</em></p>
+            <p><em>Punto de corte: ≤24 puntos</em></p>
           </>
         }
         style={{ marginBottom: '20px' }}
       />
 
-      <Title level={4}>Detalle por Ítems</Title>
-      <Card>
-        <Title level={5}>Parte I: Denominación</Title>
+      <Title level={4}>Detalle Parte III (Recuerdo)</Title>
+      <Card size="small">
         <Space direction="vertical" style={{ width: '100%' }}>
-          <div>
-            <Text strong>Monedas correctas: </Text>
-            <Text>{totalMonedasCorrectas}/6</Text>
-            <Text type="secondary"> (Intrusiones: {intrusiones.monedas})</Text>
-          </div>
-          <div>
-            <Text strong>Billetes correctos: </Text>
-            <Text>{totalBilletesCorrectos}/5</Text>
-            <Text type="secondary"> (Intrusiones: {intrusiones.billetes})</Text>
-          </div>
+          
+          <Row justify="space-between" align="middle">
+            <Text strong>1. Cantidad de monedas (11):</Text>
+            {recuerdo.cantidadMonedas === '11' ? 
+              <Text type="success" strong>+1 punto</Text> : 
+              <Text type="danger">0 puntos</Text>}
+          </Row>
+
+          <Row justify="space-between" align="middle">
+            <Text strong>2. Total de dinero (9 soles):</Text>
+            {recuerdo.totalDinero === '9' ? 
+              <Text type="success" strong>+1 punto</Text> : 
+              <Text type="danger">0 puntos</Text>}
+          </Row>
+          
+          <Divider style={{margin: '10px 0'}} dashed />
+          <Text strong>3. Desglose de monedas (+2 c/u):</Text>
+
+          <Row justify="space-between">
+            <Text>5 de 20 céntimos:</Text>
+            {Number(recuerdo.monedasRecordadas.centimos20) === 5 ? <Text type="success">+2 pts</Text> : <Text type="secondary">Incorrecto</Text>}
+          </Row>
+          <Row justify="space-between">
+            <Text>2 de 50 céntimos:</Text>
+            {Number(recuerdo.monedasRecordadas.centimos50) === 2 ? <Text type="success">+2 pts</Text> : <Text type="secondary">Incorrecto</Text>}
+          </Row>
+          <Row justify="space-between">
+            <Text>1 de 1 sol:</Text>
+            {Number(recuerdo.monedasRecordadas.sol1) === 1 ? <Text type="success">+2 pts</Text> : <Text type="secondary">Incorrecto</Text>}
+          </Row>
+          <Row justify="space-between">
+            <Text>3 de 2 soles:</Text>
+            {Number(recuerdo.monedasRecordadas.soles2) === 3 ? <Text type="success">+2 pts</Text> : <Text type="secondary">Incorrecto</Text>}
+          </Row>
+
+          <Divider style={{margin: '10px 0'}} />
+          <Row justify="end">
+             <Text type="secondary"> (Menos Intrusiones: -{intrusiones.recuerdo})</Text>
+          </Row>
         </Space>
-
-        <Divider />
-
-        <Title level={5}>Parte II: Cálculo con monedas</Title>
-        <Space direction="vertical" style={{ width: '100%' }}>
-          {Object.entries(calculos).map(([key, value]) => (
-            <div key={key}>
-              <Text strong>Ítem {key.replace('item', '')}: </Text>
-              {value.estado === 'correcto' && <Text type="success">Correcto (primer intento) - 2 pts</Text>}
-              {value.estado === 'correcto_segundo' && <Text type="warning">Correcto (segundo intento) - 1 pt</Text>}
-              {value.estado === 'incorrecto' && <Text type="danger">Incorrecto - 0 pts</Text>}
-              {!value.estado && <Text type="secondary">No evaluado</Text>}
-            </div>
-          ))}
-        </Space>
-
-        <Divider />
-
-        <Title level={5}>Parte III: Recuerdo</Title>
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <div>
-            <Text strong>Cantidad de monedas (11): </Text>
-            {recuerdo.cantidadMonedas === '11' ?
-              <Text type="success">Correcto - 1 pt</Text> :
-              <Text type="danger">Incorrecto - 0 pts</Text>}
-          </div>
-          <div>
-            <Text strong>Total de dinero (9 soles): </Text>
-            {recuerdo.totalDinero === '9' ?
-              <Text type="success">Correcto - 1 pt</Text> :
-              <Text type="danger">Incorrecto - 0 pts</Text>}
-          </div>
-          <div>
-            <Text strong>Monedas recordadas: </Text>
-            <Text>{puntajeParte3 - (recuerdo.cantidadMonedas === '11' ? 1 : 0) - (recuerdo.totalDinero === '9' ? 1 : 0)}/8</Text>
-            <Text type="secondary"> (Intrusiones: {intrusiones.recuerdo})</Text>
-          </div>
-        </Space>
-
-        <Divider />
-
-        <Title level={5}>Fluencia verbal</Title>
-        <Text>Total animales mencionados: {animales.length} (no puntúa)</Text>
       </Card>
 
       <div style={{ textAlign: 'right', marginTop: '20px' }}>

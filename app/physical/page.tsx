@@ -300,7 +300,6 @@ const SPPBEvaluation = () => {
                         DESEMPEÑO FÍSICO
                     </Title>
                     <Text type="secondary" className="text-lg">Batería Corta de Desempeño Físico (SPPB)</Text>
-                    <Divider />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
 

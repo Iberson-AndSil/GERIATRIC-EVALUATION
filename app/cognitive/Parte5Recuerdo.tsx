@@ -1,7 +1,8 @@
-import { Card, Input, Typography, Button, Space } from 'antd';
+'use client';
+import { Card, Input, Typography, Button, Space, Row, Col, Divider, Form } from 'antd';
 import { Recuerdo, Intrusiones } from '../utils/cognitive/types';
 
-const { Text } = Typography;
+const { Text, Title } = Typography;
 
 interface Parte5RecuerdoProps {
   recuerdo: Recuerdo;
@@ -20,6 +21,7 @@ export default function Parte5Recuerdo({
   nextStep,
   prevStep
 }: Parte5RecuerdoProps) {
+  
   const handleMonedaRecordadaChange = (key: keyof Recuerdo['monedasRecordadas'], value: string) => {
     setRecuerdo(prev => ({
       ...prev,
@@ -31,90 +33,94 @@ export default function Parte5Recuerdo({
   };
 
   return (
-    <Card title="4. Tercera parte (recuerdo)" style={{ marginBottom: '20px' }}>
-      <Text>“Para finalizar, quiero que haga un último esfuerzo y trate de recordar”:</Text>
+    <Card title="4. Tercera parte (Recuerdo)" style={{ marginBottom: '20px' }}>
+      <Text style={{ display: 'block', marginBottom: '20px', fontSize: '16px' }}>
+        “Para finalizar, quiero que haga un último esfuerzo y trate de recordar”:
+      </Text>
 
-      <Space direction="vertical" size="large" style={{ width: '100%', marginTop: '20px' }}>
-        <div>
-          <Text strong>“¿Cuántas monedas le enseñé antes?” (11)</Text>
-          <Input
-            type="number"
-            style={{ width: '80px' }}
-            value={recuerdo.cantidadMonedas}
-            onChange={(e) => setRecuerdo(prev => ({ ...prev, cantidadMonedas: e.target.value }))}
-          />
-        </div>
+      {/* Sección 1: Preguntas Globales */}
+      <div style={{ background: '#f5f5f5', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+        <Row gutter={[24, 24]}>
+          <Col span={12} xs={24} sm={12}>
+            <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+              1. “¿Cuántas monedas le enseñé antes?”
+            </Text>
+            <Input
+              type="number"
+              suffix={<Text type="secondary">monedas</Text>}
+              value={recuerdo.cantidadMonedas}
+              onChange={(e) => setRecuerdo(prev => ({ ...prev, cantidadMonedas: e.target.value }))}
+            />
+            <Text type="secondary" style={{ fontSize: '12px' }}>(Correcto: 11)</Text>
+          </Col>
+          <Col span={12} xs={24} sm={12}>
+            <Text strong style={{ display: 'block', marginBottom: '8px' }}>
+              2. “¿Cuánto dinero había en total?”
+            </Text>
+            <Input
+              type="number"
+              prefix="S/."
+              value={recuerdo.totalDinero}
+              onChange={(e) => setRecuerdo(prev => ({ ...prev, totalDinero: e.target.value }))}
+            />
+            <Text type="secondary" style={{ fontSize: '12px' }}>(Correcto: 9)</Text>
+          </Col>
+        </Row>
+      </div>
 
-        <div>
-          <Text strong>“¿Cuánto dinero había en total?” (9 soles)</Text>
-          <Input
-            type="number"
-            style={{ width: '80px' }}
-            value={recuerdo.totalDinero}
-            onChange={(e) => setRecuerdo(prev => ({ ...prev, totalDinero: e.target.value }))}
-          />
-        </div>
+      <Divider orientation="left" style={{ borderColor: '#d9d9d9' }}>Detalle de Monedas</Divider>
 
-        <div>
-          <Text strong>“¿Recuerda qué monedas había exactamente?”</Text>
-          <table style={{ width: '100%', marginTop: '10px' }}>
-            <thead>
-              <tr>
-                <th>Cantidad</th>
-                <th>Moneda</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <Input
-                    type="number"
-                    style={{ width: '60px' }}
-                    value={recuerdo.monedasRecordadas.centimos20}
-                    onChange={(e) => handleMonedaRecordadaChange('centimos20', e.target.value)}
-                  />
-                </td>
-                <td>de 20 céntimos</td>
-              </tr>
-              <tr>
-                <td>
-                  <Input
-                    type="number"
-                    style={{ width: '60px' }}
-                    value={recuerdo.monedasRecordadas.centimos50}
-                    onChange={(e) => handleMonedaRecordadaChange('centimos50', e.target.value)}
-                  />
-                </td>
-                <td>de 50 céntimos</td>
-              </tr>
-              <tr>
-                <td>
-                  <Input
-                    type="number"
-                    style={{ width: '60px' }}
-                    value={recuerdo.monedasRecordadas.sol1}
-                    onChange={(e) => handleMonedaRecordadaChange('sol1', e.target.value)}
-                  />
-                </td>
-                <td>de 1 sol</td>
-              </tr>
-              <tr>
-                <td>
-                  <Input
-                    type="number"
-                    style={{ width: '60px' }}
-                    value={recuerdo.monedasRecordadas.soles2}
-                    onChange={(e) => handleMonedaRecordadaChange('soles2', e.target.value)}
-                  />
-                </td>
-                <td>de 2 soles</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      {/* Sección 2: Desglose de Monedas (Grid en lugar de Tabla) */}
+      <Text strong style={{ display: 'block', marginBottom: '16px' }}>
+        3. “¿Recuerda qué monedas había exactamente?”
+      </Text>
+      
+      <Row gutter={[16, 16]}>
+        <Col span={6} xs={12}>
+          <Card size="small" type="inner" title="20 céntimos">
+            <Input
+              type="number"
+              placeholder="0"
+              value={recuerdo.monedasRecordadas.centimos20}
+              onChange={(e) => handleMonedaRecordadaChange('centimos20', e.target.value)}
+            />
+          </Card>
+        </Col>
+        <Col span={6} xs={12}>
+          <Card size="small" type="inner" title="50 céntimos">
+            <Input
+              type="number"
+              placeholder="0"
+              value={recuerdo.monedasRecordadas.centimos50}
+              onChange={(e) => handleMonedaRecordadaChange('centimos50', e.target.value)}
+            />
+          </Card>
+        </Col>
+        <Col span={6} xs={12}>
+          <Card size="small" type="inner" title="1 Sol">
+            <Input
+              type="number"
+              placeholder="0"
+              value={recuerdo.monedasRecordadas.sol1}
+              onChange={(e) => handleMonedaRecordadaChange('sol1', e.target.value)}
+            />
+          </Card>
+        </Col>
+        <Col span={6} xs={12}>
+          <Card size="small" type="inner" title="2 Soles">
+            <Input
+              type="number"
+              placeholder="0"
+              value={recuerdo.monedasRecordadas.soles2}
+              onChange={(e) => handleMonedaRecordadaChange('soles2', e.target.value)}
+            />
+          </Card>
+        </Col>
+      </Row>
 
-        <div style={{ margin: '16px 0' }}>
-          <Text strong>Intrusiones (respuestas incorrectas adicionales): </Text>
+      <div style={{ marginTop: '24px', padding: '15px', border: '1px solid #ffa39e', background: '#fff1f0', borderRadius: '8px' }}>
+        <Space>
+          <Text strong type="danger">Intrusiones (respuestas incorrectas): </Text>
           <Input 
             type="number" 
             min={0}
@@ -122,8 +128,8 @@ export default function Parte5Recuerdo({
             value={intrusiones.recuerdo}
             onChange={(e) => handleIntrusionChange('recuerdo', parseInt(e.target.value) || 0)}
           />
-        </div>
-      </Space>
+        </Space>
+      </div>
 
       <div style={{ textAlign: 'right', marginTop: '20px' }}>
         <Button style={{ marginRight: '10px' }} onClick={prevStep}>Anterior</Button>

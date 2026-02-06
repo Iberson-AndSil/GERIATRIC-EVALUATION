@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Form, Select, Slider, Checkbox, Typography, Divider, Alert, Badge } from "antd";
+import { Card, Form, Select, Slider, Checkbox, Typography, Divider, Badge } from "antd";
 import { IncontinenceResponses } from "../../type";
 import { frequencyOptions, amountOptions, situationOptions, interpretICIQ } from "../../utils/syndromes/first";
 
@@ -11,11 +11,11 @@ interface Props {
 }
 
 const IncontinenceCard: React.FC<Props> = ({ responses, onResponseChange }) => {
-  // Cálculo derivado (no necesita estado)
+  
+  // CORRECCIÓN AQUÍ: Eliminamos (responses.situations?.length || 0)
   const totalScore = (responses.frequency || 0) + 
                      (responses.amount || 0) + 
-                     (responses.impact || 0) + 
-                     (responses.situations?.length || 0);
+                     (responses.impact || 0);
 
   return (
     <Card 
@@ -23,7 +23,7 @@ const IncontinenceCard: React.FC<Props> = ({ responses, onResponseChange }) => {
         className="shadow-md rounded-xl border-t-4 border-t-blue-500"
     >
       <Form layout="vertical">
-        <Form.Item label="Frecuencia de pérdida">
+        <Form.Item label="¿Con qué frecuencia pierdo orina?">
           <Select 
             options={frequencyOptions} 
             value={responses.frequency} 
@@ -32,7 +32,7 @@ const IncontinenceCard: React.FC<Props> = ({ responses, onResponseChange }) => {
           />
         </Form.Item>
         
-        <Form.Item label="Cantidad habitual">
+        <Form.Item label="Cantidad habitual de la orina que se le escapa">
           <Select 
             options={amountOptions} 
             value={responses.amount} 
