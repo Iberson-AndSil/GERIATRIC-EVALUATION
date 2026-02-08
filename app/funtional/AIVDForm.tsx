@@ -32,7 +32,6 @@ export default function AIVDForm({
       className="h-full shadow-md rounded-xl border-t-4 border-t-blue-500"
       bodyStyle={{ padding: '24px' }}
     >
-      {/* Grid de Preguntas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
         {preguntas.map((pregunta) => (
           <div key={pregunta.key} className="flex flex-col">
@@ -55,7 +54,6 @@ export default function AIVDForm({
         ))}
       </div>
 
-      {/* Footer de Resultados Unificado */}
       <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
         <div className="flex justify-between items-center">
           <div className="flex flex-col">

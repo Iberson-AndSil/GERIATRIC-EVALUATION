@@ -33,13 +33,13 @@ export const useAdherence = () => {
 
     setScore(puntuacion);
 
-    let resultado = 'Resultado: ';
-    if (puntuacion === 0) {
-      resultado += 'Buena adherencia al tratamiento';
-    } else if (puntuacion === 1) {
-      resultado += 'Riesgo de baja adherencia';
+    let resultado = '';
+    if (puntuacion < 2) {
+      resultado += 'Deficiente adherencia (Incumplimiento de tratamiento farmacológico)';
+    } else if (puntuacion <= 3 && puntuacion >= 2) {
+      resultado += 'Media adherencia (Cumplimiento moderado de tratamiento farmacológico)';
     } else {
-      resultado += 'No adherente al tratamiento';
+      resultado += 'Alta adherencia (Cumplimiento de tratamiento farmacológico)';
     }
 
     setAdherenciaResult(resultado);

@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Typography, Progress, Card, Steps, Divider } from 'antd';
+import { Typography, Progress, Card, Steps } from 'antd';
 import { useGlobalContext } from '../context/GlobalContext';
 import { 
   DollarCircleOutlined, 
@@ -10,7 +10,6 @@ import {
   FileDoneOutlined 
 } from '@ant-design/icons';
 
-// Importamos tus componentes (asegúrate de que las rutas sean correctas)
 import Parte1DenominacionMonedas from './Parte1DenominacionMonedas';
 import Parte2DenominacionBilletes from './Parte2DenominacionBilletes';
 import Parte3CalculoMonedas from './Parte3CalculoMonedas';
@@ -18,7 +17,6 @@ import Parte4FluenciaVerbal from './Parte4FluenciaVerbal';
 import Parte5Recuerdo from './Parte5Recuerdo';
 import ResultadosEvaluacion from './ResultadosEvaluacion';
 
-// Tipos
 import { 
   MonedasCorrectas, 
   BilletesCorrectos, 
@@ -36,7 +34,6 @@ export default function EvaluacionMonetaria() {
   const [tiempoFluencia, setTiempoFluencia] = useState(60);
   const { currentPatient } = useGlobalContext();
 
-  // --- ESTADOS (Tu lógica original) ---
   const [monedasCorrectas, setMonedasCorrectas] = useState<MonedasCorrectas>({
     centimos10: false, centimos20: false, centimos50: false,
     soles1: false, soles2: false, soles5: false, otrasMonedas: '',
@@ -71,7 +68,6 @@ export default function EvaluacionMonetaria() {
     setIntrusiones(prev => ({ ...prev, [tipo]: value }));
   };
 
-  // --- RENDERIZADO ---
   const renderStep = () => {
     switch (currentStep) {
       case 1: return <Parte1DenominacionMonedas monedasCorrectas={monedasCorrectas} setMonedasCorrectas={setMonedasCorrectas} intrusiones={intrusiones} handleIntrusionChange={handleIntrusionChange} nextStep={nextStep} />;
@@ -96,7 +92,6 @@ export default function EvaluacionMonetaria() {
         </div>
 
         <Card className="w-full shadow-lg rounded-2xl border-t-4 border-t-blue-500">
-            {/* Stepper Visual */}
             <div className="mb-8 px-4">
                 <Steps current={currentStep - 1} size="small" className="hidden sm:flex">
                     <Step title="Monedas" icon={<DollarCircleOutlined />} />
@@ -106,7 +101,6 @@ export default function EvaluacionMonetaria() {
                     <Step title="Recuerdo" icon={<BulbOutlined />} />
                     <Step title="Fin" icon={<FileDoneOutlined />} />
                 </Steps>
-                {/* Barra simple para móviles */}
                 <div className="sm:hidden">
                     <div className="flex justify-between text-xs text-gray-500 mb-1">
                         <span>Paso {currentStep} de 6</span>

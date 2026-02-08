@@ -115,7 +115,7 @@ export default function FunctionalAssessmentPage() {
   const interpretacionAIVD = () => {
     const total = puntajeTotal();
     if (total <= 3) return "Función Normal";
-    if (total >= 4) return "Dependencia Funcional";
+    if (total >= 4) return "Deterioro Funcional";
     return "Disfunción severa";
   };
 

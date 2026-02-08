@@ -38,7 +38,6 @@ export default function Parte5Recuerdo({
         “Para finalizar, quiero que haga un último esfuerzo y trate de recordar”:
       </Text>
 
-      {/* Sección 1: Preguntas Globales */}
       <div style={{ background: '#f5f5f5', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
         <Row gutter={[24, 24]}>
           <Col span={12} xs={24} sm={12}>
@@ -70,7 +69,6 @@ export default function Parte5Recuerdo({
 
       <Divider orientation="left" style={{ borderColor: '#d9d9d9' }}>Detalle de Monedas</Divider>
 
-      {/* Sección 2: Desglose de Monedas (Grid en lugar de Tabla) */}
       <Text strong style={{ display: 'block', marginBottom: '16px' }}>
         3. “¿Recuerda qué monedas había exactamente?”
       </Text>

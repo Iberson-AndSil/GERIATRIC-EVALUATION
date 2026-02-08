@@ -34,7 +34,6 @@ export default function ABVDForm({
       className="h-full shadow-md rounded-xl border-t-4 border-t-blue-500"
       bodyStyle={{ padding: '24px' }}
     >
-      {/* Grid de Preguntas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
         {actividades.map((actividad) => (
           <div key={actividad.key} className="flex flex-col">
@@ -46,7 +45,6 @@ export default function ABVDForm({
               placeholder="- Seleccione -"
               onChange={(value) => handleChangeABVD(actividad.key, value)}
               value={puntajes[actividad.key]}
-              // Pone el borde verde sutil si ya se respondió
               status={puntajes[actividad.key] !== undefined && puntajes[actividad.key] !== null ? "" : ""}
             >
               {actividad.opciones.map((opcion, index) => (
@@ -59,7 +57,6 @@ export default function ABVDForm({
         ))}
       </div>
 
-      {/* Footer de Resultados Unificado */}
       <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
         <div className="flex justify-between items-center">
           <div className="flex flex-col">

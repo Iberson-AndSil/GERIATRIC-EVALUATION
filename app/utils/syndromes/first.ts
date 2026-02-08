@@ -83,8 +83,14 @@ export const interpretSarcopenia = (score: number): string => {
 };
 
 export const interpretICIQ = (puntaje: number) => {
-    if (puntaje <= 5) return "Incontinencia leve";
-    if (puntaje <= 12) return "Incontinencia moderada";
-    if (puntaje <= 18) return "Incontinencia severa";
-    return "Incontinencia muy severa";
+    if (puntaje <= 5) {
+        return { text: "Incontinencia leve", color: "green" };
+    }
+    if (puntaje <= 12) {
+        return { text: "Incontinencia moderada", color: "blue" };
+    }
+    if (puntaje <= 18) {
+        return { text: "Incontinencia grave", color: "orange" };
+    }
+    return { text: "Incontinencia muy grave", color: "red" };
 };
