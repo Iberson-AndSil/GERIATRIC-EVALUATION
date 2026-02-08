@@ -132,7 +132,7 @@ const MMSEForm = () => {
                             title={<span className="text-blue-600"><EnvironmentOutlined /> ORIENTACIÓN</span>}
                             className="shadow-sm rounded-xl border-t-4 border-t-blue-500 !mb-4"
                         >
-                            <Divider orientation="left" className="!border-gray-200 !mt-0" plain><Text type="secondary">¿Qué día es hoy? (Validación Automática)</Text></Divider>
+                            <Divider orientation="left" className="!border-gray-200 !mt-0" plain><Text>¿Qué día es hoy? (Validación Automática)</Text></Divider>
                             <Row gutter={8}>
                                 <Col span={3}>
                                     <Form.Item name="date_day" label="Día">
@@ -168,7 +168,7 @@ const MMSEForm = () => {
                                     </Form.Item>
                                 </Col>
                             </Row>
-                            <Divider orientation="left" className="!border-gray-200 !mt-0" plain><Text type="secondary">¿Dónde estamos?</Text></Divider>
+                            <Divider orientation="left" className="!border-gray-200 !mt-0" plain><Text>¿Dónde estamos?</Text></Divider>
                             <Row gutter={8}>
                                 <Col span={10}>
                                     <Form.Item name="place_location" label="Lugar">

@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
-import { Card, Typography, Divider, Space, Progress, Row, Col, Button, notification } from 'antd';
+'use client';
+import { Typography, Divider, Progress, Row, Col, Button } from 'antd';
 import { MOCATestProps, SectionKey } from '../type';
-import { useGlobalContext } from '../context/GlobalContext';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
-import { actualizarResultado } from '../lib/pacienteService';
-
-const { Title, Text } = Typography;
+import { 
+  EyeOutlined,
+  TagsOutlined,
+  NumberOutlined,
+  MessageOutlined,
+  BulbOutlined,
+  HistoryOutlined,
+  CompassOutlined,
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
 
 interface ResultsSectionProps extends MOCATestProps {
   totalScore: number;
@@ -15,134 +18,67 @@ interface ResultsSectionProps extends MOCATestProps {
   calculateSectionProgress: (section: SectionKey, scores: any) => number;
 }
 
+const SECTION_CONFIG: Record<string, { label: string, icon: React.ReactNode }> = {
+  visuospatial: { label: 'Visuoespacial', icon: <EyeOutlined /> },
+  naming:       { label: 'Identificación', icon: <TagsOutlined /> },
+  attention:    { label: 'Atención', icon: <NumberOutlined /> },
+  language:     { label: 'Lenguaje', icon: <MessageOutlined /> },
+  abstraction:  { label: 'Abstracción', icon: <BulbOutlined /> },
+  delayedRecall:{ label: 'Recuerdo', icon: <HistoryOutlined /> },
+  orientation:  { label: 'Orientación', icon: <CompassOutlined /> },
+};
+
 const ResultsSection: React.FC<ResultsSectionProps> = ({
   scores,
   educationLevel,
   totalScore,
   isNormal,
+  onSectionChange,
   calculateSectionProgress,
 }) => {
 
-  const { currentPatient, currentResultId } = useGlobalContext();
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [api, contextHolder] = notification.useNotification();
-  const handleSaveData = async () => {
-    try {
-
-      setLoading(true);
-
-      await actualizarResultado(
-        currentPatient!.dni,
-        currentResultId || "",
-        'moca',
-        totalScore
-      );
-
-      api.success({
-        message: 'Éxito',
-        description: 'Resultados de ABVD y AIVD guardados correctamente',
-        placement: 'topRight'
-      });
-
-      router.push('/affective');
-
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error("Error detallado:", err);
-        alert(`Error al guardar: ${err.message}`);
-      } else {
-        console.error("Error desconocido:", err);
-        alert("Error al guardar: Verifique la consola para más detalles");
-      }
-    }
-  };
 
   return (
-    <>
-      {contextHolder}
-      <Card title="Resultado">
-        <Title level={3}>
-          Puntuación total: {totalScore}/30
-          {totalScore > 0 && (
-            <span style={{
-              color: isNormal ? '#389e0d' : '#cf1322',
-              marginLeft: '20px',
-              fontSize: '24px'
-            }}>
-              {isNormal ? 'Normal (≥26 puntos)' : 'Anormal (<26 puntos)'}
-            </span>
-          )}
-        </Title>
-        {educationLevel === 'none' && (
-          <Text type="secondary">
-            * Se ha añadido 1 punto adicional por nivel de estudios: Ninguno de estos
-          </Text>
-        )}
+    <div className="h-full flex flex-col">      
+      <div className="flex-1 overflow-y-auto pr-2">
+        <Divider orientation="left" className="!text-xs !text-gray-400 !uppercase !font-bold !mt-0">Desglose por Área</Divider>
+        <Row gutter={[12, 12]}>
+            {Object.keys(SECTION_CONFIG).map((key) => {
+                const config = SECTION_CONFIG[key];
+                const percent = calculateSectionProgress(key as SectionKey, scores);
+                
+                return (
+                    <Col span={12} key={key}>
+                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex flex-col justify-center h-full">
+                            <div className="flex items-center gap-2 mb-2 text-gray-600 font-medium text-xs uppercase">
+                                <span className="text-blue-500">{config.icon}</span>
+                                {config.label}
+                            </div>
+                            <Progress 
+                                percent={percent} 
+                                size="small" 
+                                status={percent === 100 ? "success" : "normal"}
+                                strokeColor={percent === 100 ? "#52c41a" : "#1890ff"}
+                            />
+                        </div>
+                    </Col>
+                );
+            })}
+        </Row>
+      </div>
 
-        <Divider />
-
-        <Title level={4}>Desglose por sección:</Title>
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <div>
-            <Text>Visuoespacial/Ejecutiva</Text>
-            <Progress percent={calculateSectionProgress('visuospatial', scores)} status="active" />
-          </div>
-          <div>
-            <Text>Identificación</Text>
-            <Progress percent={calculateSectionProgress('naming', scores)} status="active" />
-          </div>
-          <div>
-            <Text>Atención</Text>
-            <Progress percent={calculateSectionProgress('attention', scores)} status="active" />
-          </div>
-          <div>
-            <Text>Lenguaje</Text>
-            <Progress percent={calculateSectionProgress('language', scores)} status="active" />
-          </div>
-          <div>
-            <Text>Abstracción</Text>
-            <Progress percent={calculateSectionProgress('abstraction', scores)} status="active" />
-          </div>
-          <div>
-            <Text>Recuerdo diferido</Text>
-            <Progress percent={calculateSectionProgress('delayedRecall', scores)} status="active" />
-          </div>
-          <div>
-            <Text>Orientación</Text>
-            <Progress percent={calculateSectionProgress('orientation', scores)} status="active" />
-          </div>
-        </Space>
-      </Card>
-
-      <Row key="actions" className="m-12 flex justify-center">
-        <Col>
-          <Link href="/mmse30" passHref>
-            <Button
-              type="default"
-              icon={<ArrowLeftOutlined />}
-              size="large"
-              style={{ minWidth: '120px' }}
-            >
-              Volver a MMSE30
-            </Button>
-          </Link>
-        </Col>
-        <Col>
-          <Button className="!ml-3"
-            type="primary"
-            size="large"
-            onClick={handleSaveData}
-            style={{ minWidth: '120px' }}
-            disabled={!currentPatient}
-            loading={loading}
-            icon={<SaveOutlined />}
-          >
-            {currentPatient ? "Guardar Paciente" : "Seleccione archivo primero"}
-          </Button>
-        </Col>
-      </Row>
-    </>
+      <div className="mt-6 flex justify-start items-center gap-4">
+        <Button 
+          onClick={() => onSectionChange('orientation')}
+          type="default"
+          size="large"
+          icon={<ArrowLeftOutlined />}
+          className="text-gray-500 hover:text-blue-600 border-gray-300"
+        >
+          Anterior
+        </Button>
+      </div>
+    </div>
   );
 };
 
