@@ -69,6 +69,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { key: "/moca", icon: <DeploymentUnitOutlined />, label: "MOCA", onClick: () => router.push("/moca") },
     { key: "/affective", icon: <SmileOutlined />, label: "Afectividad", onClick: () => router.push("/affective") },
     { key: "/nutritional", icon: <MedicineBoxOutlined />, label: "Valoración Nutricional", onClick: () => router.push("/nutritional") },
+    { key: "/clinic", icon: <MedicineBoxOutlined />, label: "Valoración Clínica", onClick: () => router.push("/clinic") },
     { key: "/dashboard", icon: <DashboardOutlined />, label: "Dashboard", onClick: () => router.push("/dashboard") },
     {
       key: "sub-dashboard",
@@ -79,7 +80,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         { key: "/dashboard/analytics", icon: <LineChartOutlined />, label: "Análisis de Datos", onClick: () => router.push("/dashboard/analytics") },
       ],
     },
-    { key: "/settings", icon: <SettingOutlined />, label: "Configuración", onClick: () => router.push("/settings") },
+    // { key: "/settings", icon: <SettingOutlined />, label: "Configuración", onClick: () => router.push("/settings") },
   ];
 
   return (

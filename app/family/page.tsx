@@ -53,6 +53,7 @@ const PatientForm = () => {
         ingreso_economico: formData.ingreso_economico,
         con_quien_vive: formData.con_quien_vive,
       };
+      
       await axios.post("/api/pacientes", patientData);
       openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
       router.push('/syndromes/first/');
