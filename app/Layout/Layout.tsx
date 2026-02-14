@@ -34,17 +34,19 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname(); // <--- Detecta la ruta actual
   const [isReady, setIsReady] = useState(false);
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsReady(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (!isReady) {
-    return <MedicalSpinner />;
-  }
+    if (pathname) {
+      // Buscamos si la ruta actual pertenece a un sub-menú
+      // Por ejemplo, si la ruta es /syndromes/first, queremos abrir /syndromes
+      const pathParts = pathname.split('/');
+      if (pathParts.length > 2) {
+        const parentKey = `/${pathParts[1]}`;
+        setOpenKeys([parentKey]);
+      }
+    }
+  }, [pathname]);
 
   // Definición de ítems (Asegúrate de que 'key' sea igual al path del router.push)
   const items = [
@@ -110,12 +112,13 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           <AntLayout>
             <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme="dark" width={240} collapsedWidth={80}>
-              <Menu 
-                mode="inline" 
-                theme="dark" 
-                items={items} 
+              <Menu
+                mode="inline"
+                theme="dark"
+                items={items}
                 selectedKeys={[pathname]}
-                defaultOpenKeys={['/syndromes', 'sub-dashboard', '/results']}
+                openKeys={openKeys} // Controlamos cuáles están abiertos
+                onOpenChange={(keys) => setOpenKeys(keys)} // Permite al usuario abrir/cerrar otros
               />
             </Sider>
 
