@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import "antd/dist/reset.css";
 import { Layout as AntLayout, Menu, Button, ConfigProvider } from "antd";
 import { StyleProvider } from "@ant-design/cssinjs";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation"; // Importamos usePathname
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -32,8 +32,8 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const { currentPatient } = useGlobalContext();
   const router = useRouter();
+  const pathname = usePathname(); // <--- Detecta la ruta actual
   const [isReady, setIsReady] = useState(false);
-
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -46,6 +46,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return <MedicalSpinner />;
   }
 
+  // Definición de ítems (Asegúrate de que 'key' sea igual al path del router.push)
   const items = [
     { key: "/", icon: <HomeOutlined />, label: "Inicio", onClick: () => router.push("/") },
     {
@@ -53,12 +54,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       icon: <FileSearchOutlined />,
       label: "Síndromes Geriátricos",
       children: [
-        { key: "/first", icon: <HeartOutlined />, label: "Primera Parte", onClick: () => router.push("/syndromes/first") },
-        { key: "/second", icon: <MedicineBoxOutlined />, label: "Segunda Parte", onClick: () => router.push("/syndromes/second") },
+        { key: "/syndromes/first", icon: <HeartOutlined />, label: "Primera Parte", onClick: () => router.push("/syndromes/first") },
+        { key: "/syndromes/second", icon: <MedicineBoxOutlined />, label: "Segunda Parte", onClick: () => router.push("/syndromes/second") },
       ],
     },
     { key: "/social", icon: <AuditOutlined />, label: "Valoración Social", onClick: () => router.push("/social") },
-    { key: "/assessment", icon: <AuditOutlined />, label: "Valoración Funcional", onClick: () => router.push("/funtional") },
+    { key: "/funtional", icon: <AuditOutlined />, label: "Valoración Funcional", onClick: () => router.push("/funtional") },
     { key: "/physical", icon: <ExperimentOutlined />, label: "Valoración Física", onClick: () => router.push("/physical") },
     { key: "/mental", icon: <MailOutlined />, label: "Valoración Mental", onClick: () => router.push("/mental") },
     { key: "/cognitive", icon: <ReadOutlined />, label: "Valoración Cognitiva", onClick: () => router.push("/cognitive") },
@@ -71,13 +72,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     {
       key: "/results",
       icon: <FileSearchOutlined />,
-      label: "Síndromes Geriátricos",
+      label: "Resultados",
       children: [
         { key: "/comorbidity", icon: <HeartOutlined />, label: "Comorbilidades", onClick: () => router.push("/comorbidity") },
         { key: "/fragility", icon: <MedicineBoxOutlined />, label: "Fragilidad", onClick: () => router.push("/fragility") },
       ],
     },
-    
     { key: "/dashboard", icon: <DashboardOutlined />, label: "Dashboard", onClick: () => router.push("/dashboard") },
     {
       key: "sub-dashboard",
@@ -92,22 +92,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <StyleProvider hashPriority="high">
-      <ConfigProvider
-        theme={{
-          token: { colorPrimary: "#1890ff" },
-        }}
-      >
+      <ConfigProvider theme={{ token: { colorPrimary: "#1890ff" } }}>
         <AntLayout style={{ minHeight: "100vh" }}>
-          <Header
-            style={{
-              background: "#001529",
-              padding: "0 20px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              color: "white",
-            }}
-          >
+          <Header style={{ background: "#001529", padding: "0 20px", display: "flex", alignItems: "center", justifyContent: "space-between", color: "white" }}>
             <div className="flex items-center">
               <Button
                 type="primary"
@@ -123,7 +110,13 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           <AntLayout>
             <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme="dark" width={240} collapsedWidth={80}>
-              <Menu mode="inline" theme="dark" items={items} />
+              <Menu 
+                mode="inline" 
+                theme="dark" 
+                items={items} 
+                selectedKeys={[pathname]}
+                defaultOpenKeys={['/syndromes', 'sub-dashboard', '/results']}
+              />
             </Sider>
 
             <AntLayout>
