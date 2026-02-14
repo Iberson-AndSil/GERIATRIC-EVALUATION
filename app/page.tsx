@@ -71,6 +71,8 @@ const Home = () => {
   };
 
   const handleSelectPatient = async (paciente: Paciente) => {
+    console.log("Seleccionando paciente:", paciente);
+    
     try {
       setCurrentPatient(paciente);
       const resultadosRef = collection(db, "pacientes", paciente.dni, "resultados");

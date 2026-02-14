@@ -9,11 +9,9 @@ import {
 } from 'antd';
 import { 
     FileSearchOutlined, 
-    MedicineBoxOutlined, 
     CheckSquareOutlined, 
     PlusOutlined,
     DeleteOutlined,
-    InfoCircleOutlined,
     HeartOutlined,
     HistoryOutlined,
     MedicineBoxFilled,
@@ -28,7 +26,6 @@ import { actualizarResultado } from '../lib/pacienteService';
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-// Lista de comorbilidades extraída de la imagen
 const COMORBILIDADES_LIST = [
     "ANEMIA CRONICA", "ERC", "DIABETES MELLITUS", "HIPERTENSION ARTERIAL",
     "FIBRILACION AURICULAR", "INSUFICIENCIA CARDIACA (Clase Funcional III-IV y/o MRC)",
@@ -48,7 +45,6 @@ const ClinicalAssessment: React.FC = () => {
     const router = useRouter();
     const [api, contextHolder] = notification.useNotification();
 
-    // Observadores de estado en tiempo real para UI dinámica
     const seleccionadas = Form.useWatch('enfermedades_activas', form) || [];
     const medicamentos = Form.useWatch('medicamentos', form) || [];
     const numMedicamentos = medicamentos.filter((m: any) => m?.nombre).length;
@@ -91,7 +87,7 @@ const ClinicalAssessment: React.FC = () => {
             await actualizarResultado(
                 currentPatient.dni,
                 currentResultId || "",
-                'clinica', // Identificador de la sección
+                'clinica', 
                 score
             );
 
@@ -123,8 +119,6 @@ const ClinicalAssessment: React.FC = () => {
 
             <Form form={form} layout="vertical" initialValues={{ medicamentos: [{}], enfermedades_activas: [] }}>
                 <Row gutter={[20, 20]}>
-                    
-                    {/* COLUMNA IZQUIERDA: MEDICACIÓN Y HOSPITALIZACIÓN */}
                     <Col xs={24} lg={8}>
                         <Card 
                             title={<Space><MedicineBoxFilled /> MEDICACIÓN HABITUAL</Space>}
@@ -159,14 +153,11 @@ const ClinicalAssessment: React.FC = () => {
                             </Form.Item>
                         </Card>
                     </Col>
-
-                    {/* COLUMNA DERECHA: CHECKLIST COMORBILIDADES */}
                     <Col xs={24} lg={16}>
                         <Card 
                             title={<Space><CheckSquareOutlined /> COMORBILIDADES / ANTECEDENTES</Space>}
                             className="shadow-md rounded-2xl"
                         >
-                            {/* VALORACIÓN ONCOLÓGICA */}
                             <div className="bg-red-50 p-4 rounded-xl border border-red-100 mb-5">
                                 <Text strong className="text-red-600 block mb-3">VALORACIÓN ONCOLÓGICA (CÁNCER)</Text>
                                 <Row gutter={16}>
@@ -198,8 +189,6 @@ const ClinicalAssessment: React.FC = () => {
                             </Form.Item>
                         </Card>
                     </Col>
-
-                    {/* SECCIÓN INFERIOR: DETALLES DE CADA ENFERMEDAD */}
                     <Col span={24}>
                         <Card title={<Space><FileSearchOutlined /> DETALLES CLÍNICOS ESPECÍFICOS</Space>} className="shadow-md rounded-2xl">
                             {seleccionadas.length === 0 ? (
@@ -249,8 +238,6 @@ const ClinicalAssessment: React.FC = () => {
                     </Col>
                 </Row>
             </Form>
-
-            {/* BOTONES DE ACCIÓN */}
             <Row className="m-12 flex justify-center gap-4">
                 <Col>
                     <Link href="/">

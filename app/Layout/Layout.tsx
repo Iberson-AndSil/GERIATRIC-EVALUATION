@@ -15,12 +15,10 @@ import {
   HeartOutlined,
   MedicineBoxOutlined,
   AuditOutlined,
-  TeamOutlined,
   ExperimentOutlined,
   ReadOutlined,
   DashboardOutlined,
   FileDoneOutlined,
-  SettingOutlined,
   CheckCircleOutlined,
   DeploymentUnitOutlined,
   SmileOutlined,
@@ -50,7 +48,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const items = [
     { key: "/", icon: <HomeOutlined />, label: "Inicio", onClick: () => router.push("/") },
-    // { key: "/family", icon: <TeamOutlined />, label: "Socio Familiar", onClick: () => router.push("/family") },
     {
       key: "/syndromes",
       icon: <FileSearchOutlined />,
@@ -69,7 +66,18 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     { key: "/moca", icon: <DeploymentUnitOutlined />, label: "MOCA", onClick: () => router.push("/moca") },
     { key: "/affective", icon: <SmileOutlined />, label: "Afectividad", onClick: () => router.push("/affective") },
     { key: "/nutritional", icon: <MedicineBoxOutlined />, label: "Valoración Nutricional", onClick: () => router.push("/nutritional") },
-    { key: "/clinic", icon: <MedicineBoxOutlined />, label: "Valoración Clínica", onClick: () => router.push("/clinic") },
+    { key: "/clinic", icon: <CheckCircleOutlined />, label: "Valoración Clínica", onClick: () => router.push("/clinic") },
+    { key: "/markers", icon: <ReadOutlined />, label: "Marcadores Bioquímicos", onClick: () => router.push("/markers") },
+    {
+      key: "/results",
+      icon: <FileSearchOutlined />,
+      label: "Síndromes Geriátricos",
+      children: [
+        { key: "/comorbidity", icon: <HeartOutlined />, label: "Comorbilidades", onClick: () => router.push("/comorbidity") },
+        { key: "/fragility", icon: <MedicineBoxOutlined />, label: "Fragilidad", onClick: () => router.push("/fragility") },
+      ],
+    },
+    
     { key: "/dashboard", icon: <DashboardOutlined />, label: "Dashboard", onClick: () => router.push("/dashboard") },
     {
       key: "sub-dashboard",
@@ -80,7 +88,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         { key: "/dashboard/analytics", icon: <LineChartOutlined />, label: "Análisis de Datos", onClick: () => router.push("/dashboard/analytics") },
       ],
     },
-    // { key: "/settings", icon: <SettingOutlined />, label: "Configuración", onClick: () => router.push("/settings") },
   ];
 
   return (
