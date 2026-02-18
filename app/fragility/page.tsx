@@ -1,10 +1,21 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Form, Radio, Card, Row, Col, Typography, Space, Button, notification, Statistic, Divider, Tag, Alert } from 'antd';
-import { SaveOutlined, ArrowLeftOutlined, HeartOutlined, SyncOutlined, CheckCircleOutlined, LockOutlined } from '@ant-design/icons';
+import {
+  Form, Radio, Card, Row, Col, Typography,
+  Space, Button, notification, Statistic,
+  Divider, Tag, Alert
+} from 'antd';
+import {
+  SaveOutlined, ArrowLeftOutlined,
+  HeartOutlined, SyncOutlined,
+  CheckCircleOutlined, LockOutlined
+} from '@ant-design/icons';
 import { useRouter } from "next/navigation";
 import { useGlobalContext } from "@/app/context/GlobalContext";
-import { actualizarResultado } from "../lib/pacienteService";
+import {
+  actualizarResultado,
+  obtenerResultadoPorId
+} from "../lib/pacienteService";
 
 const { Title, Text } = Typography;
 
@@ -15,24 +26,55 @@ const FragilidadForm = () => {
   const [score, setScore] = useState<number>(0);
   const [api, contextHolder] = notification.useNotification();
   const router = useRouter();
-  
+
   const { currentPatient, currentResultId } = useGlobalContext();
 
   useEffect(() => {
-    if (currentPatient) {
-      setIsSyncing(true);
-      const p = currentPatient as any;
+    const cargarDatos = async () => {
+      if (!currentPatient?.dni || !currentResultId) {
+        setIsSyncing(false);
+        return;
+      }
 
-      // Sincronización automática de la dinamometría desde la BD
-      const valorDinamometria = p.dynamometry || 0;
+      try {
+        setIsSyncing(true);
+        const resultado: any = await obtenerResultadoPorId(
+          currentPatient.dni,
+          currentResultId
+        );
 
-      form.setFieldsValue({
-        dinamometria: valorDinamometria
-      });
-      
-      setTimeout(() => setIsSyncing(false), 800);
-    }
-  }, [currentPatient, form]);
+        // Si el resultado existe y tiene datos (no es el objeto 'inexistente')
+        if (resultado && !resultado.inexistente) {
+          
+          // Seteamos dinamometría (está en la raíz del documento)
+          form.setFieldsValue({
+            dinamometria: resultado.dynamometry || 0
+          });
+
+          // Seteamos evaluación de fragilidad
+          if (resultado.evaluacion_fragilidad) {
+            const frag = resultado.evaluacion_fragilidad;
+            form.setFieldsValue({
+              exhausto: frag.exhausto,
+              apetito: frag.apetito,
+              caminar: frag.caminar,
+              escaleras: frag.escaleras,
+              actividad: frag.actividad,
+            });
+            setScore(frag.score_fragilidad || 0);
+          }
+        } else {
+          console.log("📝 Formulario listo para primer registro.");
+        }
+      } catch (error) {
+        console.error("Error al cargar:", error);
+      } finally {
+        setIsSyncing(false);
+      }
+    };
+
+    cargarDatos();
+  }, [currentPatient?.dni, currentResultId, form]);
 
   const calcularCategoria = (values: any) => {
     let puntos = 0;
@@ -53,128 +95,124 @@ const FragilidadForm = () => {
   const categoria = getFragilidadTag(score);
 
   const onFinish = async (values: any) => {
-    if (!currentPatient?.dni) return;
+    if (!currentPatient?.dni || !currentResultId) return;
+
     try {
       setLoading(true);
-      await actualizarResultado(currentPatient.dni, currentResultId || "", 'evaluacion_fragilidad', {
-        ...values,
-        score_fragilidad: score,
-        categoria: categoria.label,
-        fecha: new Date()
-      });
-      api.success({ message: 'Éxito', description: 'Evaluación sincronizada correctamente.' });
+      
+      // Guardamos específicamente en el campo 'evaluacion_fragilidad'
+      await actualizarResultado(
+        currentPatient.dni,
+        currentResultId,
+        'evaluacion_fragilidad',
+        {
+          ...values,
+          score_fragilidad: score,
+          categoria: categoria.label,
+          fecha: new Date().toISOString()
+        }
+      );
+
+      api.success({ message: 'Sincronizado correctamente' });
       router.push('/physical');
     } catch (e) {
-      api.error({ message: 'Error al guardar' });
-    } finally { setLoading(false); }
+      api.error({ message: 'Error al guardar en Firebase' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
       {contextHolder}
-      <Card className="max-w-6xl mx-auto shadow-lg rounded-2xl">
-        <Row justify="space-between" className="mb-8">
+      <Card className="max-w-5xl mx-auto shadow-lg rounded-xl">
+        <Row justify="space-between" align="middle" className="mb-6">
           <Space>
-            <HeartOutlined className="text-3xl text-red-500" />
-            <div>
-              <Title level={3} className="!m-0">Fragilidad (SHARE-FI)</Title>
-              <Text type="secondary">Paciente: {currentPatient?.nombre || '---'}</Text>
-            </div>
+            <HeartOutlined style={{ fontSize: 24, color: '#ff4d4f' }} />
+            <Title level={4} style={{ margin: 0 }}>Evaluación de Fragilidad</Title>
           </Space>
-          {isSyncing ? (
-            <Tag color="processing" icon={<SyncOutlined spin />}>Sincronizando...</Tag>
-          ) : (
-            <Tag color="success" icon={<CheckCircleOutlined />}>Datos sincronizados</Tag>
-          )}
+          <Tag color={isSyncing ? "processing" : "success"}>
+            {isSyncing ? "Cargando..." : "Sincronizado"}
+          </Tag>
         </Row>
 
-        <Form form={form} layout="vertical" onFinish={onFinish} onValuesChange={(_, all) => calcularCategoria(all)}>
-          <Row gutter={32}>
-            <Col xs={24} lg={16}>
-              <Space direction="vertical" className="w-full" size={16}>
-                
-                <Card size="small" title="1. SENTIRSE EXHAUSTO" className="border-l-4 border-l-blue-400">
-                  <Text type="secondary">¿Ha sentido que no tenía suficiente energía para hacer las cosas que quería?</Text>
-                  <Form.Item name="exhausto" className="mt-4 mb-0">
-                    <Radio.Group buttonStyle="solid">
-                      <Radio.Button value="SI">SÍ</Radio.Button>
-                      <Radio.Button value="NO">NO</Radio.Button>
-                    </Radio.Group>
-                  </Form.Item>
-                </Card>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}
+          onValuesChange={(_, all) => calcularCategoria(all)}
+        >
+          <Row gutter={24}>
+            <Col xs={24} md={16}>
+              <Card size="small" title="Cuestionario SHARE-FI" className="mb-4">
+                <Form.Item name="exhausto" label="¿Se ha sentido exhausto recientemente?">
+                  <Radio.Group buttonStyle="solid">
+                    <Radio.Button value="SI">SÍ</Radio.Button>
+                    <Radio.Button value="NO">NO</Radio.Button>
+                  </Radio.Group>
+                </Form.Item>
 
-                <Card size="small" title="2. PÉRDIDA DE APETITO" className="border-l-4 border-l-orange-400">
-                  <Form.Item name="apetito" className="mb-0">
-                    <Radio.Group>
-                      <Space direction="vertical">
-                        <Radio value="DISMINUYO">Disminuyó / Come menos de lo habitual</Radio>
-                        <Radio value="IGUAL">Igual / Ni más ni menos</Radio>
-                        <Radio value="AUMENTO">Aumentó / Come más de lo habitual</Radio>
-                      </Space>
-                    </Radio.Group>
-                  </Form.Item>
-                </Card>
+                <Form.Item name="apetito" label="¿Cómo ha estado su apetito?">
+                  <Radio.Group>
+                    <Space direction="vertical">
+                      <Radio value="DISMINUYO">Disminuyó</Radio>
+                      <Radio value="IGUAL">Se mantiene igual</Radio>
+                      <Radio value="AUMENTO">Aumentó</Radio>
+                    </Space>
+                  </Radio.Group>
+                </Form.Item>
 
-                <Card size="small" title={<span><LockOutlined /> 3. FUERZA DE PRENSIÓN (Sincronizado)</span>} className="bg-gray-50">
-                  <Statistic 
-                    title="Dato detectado en BD (Dinamometría)" 
-                    value={form.getFieldValue('dinamometria')} 
-                    suffix="kg" 
-                    valueStyle={{ color: '#096dd9' }}
-                  />
-                </Card>
+                <Form.Item name="caminar" label="¿Tiene dificultad para caminar 100 metros?">
+                  <Radio.Group buttonStyle="solid">
+                    <Radio.Button value="SI">SÍ</Radio.Button>
+                    <Radio.Button value="NO">NO</Radio.Button>
+                  </Radio.Group>
+                </Form.Item>
 
-                <Card size="small" title="4. DIFICULTADES FUNCIONALES" className="border-l-4 border-l-purple-400">
-                  <Row gutter={24}>
-                    <Col span={12}>
-                      <Form.Item name="caminar" label="Caminar 100 metros con dificultad">
-                        <Radio.Group size="small">
-                          <Radio.Button value="SI">SÍ</Radio.Button>
-                          <Radio.Button value="NO">NO</Radio.Button>
-                        </Radio.Group>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="escaleras" label="Subir escaleras sin descansar">
-                        <Radio.Group size="small">
-                          <Radio.Button value="SI">SÍ</Radio.Button>
-                          <Radio.Button value="NO">NO</Radio.Button>
-                        </Radio.Group>
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </Card>
+                <Form.Item name="escaleras" label="¿Tiene dificultad para subir un piso de escaleras?">
+                  <Radio.Group buttonStyle="solid">
+                    <Radio.Button value="SI">SÍ</Radio.Button>
+                    <Radio.Button value="NO">NO</Radio.Button>
+                  </Radio.Group>
+                </Form.Item>
 
-                <Card size="small" title="5. ACTIVIDAD FÍSICA" className="border-l-4 border-l-green-400">
-                  <Form.Item name="actividad" className="mb-0">
-                    <Radio.Group>
-                      <Space direction="vertical">
-                        <Radio value="MAS_UNA">Más de una vez a la semana</Radio>
-                        <Radio value="UNA_VEZ">Una vez a la semana</Radio>
-                        <Radio value="MES">De una a tres veces al mes</Radio>
-                        <Radio value="CASI_NUNCA">Casi nunca, o nunca</Radio>
-                      </Space>
-                    </Radio.Group>
-                  </Form.Item>
-                </Card>
-              </Space>
+                <Form.Item name="actividad" label="¿Con qué frecuencia realiza actividad física?">
+                  <Radio.Group>
+                    <Space direction="vertical">
+                      <Radio value="MAS_UNA">Más de una vez por semana</Radio>
+                      <Radio value="UNA_VEZ">Una vez por semana</Radio>
+                      <Radio value="MES">1 a 3 veces al mes</Radio>
+                      <Radio value="CASI_NUNCA">Casi nunca o nunca</Radio>
+                    </Space>
+                  </Radio.Group>
+                </Form.Item>
+              </Card>
             </Col>
 
-            <Col xs={24} lg={8}>
-              <Card className="text-center sticky top-4 border-2 border-dashed border-gray-200">
-                <Statistic title="Puntuación" value={score} suffix="/ 5" />
+            <Col xs={24} md={8}>
+              <Card className="text-center bg-gray-50">
+                <Statistic title="Puntaje" value={score} suffix="/ 5" />
                 <Divider />
-                <Title level={4} style={{ color: categoria.color }}>{categoria.label}</Title>
-                <Alert message="Interpretación SHARE-FI" type="info" showIcon className="mt-4" />
+                <div className="mb-4">
+                    <Text strong>Estado:</Text><br/>
+                    <Tag color={categoria.color} style={{ fontSize: 16, padding: '5px 15px' }}>
+                        {categoria.label}
+                    </Tag>
+                </div>
+                <Form.Item name="dinamometria" label="Fuerza de Prensisón (Kg)">
+                   <Statistic value={form.getFieldValue('dinamometria') || 0} precision={1} />
+                </Form.Item>
               </Card>
             </Col>
           </Row>
 
-          <Row justify="end" className="mt-10 gap-4">
-            <Button size="large" onClick={() => router.back()} icon={<ArrowLeftOutlined />}>Volver</Button>
-            <Button type="primary" size="large" htmlType="submit" loading={loading} icon={<SaveOutlined />} className="bg-red-600 px-12">
-              Guardar en BD
-            </Button>
+          <Row justify="end" gutter={12}>
+            <Col><Button onClick={() => router.back()}>Cancelar</Button></Col>
+            <Col>
+              <Button type="primary" htmlType="submit" loading={loading} icon={<SaveOutlined />}>
+                Guardar Evaluación
+              </Button>
+            </Col>
           </Row>
         </Form>
       </Card>

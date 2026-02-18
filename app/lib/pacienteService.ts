@@ -26,7 +26,7 @@ export const obtenerPacientesConResultadosRecientes = async (): Promise<Paciente
     if (!resultadosSnapshot.empty) {
       resultadoReciente = resultadosSnapshot.docs[0].data();
     }
-    
+
     return {
       id: pacienteDoc.id,
       ...pacienteData,
@@ -100,21 +100,18 @@ export const agregarModuloAArray = async (
   );
 };
 
-export const crearRegistroResultados = async (pacienteId: string, gijon:number) => {
-    if (!pacienteId) {
-    throw new Error("pacienteId no puede estar vacío");
-  }
-  
+export const crearRegistroResultados = async (pacienteId: string, gijon: number) => {
+  if (!pacienteId) throw new Error("pacienteId no puede estar vacío");
   try {
     const resultadosRef = collection(db, "pacientes", pacienteId, "resultados");
     const nuevoResultadoRef = doc(resultadosRef);
-    
+
     await setDoc(nuevoResultadoRef, {
       fecha: serverTimestamp(),
       completado: false,
       gijon: gijon
     });
-    
+
     return nuevoResultadoRef.id;
   } catch (error) {
     console.error("Error en crearRegistroResultados:", error);
@@ -128,11 +125,22 @@ export const actualizarResultado = async (
   campo: string,
   valor: any
 ) => {
-  const resultadoRef = doc(db, "pacientes", pacienteId, "resultados", resultadoId);
+  // Limpieza de IDs para evitar errores de ruta
+  const pId = String(pacienteId).trim();
+  const rId = String(resultadoId).trim();
+  
+  const resultadoRef = doc(db, "pacientes", pId, "resultados", rId);
 
-  await updateDoc(resultadoRef, {
-    [campo]: valor
-  });
+  try {
+    // setDoc con merge es más seguro que updateDoc para inicializar documentos
+    await setDoc(resultadoRef, {
+      [campo]: valor,
+      ultimaModificacion: serverTimestamp() // Recomendado para trazabilidad
+    }, { merge: true });
+  } catch (error) {
+    console.error("Error al actualizar/crear resultado:", error);
+    throw error;
+  }
 };
 
 export const marcarResultadoCompleto = async (pacienteId: string, resultadoId: string) => {
@@ -185,3 +193,25 @@ export const eliminarResultado = async (pacienteId: string, resultadoId: string)
   const resultadoRef = doc(db, "pacientes", pacienteId, "resultados", resultadoId)
   await deleteDoc(resultadoRef)
 }
+
+export const obtenerResultadoPorId = async (pacienteId: string, resultadoId: string) => {
+  try {
+    const pId = String(pacienteId).trim();
+    const rId = String(resultadoId).trim();
+    
+    if (!pId || !rId) return null;
+
+    const ref = doc(db, "pacientes", pId, "resultados", rId);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      // Devolvemos un objeto con flag de inexistencia para que el form sepa que es nuevo
+      return { id: rId, inexistente: true }; 
+    }
+
+    return { id: snap.id, ...snap.data() };
+  } catch (error) {
+    console.error("Error crítico en Service al obtener resultado:", error);
+    return null;
+  }
+};

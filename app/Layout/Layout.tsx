@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import "antd/dist/reset.css";
 import { Layout as AntLayout, Menu, Button, ConfigProvider } from "antd";
 import { StyleProvider } from "@ant-design/cssinjs";
-import { useRouter, usePathname } from "next/navigation"; // Importamos usePathname
+import { useRouter, usePathname } from "next/navigation";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -24,7 +24,6 @@ import {
   SmileOutlined,
 } from "@ant-design/icons";
 import { useGlobalContext } from "@/app/context/GlobalContext";
-import MedicalSpinner from "../components/MedicalSpinner";
 
 const { Header, Sider, Content } = AntLayout;
 
@@ -32,14 +31,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const { currentPatient } = useGlobalContext();
   const router = useRouter();
-  const pathname = usePathname(); // <--- Detecta la ruta actual
+  const pathname = usePathname();
   const [isReady, setIsReady] = useState(false);
   const [openKeys, setOpenKeys] = useState<string[]>([]);
 
   useEffect(() => {
     if (pathname) {
-      // Buscamos si la ruta actual pertenece a un sub-menú
-      // Por ejemplo, si la ruta es /syndromes/first, queremos abrir /syndromes
       const pathParts = pathname.split('/');
       if (pathParts.length > 2) {
         const parentKey = `/${pathParts[1]}`;
@@ -48,7 +45,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   }, [pathname]);
 
-  // Definición de ítems (Asegúrate de que 'key' sea igual al path del router.push)
   const items = [
     { key: "/", icon: <HomeOutlined />, label: "Inicio", onClick: () => router.push("/") },
     {
@@ -117,8 +113,8 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 theme="dark"
                 items={items}
                 selectedKeys={[pathname]}
-                openKeys={openKeys} // Controlamos cuáles están abiertos
-                onOpenChange={(keys) => setOpenKeys(keys)} // Permite al usuario abrir/cerrar otros
+                openKeys={openKeys}
+                onOpenChange={(keys) => setOpenKeys(keys)}
               />
             </Sider>
 
