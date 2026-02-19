@@ -22,7 +22,6 @@ const ProfundIndexForm = () => {
   const { currentPatient, currentResultId } = useGlobalContext();
   const [bdValues, setBdValues] = useState<any>({});
 
-  // --- LÓGICA DE CÁLCULO CORREGIDA ---
   const recalcular = useCallback((values: any) => {
     const baremo: Record<string, number> = {
       edad85: 3, neoplasia: 6, demencia: 3, claseFuncional: 3,
@@ -36,7 +35,6 @@ const ProfundIndexForm = () => {
     setTotalPoints(total);
   }, []);
 
-  // --- PALETA DE COLORES EQUILIBRADA (Semáforo Profesional) ---
   const getRisk = (s: number) => {
     if (s <= 2) return { l: "Bajo", c: "#52c41a", p: "12% - 14%", bg: "#f6ffed", border: "#b7eb8f" }; 
     if (s <= 6) return { l: "Intermedio - Bajo", c: "#d48806", p: "~25%", bg: "#fffbe6", border: "#ffe58f" }; 
@@ -74,7 +72,6 @@ const ProfundIndexForm = () => {
         };
         setBdValues(infoBD);
 
-        // Corregimos la detección para que marque el check y sume automáticamente
         const autoChecks = {
           edad85: infoBD.edad >= 85,
           neoplasia: clinica.valoracion_oncologica?.en_tratamiento || comorbilidades.some((n: string) => n.includes("CANCER") || n.includes("NEOPLASIA")),
@@ -137,31 +134,31 @@ const ProfundIndexForm = () => {
             <Col xs={24} lg={15}>
               <Space direction="vertical" size="large" className="w-full">
                 
-                <section className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                <section className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                   <Title level={5} className="mb-6 mt-0 text-slate-600"><UserOutlined /> Criterios Clínicos</Title>
                   <Row gutter={[16, 24]}>
                     <Col span={12}>
-                      <Form.Item name="edad85" valuePropName="checked" className="m-0"><Checkbox disabled>Edad ≥ 85 años (3 pts)</Checkbox></Form.Item>
+                      <Form.Item name="edad85" valuePropName="checked" className="!m-0"><Checkbox disabled>Edad ≥ 85 años (3 pts)</Checkbox></Form.Item>
                     </Col>
                     <Col span={12}>
-                      <Form.Item name="neoplasia" valuePropName="checked" className="m-0"><Checkbox disabled>Neoplasia activa (6 pts)</Checkbox></Form.Item>
+                      <Form.Item name="neoplasia" valuePropName="checked" className="!m-0"><Checkbox disabled>Neoplasia activa (6 pts)</Checkbox></Form.Item>
                     </Col>
                     <Col span={12}>
-                      <Form.Item name="demencia" valuePropName="checked" className="m-0"><Checkbox disabled>Demencia (3 pts)</Checkbox></Form.Item>
+                      <Form.Item name="demencia" valuePropName="checked" className="!m-0"><Checkbox disabled>Demencia (3 pts)</Checkbox></Form.Item>
                     </Col>
                     <Col span={12}>
-                      <Form.Item name="delirium" valuePropName="checked" className="m-0"><Checkbox disabled>Delirium previo (3 pts)</Checkbox></Form.Item>
+                      <Form.Item name="delirium" valuePropName="checked" className="!m-0"><Checkbox disabled>Delirium previo (3 pts)</Checkbox></Form.Item>
                     </Col>
                     <Col span={12}>
-                      <Form.Item name="hemoglobina" valuePropName="checked" className="m-0"><Checkbox disabled>Hb &lt; 10 g/dL (3 pts)</Checkbox></Form.Item>
+                      <Form.Item name="hemoglobina" valuePropName="checked" className="!m-0"><Checkbox disabled>Hb &lt; 10 g/dL (3 pts)</Checkbox></Form.Item>
                     </Col>
                     <Col span={12}>
-                      <Form.Item name="barthel60" valuePropName="checked" className="m-0"><Checkbox disabled>Barthel &lt; 60 (4 pts)</Checkbox></Form.Item>
+                      <Form.Item name="barthel60" valuePropName="checked" className="!m-0"><Checkbox disabled>Barthel &lt; 60 (4 pts)</Checkbox></Form.Item>
                     </Col>
                   </Row>
                 </section>
 
-                <section className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                <section className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                   <Title level={5} className="mb-6 mt-0 text-slate-600"><MedicineBoxOutlined /> Soporte y Asistencia</Title>
                   <Row gutter={[16, 24]}>
                     <Col span={12}>
@@ -177,7 +174,7 @@ const ProfundIndexForm = () => {
                   className="rounded-xl border-blue-200 bg-blue-50"
                   message={<Text strong className="text-blue-800">Valoración Clínica Manual</Text>}
                   description={
-                    <Form.Item name="claseFuncional" valuePropName="checked" className="!m-0 mt-2">
+                    <Form.Item name="claseFuncional" valuePropName="checked" className="!m-0">
                       <Checkbox className="text-blue-900 font-medium">Clase Funcional III-IV (NYHA) y/o MRC (3 pts)</Checkbox>
                     </Form.Item>
                   }
@@ -186,11 +183,9 @@ const ProfundIndexForm = () => {
                 />
               </Space>
             </Col>
-
-            {/* Sidebar de Resultado */}
             <Col xs={24} lg={9}>
               <div 
-                className="sticky top-4 rounded-2xl p-8 border-t-8 transition-all duration-500 shadow-lg bg-white"
+                className="rounded-2xl border border-t-8 transition-all duration-500 shadow-lg bg"
                 style={{ borderTopColor: risk.c }}
               >
                 <div className="text-center">
