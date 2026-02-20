@@ -97,7 +97,7 @@ const ClinicalAssessment: React.FC = () => {
                 placement: 'topRight'
             });
 
-            router.push('/');
+            router.push('/markers');
         } catch (err: any) {
             console.error("Error al guardar:", err);
             api.error({

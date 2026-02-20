@@ -6,7 +6,7 @@ import Link from "next/link";
 import { NotificationPlacement } from "antd/es/notification/interface";
 import { BasicInfoSection } from "./BasicInfoSection";
 import axios from "axios";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 
 const { Title } = Typography;
 
@@ -14,6 +14,7 @@ const PatientForm = () => {
   const [form] = Form.useForm();
   const [api, contextHolder] = notification.useNotification();
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const savePatientToFirebase = async () => {
     try {
@@ -56,7 +57,7 @@ const PatientForm = () => {
       
       await axios.post("/api/pacientes", patientData);
       openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
-      router.push('/syndromes/first/');
+      router.push('/syndromes/first');
     } catch (err: unknown) {
       console.error("Error al guardar:", err);
       openNotification(

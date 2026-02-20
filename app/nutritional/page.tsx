@@ -117,7 +117,7 @@ const NutritionalAssessment: React.FC = () => {
                 placement: 'topRight'
             });
 
-            router.push('/');
+            router.push('/clinic');
         } catch (err: any) {
             console.error("Error al guardar:", err);
             alert(`Error al guardar: ${err.message || "Verifique la consola"}`);

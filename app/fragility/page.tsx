@@ -98,7 +98,7 @@ const FragilidadForm: React.FC = () => {
         // fecha: new Date().toISOString(),
       });
       api.success({ message: "Éxito", description: "Evaluación guardada correctamente." });
-      router.push("/physical");
+      router.push("/");
     } catch (error: any) {
       if (!error.errorFields) api.error({ message: "Error al guardar" });
     } finally {

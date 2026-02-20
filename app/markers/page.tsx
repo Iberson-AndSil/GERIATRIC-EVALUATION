@@ -52,7 +52,7 @@ const MarcadoresForm = () => {
       form.resetFields();
       
       setTimeout(() => {
-        router.push('/clinic');
+        router.push('/comorbidity');
       }, 1000);
 
     } catch (err: unknown) {

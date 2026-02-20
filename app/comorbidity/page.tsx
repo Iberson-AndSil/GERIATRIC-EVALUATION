@@ -124,7 +124,7 @@ const ProfundIndexForm = () => {
       });
 
       api.success({ message: "Evaluación guardada exitosamente" });
-      router.push("/physical");
+      router.push("/fragility");
     } catch (e: any) {
       if (!e.errorFields) {
         api.error({ message: "Error al guardar en la base de datos" });
