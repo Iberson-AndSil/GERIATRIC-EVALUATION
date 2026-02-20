@@ -10,7 +10,6 @@ import Link from "next/link";
 
 const { Title, Text } = Typography;
 
-// --- Interfaces ---
 interface FragilidadValues {
   exhausto: "SI" | "NO";
   apetito: "DISMINUYO" | "IGUAL" | "AUMENTO";
@@ -227,8 +226,8 @@ const FragilidadForm: React.FC = () => {
             </Col>
 
             <Col xs={24} lg={9}>
-              <Card className="sticky top-6 border-0 bg-slate-100 rounded-3xl overflow-hidden shadow-sm" bodyStyle={{ padding: 0 }}>
-                <div className={`p-8 text-center bg-${categoria.color}-500 transition-all`}>
+              <Card className="sticky top-6 border-0 bg-slate-100 rounded-3xl overflow-hidden shadow-sm p-3">
+                <div className={`p-8 text-center transition-all`}>
                   <Statistic
                     title={<span className="uppercase tracking-widest text-xs font-bold text-slate-900 opacity-90">Puntuación Total</span>}
                     value={score}
