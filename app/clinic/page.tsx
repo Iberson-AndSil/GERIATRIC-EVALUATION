@@ -3,9 +3,8 @@
 import React, { useState } from 'react';
 import { 
     Form, Input, Checkbox, Card, Row, Col, Typography, 
-    Select, InputNumber, Space, Badge, Divider, Button, 
-    Radio, notification, 
-    Alert
+    Select, InputNumber, Space, Badge, Button, 
+    Radio, notification, Empty, Tag
 } from 'antd';
 import { 
     FileSearchOutlined, 
@@ -16,7 +15,9 @@ import {
     HistoryOutlined,
     MedicineBoxFilled,
     SaveOutlined,
-    ArrowLeftOutlined
+    ArrowLeftOutlined,
+    IdcardOutlined,
+    CalendarOutlined
 } from '@ant-design/icons';
 import { useGlobalContext } from '../context/GlobalContext';
 import { useRouter } from 'next/navigation';
@@ -38,7 +39,7 @@ const COMORBILIDADES_LIST = [
     "SECUELA FRACTURA", "CANCER REMITIDO", "COVID (RQ OXIGENO)"
 ];
 
-const ClinicalAssessment: React.FC = () => {
+const ErgonomicClinicAssessment: React.FC = () => {
     const [form] = Form.useForm();
     const { currentPatient, currentResultId } = useGlobalContext();
     const [loading, setLoading] = useState(false);
@@ -111,33 +112,51 @@ const ClinicalAssessment: React.FC = () => {
     };
 
     return (
-        <div style={{ padding: '24px', maxWidth: '1300px', margin: '0 auto' }}>
+        <div className="ergonomic-container">
             {contextHolder}
-            <Title level={3} style={{ textAlign: 'center', marginBottom: '24px', color: '#1890ff', fontWeight: 500 }}>
-                VALORACIÓN CLÍNICA - COMORBILIDADES Y MEDICACIÓN
-            </Title>
 
-            <Form form={form} layout="vertical" initialValues={{ medicamentos: [{}], enfermedades_activas: [] }}>
-                <Row gutter={[20, 20]}>
-                    <Col xs={24} lg={8}>
+            {/* HEADER LOCAL DE LA PÁGINA */}
+            <div className="page-header">
+                <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
+                    VALORACIÓN CLÍNICA Y COMORBILIDADES
+                </Title>
+                {currentPatient && (
+                    <Space size="large" className="patient-banner">
+                        <Text strong><IdcardOutlined /> {currentPatient.nombre}</Text>
+                        <Text><CalendarOutlined /> {currentPatient.edad} años</Text>
+                        <Tag color="cyan">{currentPatient.dni}</Tag>
+                    </Space>
+                )}
+            </div>
+
+            <Form 
+                form={form} 
+                layout="vertical" 
+                initialValues={{ medicamentos: [{}], enfermedades_activas: [] }}
+                className="main-form"
+            >
+                <div className="content-layout">
+                    {/* COLUMNA 1: Medicación y Antecedentes */}
+                    <div className="column column-left">
                         <Card 
-                            title={<Space><MedicineBoxFilled /> MEDICACIÓN HABITUAL</Space>}
-                            extra={<Badge count={numMedicamentos >= 3 ? "POLIFARMACIA" : "NORMAL"} color={getPolifarmaciaColor()} />}
-                            className="shadow-md rounded-2xl mb-6"
+                            title={<Space><MedicineBoxFilled /> Medicación</Space>}
+                            extra={<Badge count={numMedicamentos} color={getPolifarmaciaColor()} />}
+                            className="flex-column-card"
+                            styles={{ body: { padding: '12px', overflowY: 'auto', flex: 1 } }}
                         >
                             <Form.List name="medicamentos">
                                 {(fields, { add, remove }) => (
                                     <>
                                         {fields.map(({ key, name, ...restField }) => (
-                                            <div key={key} style={{ display: 'flex', marginBottom: 10, gap: 8, alignItems: 'center' }}>
-                                                <Form.Item {...restField} name={[name, 'nombre']} style={{ margin: 0, flex: 1 }}>
-                                                    <Input placeholder="Producto / Dosificación" />
+                                            <div key={key} className="item-row">
+                                                <Form.Item {...restField} name={[name, 'nombre']} className="no-margin-item flex-1">
+                                                    <Input placeholder="Producto / Dosis" />
                                                 </Form.Item>
                                                 <Button type="text" danger icon={<DeleteOutlined />} onClick={() => remove(name)} />
                                             </div>
                                         ))}
-                                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                            Agregar Medicamento
+                                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />} className="mt-2">
+                                            Añadir Medicamento
                                         </Button>
                                     </>
                                 )}
@@ -145,126 +164,256 @@ const ClinicalAssessment: React.FC = () => {
                         </Card>
 
                         <Card 
-                            title={<Space><HistoryOutlined /> HOSPITALIZACIONES</Space>}
-                            className="shadow-md rounded-2xl"
+                            title={<Space><HistoryOutlined /> Antecedentes</Space>}
+                            className="mt-4"
+                            styles={{ body: { padding: '12px' } }}
                         >
-                            <Form.Item name="hospitalizaciones_anio" label="Cantidad en el último año">
-                                <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+                            <Form.Item name="hospitalizaciones_anio" label="Hospitalizaciones (año)" className="no-margin-item">
+                                <InputNumber min={0} className="w-full" placeholder="0" />
                             </Form.Item>
                         </Card>
-                    </Col>
-                    <Col xs={24} lg={16}>
+                    </div>
+
+                    {/* COLUMNA 2: Comorbilidades Grid */}
+                    <div className="column column-center">
                         <Card 
-                            title={<Space><CheckSquareOutlined /> COMORBILIDADES / ANTECEDENTES</Space>}
-                            className="shadow-md rounded-2xl"
+                            title={<Space><CheckSquareOutlined /> Comorbilidades / Antecedentes</Space>}
+                            className="flex-column-card"
+                            styles={{ body: { padding: '12px', overflowY: 'auto', flex: 1 } }}
                         >
-                            <div className="bg-red-50 p-4 rounded-xl border border-red-100 mb-5">
-                                <Text strong className="text-red-600 block mb-3">VALORACIÓN ONCOLÓGICA (CÁNCER)</Text>
-                                <Row gutter={16}>
-                                    {['cancer_tratamiento', 'cancer_metastasico', 'cancer_recurrente', 'cancer_reciente'].map((name, idx) => (
-                                        <Col span={6} key={name}>
-                                            <Form.Item name={name} label={<small>{["En Tratamiento", "Metastásico", "Recurrente", "Dx Reciente"][idx]}</small>} className="mb-0">
-                                                <Radio.Group size="small">
-                                                    <Radio value="SI">SI</Radio>
-                                                    <Radio value="NO">NO</Radio>
-                                                </Radio.Group>
-                                            </Form.Item>
-                                        </Col>
-                                    ))}
-                                </Row>
-                            </div>
-
-                            <Divider style={{ margin: '12px 0' }} />
-
                             <Form.Item name="enfermedades_activas" noStyle>
                                 <Checkbox.Group className="w-full">
-                                    <Row gutter={[10, 10]}>
+                                    <div className="responsive-grid">
                                         {COMORBILIDADES_LIST.map(enf => (
-                                            <Col xs={24} sm={12} key={enf}>
-                                                <Checkbox value={enf} style={{ fontSize: '12px' }}>{enf}</Checkbox>
-                                            </Col>
+                                            <div key={enf} className={`grid-item ${seleccionadas.includes(enf) ? 'active' : ''}`}>
+                                                <Checkbox value={enf}>{enf}</Checkbox>
+                                            </div>
                                         ))}
-                                    </Row>
+                                    </div>
                                 </Checkbox.Group>
                             </Form.Item>
                         </Card>
-                    </Col>
-                    <Col span={24}>
-                        <Card title={<Space><FileSearchOutlined /> DETALLES CLÍNICOS ESPECÍFICOS</Space>} className="shadow-md rounded-2xl">
+                    </div>
+
+                    {/* COLUMNA 3: Oncología y Detalles */}
+                    <div className="column column-right">
+                        <Card 
+                            title={<Text strong style={{ color: '#cf1322' }}>VALORACIÓN ONCOLÓGICA</Text>} 
+                            styles={{ header: { background: '#fff1f0', padding: '0 12px', minHeight: '40px' }, body: { padding: '12px' } }}
+                            className="mb-4"
+                        >
+                            <Row gutter={[12, 12]}>
+                                {[
+                                    { name: 'cancer_tratamiento', label: "Tratamiento" },
+                                    { name: 'cancer_metastasico', label: "Metastásico" },
+                                    { name: 'cancer_recurrente', label: "Recurrente" },
+                                    { name: 'cancer_reciente', label: "Dx Reciente" }
+                                ].map((item) => (
+                                    <Col span={12} key={item.name}>
+                                        <Form.Item name={item.name} label={<small>{item.label}</small>} className="no-margin-item">
+                                            <Radio.Group size="small" buttonStyle="solid" className="w-full flex">
+                                                <Radio.Button value="SI" className="flex-1 text-center">SÍ</Radio.Button>
+                                                <Radio.Button value="NO" className="flex-1 text-center">NO</Radio.Button>
+                                            </Radio.Group>
+                                        </Form.Item>
+                                    </Col>
+                                ))}
+                            </Row>
+                        </Card>
+
+                        <Card 
+                            title={<Space><FileSearchOutlined /> Detalles Específicos</Space>}
+                            className="flex-column-card"
+                            styles={{ body: { padding: 0, overflowY: 'auto', flex: 1 } }}
+                        >
                             {seleccionadas.length === 0 ? (
-                                <Alert message="Información" description="Seleccione comorbilidades arriba para habilitar los campos de Año, Método y Tratamiento." type="info" showIcon />
-                            ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left border-collapse">
-                                        <thead>
-                                            <tr className="bg-gray-50">
-                                                <th className="p-3 border-b-2 border-gray-100">Condición</th>
-                                                <th className="p-3 border-b-2 border-gray-100 w-32">Año DX</th>
-                                                <th className="p-3 border-b-2 border-gray-100 w-48">Método DX</th>
-                                                <th className="p-3 border-b-2 border-gray-100">TTO Actual</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {seleccionadas.map((enf: string) => (
-                                                <tr key={enf} className="hover:bg-blue-50/30 transition-colors">
-                                                    <td className="p-2 border-b border-gray-100"><Text strong className="text-blue-800">{enf}</Text></td>
-                                                    <td className="p-2 border-b border-gray-100">
-                                                        <Form.Item name={['detalles', enf, 'anio']} className="mb-0">
-                                                            <InputNumber placeholder="Año" className="w-full" />
-                                                        </Form.Item>
-                                                    </td>
-                                                    <td className="p-2 border-b border-gray-100">
-                                                        <Form.Item name={['detalles', enf, 'metodo']} className="mb-0">
-                                                            <Select placeholder="Método" className="w-full">
-                                                                <Option value="CLINICO">Clínico</Option>
-                                                                <Option value="IMAGEN">Imagen</Option>
-                                                                <Option value="LAB">Laboratorio</Option>
-                                                                <Option value="BIOPSIA">Biopsia</Option>
-                                                            </Select>
-                                                        </Form.Item>
-                                                    </td>
-                                                    <td className="p-2 border-b border-gray-100">
-                                                        <Form.Item name={['detalles', enf, 'tto']} className="mb-0">
-                                                            <Input placeholder="Dosis/Medicamento" prefix={<HeartOutlined className="text-red-400" />} />
-                                                        </Form.Item>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                <div className="p-10 text-center">
+                                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Sin selecciones" />
                                 </div>
+                            ) : (
+                                <table className="compact-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Condición</th>
+                                            <th style={{ width: '70px' }}>Año</th>
+                                            <th>Método / TTO</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {seleccionadas.map((enf: string) => (
+                                            <tr key={enf}>
+                                                <td><Text strong style={{ fontSize: '13px' }}>{enf}</Text></td>
+                                                <td>
+                                                    <Form.Item name={['detalles', enf, 'anio']} className="no-margin-item">
+                                                        <InputNumber size="small" className="w-full" variant="borderless" />
+                                                    </Form.Item>
+                                                </td>
+                                                <td>
+                                                    <Form.Item name={['detalles', enf, 'metodo']} className="mb-1">
+                                                        <Select size="small" variant="borderless" className="w-full" placeholder="M">
+                                                            <Option value="CLINICO">Clínico</Option>
+                                                            <Option value="IMAGEN">Imagen</Option>
+                                                            <Option value="LAB">Lab</Option>
+                                                            <Option value="BIOPSIA">Biopsia</Option>
+                                                        </Select>
+                                                    </Form.Item>
+                                                    <Form.Item name={['detalles', enf, 'tto']} className="no-margin-item">
+                                                        <Input size="small" variant="borderless" className="w-full" placeholder="Tratamiento" prefix={<HeartOutlined style={{ color: '#ff4d4f' }} />} />
+                                                    </Form.Item>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             )}
                         </Card>
-                    </Col>
-                </Row>
+                    </div>
+                </div>
             </Form>
-            <Row className="m-12 flex justify-center gap-4">
-                <Col>
-                    <Link href="/">
-                        <Button icon={<ArrowLeftOutlined />} size="large" style={{ minWidth: '150px' }}>Volver</Button>
-                    </Link>
-                </Col>
-                <Col>
-                    <Button
-                        type="primary"
-                        size="large"
-                        onClick={handleSaveData}
-                        style={{ minWidth: '180px' }}
-                        disabled={!currentPatient}
-                        loading={loading}
-                        icon={<SaveOutlined />}
-                    >
-                        {currentPatient ? "Guardar Valoración" : "Seleccione Paciente"}
-                    </Button>
-                </Col>
-            </Row>
+
+            {/* FOOTER LOCAL (Encima del navbar si es necesario) */}
+            <div className="action-footer">
+                <Link href="/">
+                    <Button icon={<ArrowLeftOutlined />} size="large">Volver</Button>
+                </Link>
+                <Button
+                    type="primary"
+                    size="large"
+                    onClick={handleSaveData}
+                    disabled={!currentPatient}
+                    loading={loading}
+                    icon={<SaveOutlined />}
+                    className="save-button"
+                >
+                    {currentPatient ? "Finalizar y Guardar Valoración" : "Seleccione Paciente"}
+                </Button>
+            </div>
 
             <style jsx global>{`
-                .ant-card-head-title { font-weight: 600 !important; }
-                .ant-form-item-label label { font-size: 11px !important; font-weight: 600; text-transform: uppercase; color: #64748b; }
+                /* Ajuste para que quepa en el Content del AppLayout sin scroll principal */
+                .ergonomic-container {
+                    height: calc(100vh - 124px); /* Ajuste basado en Navbar + Padding del Layout */
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                    font-size: 14px;
+                }
+
+                .page-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding-bottom: 16px;
+                    flex-shrink: 0;
+                }
+
+                .patient-banner {
+                    background: #f0f5ff;
+                    padding: 4px 12px;
+                    border-radius: 8px;
+                    border: 1px solid #adc6ff;
+                }
+
+                .main-form {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                }
+
+                .content-layout {
+                    flex: 1;
+                    display: flex;
+                    gap: 16px;
+                    overflow: hidden;
+                }
+
+                .column {
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                }
+
+                .column-left { flex: 0 0 260px; }
+                .column-center { flex: 1; }
+                .column-right { flex: 0 0 400px; }
+
+                .flex-column-card {
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                    flex: 1;
+                }
+
+                .item-row {
+                    display: flex;
+                    gap: 8px;
+                    margin-bottom: 8px;
+                    background: #fbfbfb;
+                    padding: 4px;
+                    border-radius: 4px;
+                }
+
+                .responsive-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                    gap: 8px;
+                }
+
+                .grid-item {
+                    padding: 8px 12px;
+                    background: #fff;
+                    border: 1px solid #f0f0f0;
+                    border-radius: 6px;
+                    transition: all 0.2s;
+                }
+                .grid-item:hover { border-color: #40a9ff; }
+                .grid-item.active { background: #e6f7ff; border-color: #1890ff; }
+
+                .compact-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                .compact-table th {
+                    position: sticky;
+                    top: 0;
+                    background: #fafafa;
+                    padding: 8px 12px;
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    color: #8c8c8c;
+                    border-bottom: 1px solid #f0f0f0;
+                    z-index: 10;
+                }
+                .compact-table td {
+                    padding: 8px 12px;
+                    border-bottom: 1px solid #f0f0f0;
+                }
+
+                .action-footer {
+                    display: flex;
+                    justify-content: space-between;
+                    padding-top: 16px;
+                    border-top: 1px solid #f0f0f0;
+                    flex-shrink: 0;
+                    margin-top: 8px;
+                }
+
+                .save-button {
+                    background: #1890ff;
+                    font-weight: 600;
+                    padding: 0 40px;
+                }
+
+                .no-margin-item { margin-bottom: 0 !important; }
+                
+                /* Custom scrollbar */
+                ::-webkit-scrollbar { width: 6px; }
+                ::-webkit-scrollbar-track { background: #f1f1f1; }
+                ::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 10px; }
             `}</style>
         </div>
     );
 };
 
-export default ClinicalAssessment;
+export default ErgonomicClinicAssessment;

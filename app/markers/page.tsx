@@ -4,6 +4,7 @@ import { Form, InputNumber, DatePicker, Button, Card, Row, Col, Typography, Spac
 import { SaveOutlined, ExperimentOutlined, MedicineBoxOutlined, StockOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
 
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { actualizarResultado } from "../lib/pacienteService";
@@ -68,142 +69,203 @@ const MarcadoresForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 w-full">
+    <div className="ergonomic-container">
       {contextHolder}
-      <div className="w-full mx-auto">
-        <div className="mb-6 flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <Space>
-            <div className="bg-blue-50 p-2 rounded-lg">
-              <ExperimentOutlined className="text-2xl text-blue-600" />
-            </div>
-            <div>
-              <Title level={4} className="!m-0">MARCADORES BIOQUÍMICOS CLÍNICOS</Title>
-              <Text type="secondary" className="text-xs">Registro de valores metabólicos y hematológicos</Text>
-            </div>
-          </Space>
-          {/* <Button
+
+      <div className="page-header">
+        <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
+          MARCADORES BIOQUÍMICOS CLÍNICOS
+        </Title>
+        <Text type="secondary" className="hidden sm:inline-block ml-4">Registro de valores metabólicos y hematológicos</Text>
+      </div>
+
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        autoComplete="off"
+        requiredMark={false}
+        initialValues={{
+          fecha_metabolismo: dayjs(),
+          fecha_hematologia: dayjs(),
+          fecha_renal: dayjs(),
+          fecha_proteico: dayjs(),
+          fecha_pcr: dayjs(),
+        }}
+        className="main-form"
+      >
+        <div className="content-layout">
+          {/* COLUMNA 1: METABOLISMO */}
+          <div className="column column-left">
+            <Card
+              title={<Space><StockOutlined style={{ color: '#fa8c16' }} /> METABOLISMO</Space>}
+              className="flex-column-card"
+              styles={{ header: { minHeight: '40px', padding: '0 12px' }, body: { padding: '12px', overflowY: 'auto', flex: 1 } }}
+            >
+              <Row gutter={12}>
+                <Col span={12}><Form.Item className="no-margin-item mb-2" name="hba1c" label={<span className="text-xs">HbA1c (%)</span>}><InputNumber className="w-full" precision={2} /></Form.Item></Col>
+                <Col span={12}><Form.Item className="no-margin-item mb-2" name="glucosa" label={<span className="text-xs">Glucosa (mg/dL)</span>}><InputNumber className="w-full" /></Form.Item></Col>
+                <Col span={12}><Form.Item className="no-margin-item mb-2" name="colesterol" label={<span className="text-xs">Col. Total (mg/dL)</span>}><InputNumber className="w-full" /></Form.Item></Col>
+                <Col span={12}><Form.Item className="no-margin-item mb-2" name="hdl" label={<span className="text-xs">HDL (mg/dL)</span>}><InputNumber className="w-full" /></Form.Item></Col>
+                <Col span={12}><Form.Item className="no-margin-item mb-2" name="ldl" label={<span className="text-xs">LDL (mg/dL)</span>}><InputNumber className="w-full" /></Form.Item></Col>
+                <Col span={12}><Form.Item className="no-margin-item mb-2" name="trigliceridos" label={<span className="text-xs">Triglic. (mg/dL)</span>}><InputNumber className="w-full" /></Form.Item></Col>
+                <Col span={24}><Form.Item name="fecha_metabolismo" label={<span className="text-xs">Fecha Análisis</span>} className="no-margin-item mb-2"><DatePicker className="w-full" format="DD/MM/YYYY" /></Form.Item></Col>
+              </Row>
+            </Card>
+          </div>
+
+          {/* COLUMNA 2: HEMATOLOGÍA Y FUNCIÓN RENAL */}
+          <div className="column column-center">
+            <Space direction="vertical" className="w-full flex-1 flex flex-col" size={16} styles={{ item: { display: 'flex' }}}>
+              <Card
+                title={<Space><MedicineBoxOutlined style={{ color: '#722ed1' }} /> HEMATOLOGÍA</Space>}
+                className="flex-column-card"
+                styles={{ header: { minHeight: '40px', padding: '0 12px' }, body: { padding: '12px', overflowY: 'auto' } }}
+              >
+                <Row gutter={12}>
+                  <Col span={12}><Form.Item className="no-margin-item mb-2" name="hemoglobina" label={<span className="text-xs">Hemoglobina (g/dL)</span>}><InputNumber className="w-full" precision={1}/></Form.Item></Col>
+                  <Col span={12}><Form.Item className="no-margin-item mb-2" name="hematocrito" label={<span className="text-xs">Hematocrito (%)</span>}><InputNumber className="w-full" precision={1}/></Form.Item></Col>
+                  <Col span={24}><Form.Item name="fecha_hematologia" label={<span className="text-xs">Fecha Análisis</span>} className="no-margin-item mb-2"><DatePicker className="w-full" format="DD/MM/YYYY" /></Form.Item></Col>
+                </Row>
+              </Card>
+
+              <Card
+                title={<Space><ExperimentOutlined style={{ color: '#1890ff' }} /> FUNCIÓN RENAL</Space>}
+                className="flex-column-card flex-1"
+                styles={{ header: { minHeight: '40px', padding: '0 12px' }, body: { padding: '12px', overflowY: 'auto' } }}
+              >
+                <Row gutter={12}>
+                  <Col span={12}><Form.Item className="no-margin-item mb-2" name="creatinina" label={<span className="text-xs">Creatinina (mg/dL)</span>}><InputNumber className="w-full" precision={2}/></Form.Item></Col>
+                  <Col span={12}><Form.Item className="no-margin-item mb-2" name="urea_bun" label={<span className="text-xs">Urea / BUN</span>}><InputNumber className="w-full" /></Form.Item></Col>
+                  <Col span={24}><Form.Item className="no-margin-item mb-2" name="tfg" label={<span className="text-xs">TFG (CKD-EPI)</span>}><InputNumber className="w-full" /></Form.Item></Col>
+                  <Col span={24}><Form.Item name="fecha_renal" label={<span className="text-xs">Fecha Análisis</span>} className="no-margin-item mb-0"><DatePicker className="w-full" format="DD/MM/YYYY" /></Form.Item></Col>
+                </Row>
+              </Card>
+            </Space>
+          </div>
+
+          {/* COLUMNA 3: ESTADO NUTRICIONAL E INFLAMATORIO */}
+          <div className="column column-right">
+            <Space direction="vertical" className="w-full flex-1 flex flex-col" size={16} styles={{ item: { display: 'flex' }}}>
+              <Card
+                title={<Space><MedicineBoxOutlined style={{ color: '#52c41a' }} /> N. PROTEICO</Space>}
+                className="flex-column-card"
+                styles={{ header: { minHeight: '40px', padding: '0 12px' }, body: { padding: '12px', overflowY: 'auto' } }}
+              >
+                <Row gutter={12}>
+                  <Col span={12}><Form.Item className="no-margin-item mb-2" name="albumina" label={<span className="text-xs">Albúmina (g/dL)</span>}><InputNumber className="w-full" precision={1}/></Form.Item></Col>
+                  <Col span={12}><Form.Item className="no-margin-item mb-2" name="globulinas" label={<span className="text-xs">Globulinas (g/dL)</span>}><InputNumber className="w-full" precision={1}/></Form.Item></Col>
+                  <Col span={24}><Form.Item className="no-margin-item mb-2" name="proteinas_totales" label={<span className="text-xs">Prot. Totales (g/dL)</span>}><InputNumber className="w-full" precision={1}/></Form.Item></Col>
+                  <Col span={24}><Form.Item name="fecha_proteico" label={<span className="text-xs">Fecha Análisis</span>} className="no-margin-item mb-2"><DatePicker className="w-full" format="DD/MM/YYYY" /></Form.Item></Col>
+                </Row>
+              </Card>
+
+              <Card
+                title={<Space><ExperimentOutlined style={{ color: '#f5222d' }} /> INFLAMACIÓN</Space>}
+                className="flex-column-card flex-1"
+                styles={{ header: { minHeight: '40px', padding: '0 12px' }, body: { padding: '12px', overflowY: 'auto' } }}
+              >
+                <Row gutter={12}>
+                  <Col span={24}><Form.Item className="no-margin-item mb-2" name="pcr" label={<span className="text-xs">PCR Cuantitativo (mg/L)</span>}><InputNumber className="w-full" precision={2}/></Form.Item></Col>
+                  <Col span={24}><Form.Item name="fecha_pcr" label={<span className="text-xs">Fecha Análisis</span>} className="no-margin-item mb-0"><DatePicker className="w-full" format="DD/MM/YYYY" /></Form.Item></Col>
+                </Row>
+              </Card>
+            </Space>
+          </div>
+        </div>
+
+        <div className="action-footer">
+          <Link href="/physical" passHref>
+            <Button icon={<ArrowLeftOutlined />} size="large">Atrás</Button>
+          </Link>
+          <Button
             type="primary"
-            icon={<SaveOutlined />}
+            size="large"
             onClick={() => form.submit()}
             loading={loading}
             disabled={!currentPatient}
-            className="h-10 px-6 rounded-lg bg-blue-600 shadow-md"
+            icon={<SaveOutlined />}
+            className="save-button"
           >
             {currentPatient?.dni ? "Guardar Resultados" : "Seleccione un paciente"}
-          </Button> */}
+          </Button>
         </div>
+      </Form>
 
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-          autoComplete="off"
-          requiredMark={false}
-        >
-          <Row gutter={[16, 16]}>
-            <Col xs={24} lg={12}>
-              <Space direction="vertical" className="w-full" size={16}>
-                <Card
-                  title={<><StockOutlined className="mr-2 text-orange-500" /> METABOLISMO GLÚCIDOS Y LÍPIDOS</>}
-                  className="shadow-sm rounded-xl border-t-4 border-t-orange-400"
-                  size="small"
-                >
-                  <Row gutter={12}>
-                    <Col span={12}><Form.Item name="hba1c" label="HbA1c (%)"><InputNumber className="w-full" precision={2} /></Form.Item></Col>
-                    <Col span={12}><Form.Item name="glucosa" label="Glucosa (mg/dL)"><InputNumber className="w-full" /></Form.Item></Col>
-                    <Col span={6}><Form.Item name="colesterol" label="Col. Total"><InputNumber className="w-full" /></Form.Item></Col>
-                    <Col span={6}><Form.Item name="hdl" label="HDL"><InputNumber className="w-full" /></Form.Item></Col>
-                    <Col span={6}><Form.Item name="ldl" label="LDL"><InputNumber className="w-full" /></Form.Item></Col>
-                    <Col span={6}><Form.Item name="trigliceridos" label="Triglic."><InputNumber className="w-full" /></Form.Item></Col>
-                    <Col span={24}><Form.Item name="fecha_metabolismo" label="Fecha de Análisis" className="mb-0"><DatePicker className="w-full" /></Form.Item></Col>
-                  </Row>
-                </Card>
+      <style jsx global>{`
+        /* Ajuste para que quepa en el Content del AppLayout sin scroll principal */
+        .ergonomic-container {
+          height: calc(100vh - 124px); /* Ajuste basado en Navbar + Padding del Layout */
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          font-size: 14px;
+        }
 
-                <Card
-                  title={<><MedicineBoxOutlined className="mr-2 text-purple-500" /> HEMATOLOGÍA</>}
-                  className="shadow-sm rounded-xl border-t-4 border-t-purple-400"
-                  size="small"
-                >
-                  <Row gutter={12}>
-                    <Col span={8}><Form.Item name="hemoglobina" label="Hemoglobina"><InputNumber className="w-full" precision={1}/></Form.Item></Col>
-                    <Col span={8}><Form.Item name="hematocrito" label="Hematocrito"><InputNumber className="w-full" precision={1}/></Form.Item></Col>
-                    <Col span={8}><Form.Item name="fecha_hematologia" label="Fecha" className="mb-0"><DatePicker className="w-full" /></Form.Item></Col>
-                  </Row>
-                </Card>
-              </Space>
-            </Col>
+        .page-header {
+          display: flex;
+          align-items: center;
+          padding-bottom: 16px;
+          flex-shrink: 0;
+        }
 
-            <Col xs={24} lg={12}>
-              <Space direction="vertical" className="w-full" size={16}>
-                <Card
-                  title={<><ExperimentOutlined className="mr-2 text-blue-500" /> FUNCIÓN RENAL</>}
-                  className="shadow-sm rounded-xl border-t-4 border-t-blue-400"
-                  size="small"
-                >
-                  <Row gutter={12}>
-                    <Col span={8}><Form.Item name="creatinina" label="Creatinina"><InputNumber className="w-full" precision={2}/></Form.Item></Col>
-                    <Col span={8}><Form.Item name="urea_bun" label="Urea / BUN"><InputNumber className="w-full" /></Form.Item></Col>
-                    <Col span={8}><Form.Item name="tfg" label="TFG (CKD-EPI)"><InputNumber className="w-full" /></Form.Item></Col>
-                    <Col span={24}><Form.Item name="fecha_renal" label="Fecha de Análisis" className="mb-0"><DatePicker className="w-full" /></Form.Item></Col>
-                  </Row>
-                </Card>
+        .main-form {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
 
-                <Card
-                  title={<><MedicineBoxOutlined className="mr-2 text-emerald-500" /> ESTADO NUTRICIONAL PROTEICO</>}
-                  className="shadow-sm rounded-xl border-t-4 border-t-emerald-400"
-                  size="small"
-                >
-                  <Row gutter={12}>
-                    <Col span={8}><Form.Item name="albumina" label="Albúmina"><InputNumber className="w-full" precision={1}/></Form.Item></Col>
-                    <Col span={8}><Form.Item name="globulinas" label="Globulinas"><InputNumber className="w-full" precision={1}/></Form.Item></Col>
-                    <Col span={8}><Form.Item name="proteinas_totales" label="Prot. Totales"><InputNumber className="w-full" precision={1}/></Form.Item></Col>
-                    <Col span={24}><Form.Item name="fecha_proteico" label="Fecha de Análisis" className="mb-0"><DatePicker className="w-full" /></Form.Item></Col>
-                  </Row>
-                </Card>
+        .content-layout {
+          flex: 1;
+          display: flex;
+          gap: 16px;
+          overflow: hidden;
+        }
 
-                <Card
-                  title={<><ExperimentOutlined className="mr-2 text-red-500" /> INFLAMACIÓN CRÓNICA</>}
-                  className="shadow-sm rounded-xl border-t-4 border-t-red-400"
-                  size="small"
-                >
-                  <Row gutter={12}>
-                    <Col span={12}><Form.Item name="pcr" label="PCR Cuantitativo" className="mb-0"><InputNumber className="w-full" precision={2}/></Form.Item></Col>
-                    <Col span={12}><Form.Item name="fecha_pcr" label="Fecha" className="mb-0"><DatePicker className="w-full" /></Form.Item></Col>
-                  </Row>
-                </Card>
-              </Space>
-            </Col>
-          </Row>
+        .column {
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
 
-          <Row className="flex justify-center mt-12 gap-4">
-            <Col>
-              <Link href="/physical" passHref>
-                <Button
-                  type="default"
-                  icon={<ArrowLeftOutlined />}
-                  size="large"
-                  style={{ minWidth: '120px' }}
-                >
-                  Atrás
-                </Button>
-              </Link>
-            </Col>
-            <Col>
-              <Button
-                type="primary"
-                size="large"
-                htmlType="submit"
-                loading={loading}
-                disabled={!currentPatient}
-                icon={<SaveOutlined />}
-                style={{ minWidth: '150px' }}
-              >
-                Guardar Resultados
-              </Button>
-            </Col>
-          </Row>
-        </Form>
-      </div>
+        .column-left { flex: 1; }
+        .column-center { flex: 1; }
+        .column-right { flex: 1; }
+
+        .flex-column-card {
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          flex: 1;
+        }
+        
+        /* Oculta scrollbar en las tarjetas */
+        .flex-column-card .ant-card-body::-webkit-scrollbar {
+            display: none;
+        }
+        .flex-column-card .ant-card-body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .action-footer {
+          display: flex;
+          justify-content: space-between;
+          padding-top: 16px;
+          border-top: 1px solid #f0f0f0;
+          flex-shrink: 0;
+          margin-top: 8px;
+        }
+
+        .save-button {
+          background: #1890ff;
+          font-weight: 600;
+          padding: 0 40px;
+        }
+
+        .no-margin-item { margin-bottom: 0 !important; }
+      `}</style>
     </div>
   );
 };

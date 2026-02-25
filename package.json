@@ -13,6 +13,7 @@
     "@types/moment": "^2.11.29",
     "antd": "^5.26.7",
     "axios": "^1.11.0",
+    "dayjs": "^1.11.19",
     "file-saver": "^2.0.5",
     "firebase": "^12.1.0",
     "moment": "^2.30.1",
