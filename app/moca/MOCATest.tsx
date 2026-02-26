@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Steps, Typography, Card, Button, notification } from 'antd';
+import { Typography, Card, Button, notification } from 'antd';
 import { initialScores, sections, calculateScore, calculateSectionProgress } from '../utils/moca/utils';
 import { MOCAScores, EducationLevel, SectionKey } from '../type';
 import { FileTextOutlined, ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
@@ -20,7 +20,6 @@ import { useGlobalContext } from '../context/GlobalContext';
 import { actualizarResultado } from '../lib/pacienteService';
 
 const { Title, Text } = Typography;
-const { Step } = Steps;
 
 const MOCATest: React.FC = () => {
   const [educationLevel, setEducationLevel] = useState<EducationLevel>('university_complete');
@@ -129,14 +128,6 @@ const MOCATest: React.FC = () => {
                   <span className="text-blue-600 font-bold text-base uppercase tracking-wider mb-2">
                     Sección: {currentSectionTitle}
                   </span>
-                  <Steps
-                    current={activeSectionIndex}
-                    size="small"
-                    className="w-full"
-                    progressDot
-                  >
-                    {activeSectionsList.map(s => <Step key={s.key} />)}
-                  </Steps>
                 </div>
               }
               className="shadow-sm rounded-xl border-t-4 border-t-blue-500 "

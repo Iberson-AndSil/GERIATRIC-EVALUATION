@@ -1,7 +1,7 @@
 "use client";
 import { Form, Typography, Button, notification, Row, Col } from "antd";
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { NotificationPlacement } from "antd/es/notification/interface";
 import { BasicInfoSection } from "./BasicInfoSection";
@@ -15,6 +15,16 @@ const PatientForm = () => {
   const [api, contextHolder] = notification.useNotification();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const newDni = urlParams.get("newDni");
+      if (newDni) {
+        form.setFieldsValue({ dni: newDni });
+      }
+    }
+  }, [form]);
 
   const savePatientToFirebase = async () => {
     try {

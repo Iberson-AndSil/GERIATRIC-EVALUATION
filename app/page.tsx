@@ -36,6 +36,11 @@ const Home = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingPatient, setEditingPatient] = useState<Paciente | null>(null);
   const [form] = Form.useForm();
+  
+  const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
+  const [searchDni, setSearchDni] = useState('');
+  const [searchResult, setSearchResult] = useState<'none' | 'found' | 'not_found'>('none');
+  const [foundPatient, setFoundPatient] = useState<Paciente | null>(null);
 
   const fetchPacientes = async () => {
     try {
@@ -368,10 +373,48 @@ const Home = () => {
     });
   };
 
-  const newPatient = () => {
+  const openSearchModal = () => {
+    setSearchDni('');
+    setSearchResult('none');
+    setFoundPatient(null);
+    setIsSearchModalVisible(true);
+  };
+
+  const currentPatientFromState = pacientes.find(p => p.dni === searchDni);
+
+  const handleSearchDni = async () => {
+    if (!searchDni) {
+      openNotification("warning", "Advertencia", "Ingrese un DNI para buscar", "topRight");
+      return;
+    }
+    try {
+      setLoading(true);
+      // First check local state
+      if (currentPatientFromState) {
+        setFoundPatient(currentPatientFromState);
+        setSearchResult('found');
+        return;
+      }
+      // If not in state, check DB
+      const res = await axios.get(`/api/pacientes/${searchDni}`);
+      if (res.data && res.data.dni) {
+        setFoundPatient(res.data);
+        setSearchResult('found');
+      } else {
+        setSearchResult('not_found');
+      }
+    } catch (e) {
+      setSearchResult('not_found');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegisterNewPatient = () => {
     setCurrentPatient(null);
-    router.push('/family?isMember=true');
-  }
+    setIsSearchModalVisible(false);
+    router.push(`/family?isMember=true&newDni=${searchDni}`);
+  };
 
   return (
     <ConfigProvider theme={{ cssVar: true, hashed: false }}>
@@ -395,7 +438,7 @@ const Home = () => {
 
         <Row gutter={16} style={{ marginBottom: '24px' }} className='flex justify-start'>
           <Col>
-            <Button onClick={newPatient} type="primary" icon={<PlusOutlined />}>
+            <Button onClick={openSearchModal} type="primary" icon={<PlusOutlined />}>
               Nuevo Paciente
             </Button>
           </Col>
@@ -444,6 +487,79 @@ const Home = () => {
             </Link>
           </Col>
         </Row>
+
+        <Modal
+          title="Buscar Paciente por DNI"
+          open={isSearchModalVisible}
+          onCancel={() => setIsSearchModalVisible(false)}
+          footer={null}
+        >
+          <div style={{ marginBottom: 16 }}>
+            <Text>Ingrese el DNI del paciente:</Text>
+            <Input
+              placeholder="DNI"
+              value={searchDni}
+              onChange={(e) => setSearchDni(e.target.value)}
+              style={{ marginTop: 8 }}
+              onPressEnter={handleSearchDni}
+              disabled={loading}
+              maxLength={8}
+            />
+          </div>
+          
+          {searchResult === 'none' && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <Button onClick={() => setIsSearchModalVisible(false)}>
+                Cancelar
+              </Button>
+              <Button type="primary" onClick={handleSearchDni} loading={loading}>
+                Buscar
+              </Button>
+            </div>
+          )}
+
+          {searchResult === 'found' && foundPatient && (
+            <div>
+              <div style={{ marginBottom: 16, padding: '12px', backgroundColor: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: '4px' }}>
+                <Text strong style={{ color: '#52c41a' }}>Paciente encontrado:</Text>
+                <br />
+                <Text>{foundPatient.nombre}</Text>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                <Button onClick={() => setIsSearchModalVisible(false)}>
+                  Cancelar
+                </Button>
+                <Button 
+                  type="primary" 
+                  onClick={() => {
+                    setIsSearchModalVisible(false);
+                    handleNewEvaluation(foundPatient);
+                  }}
+                >
+                  Nueva Evaluación
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {searchResult === 'not_found' && (
+            <div>
+              <div style={{ marginBottom: 16, padding: '12px', backgroundColor: '#fff2f0', border: '1px solid #ffccc7', borderRadius: '4px' }}>
+                <Text strong style={{ color: '#ff4d4f' }}>Paciente no encontrado</Text>
+                <br />
+                <Text>El DNI ingresado no está registrado en el sistema.</Text>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                <Button onClick={() => setIsSearchModalVisible(false)}>
+                  Cancelar
+                </Button>
+                <Button type="primary" onClick={handleRegisterNewPatient}>
+                  Registrar Paciente
+                </Button>
+              </div>
+            </div>
+          )}
+        </Modal>
       </div>
     </ConfigProvider>
   );
