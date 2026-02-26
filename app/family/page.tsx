@@ -1,7 +1,7 @@
 "use client";
 import { Form, Typography, Button, notification, Row, Col } from "antd";
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { NotificationPlacement } from "antd/es/notification/interface";
 import { BasicInfoSection } from "./BasicInfoSection";
@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 
 const { Title } = Typography;
 
-const PatientForm = () => {
+const PatientFormContent = () => {
   const [form] = Form.useForm();
   const [api, contextHolder] = notification.useNotification();
   const [loading, setLoading] = useState(false);
@@ -145,5 +145,11 @@ const PatientForm = () => {
     </>
   );
 };
+
+const PatientForm = () => (
+  <Suspense fallback={<div>Loading...</div>}>
+    <PatientFormContent />
+  </Suspense>
+);
 
 export default PatientForm;
