@@ -193,7 +193,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 telefono: currentPatient.phone || '',
                 email: currentPatient.email || '',
                 numero_historia: currentPatient.numero_historia || '',
-                nameDoctor: currentPatient.nameDoctor || "POVES REQUENA, LORENZO SEGUNDO",
+                nameDoctor: currentPatient.nameDoctor || "",
                 nameLicensed: currentPatient.nameLicensed || "",
                 dateEvaluation: currentPatient.dateEvaluation || dayjs().format('DD/MM/YYYY')
             };
@@ -333,7 +333,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         <Input
                             size="large"
                             prefix={<CalendarOutlined className="text-gray-400" />}
-                            disabled
+                            disabled={!isEditing}
                         />
                     </Form.Item>
                 </Col>

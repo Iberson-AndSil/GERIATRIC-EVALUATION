@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Form, Radio, Card, Row, Col, Typography, Space, Button, notification, Statistic, Divider, Tag } from "antd";
-import { SaveOutlined, HeartOutlined, CheckCircleOutlined, SyncOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { Form, Radio, Card, Row, Col, Typography, Space, Button, notification, Statistic, Divider, Tag, InputNumber } from "antd";
+import { SaveOutlined, HeartOutlined, CheckCircleOutlined, SyncOutlined, ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { actualizarResultado, obtenerResultadoPorId } from "../lib/pacienteService";
@@ -16,7 +16,10 @@ interface FragilidadValues {
   caminar: "SI" | "NO";
   escaleras: "SI" | "NO";
   actividad: "MAS_UNA" | "UNA_VEZ" | "MES" | "CASI_NUNCA";
-  dinamometria?: number;
+  mano_izquierda_1?: number;
+  mano_izquierda_2?: number;
+  mano_derecha_1?: number;
+  mano_derecha_2?: number;
 }
 
 interface ResultadoClinico {
@@ -31,6 +34,10 @@ interface ResultadoClinico {
     actividad: string;
     score_fragilidad: number;
     categoria: string;
+    mano_izquierda_1?: number;
+    mano_izquierda_2?: number;
+    mano_derecha_1?: number;
+    mano_derecha_2?: number;
   };
 }
 
@@ -66,9 +73,8 @@ const FragilidadForm: React.FC = () => {
         setIsSyncing(true);
         const resultado = (await obtenerResultadoPorId(currentPatient.dni, currentResultId)) as ResultadoClinico;
         if (resultado && !resultado.inexistente) {
-          const { evaluacion_fragilidad: frag, dynamometry } = resultado;
+          const { evaluacion_fragilidad: frag } = resultado;
           const initialValues = {
-            dinamometria: dynamometry || 0,
             ...(frag || {}),
           } as FragilidadValues;
           form.setFieldsValue(initialValues);
@@ -91,12 +97,24 @@ const FragilidadForm: React.FC = () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
+      
+      // Calcular el máximo de dinamometría para compatibilidad global
+      const dynamoValues = [
+        values.mano_izquierda_1 || 0,
+        values.mano_izquierda_2 || 0,
+        values.mano_derecha_1 || 0,
+        values.mano_derecha_2 || 0,
+      ];
+      const maxDynamo = Math.max(...dynamoValues);
+
       await actualizarResultado(currentPatient.dni, currentResultId, "evaluacion_fragilidad", {
         ...values,
         score_fragilidad: score,
         categoria: categoria.label,
-        // fecha: new Date().toISOString(),
       });
+
+      // También guardamos el valor máximo en el campo de nivel superior 'dynamometry'
+      await actualizarResultado(currentPatient.dni, currentResultId, "dynamometry", maxDynamo);
       api.success({ message: "Éxito", description: "Evaluación guardada correctamente." });
       router.push("/");
     } catch (error: any) {
@@ -251,23 +269,36 @@ const FragilidadForm: React.FC = () => {
 
                   <Divider className="my-8" />
 
-                  <Form.Item
-                    name="dinamometria"
-                    label={
-                      <Text type="secondary" className="uppercase text-xs font-bold">
-                        Dinamometría (Fuerza Manual)
-                      </Text>
-                    }
-                  >
-                    <div className="bg-white py-6 rounded-2xl border-2 border-dashed border-slate-200">
-                      <Statistic
-                        value={form.getFieldValue("dinamometria") || 0}
-                        precision={1}
-                        suffix="Kg"
-                        valueStyle={{ color: "#1e293b", fontWeight: "bold" }}
-                      />
-                    </div>
-                  </Form.Item>
+                  <div className="text-left mb-4">
+                    <Text strong className="uppercase text-xs font-bold text-slate-500">
+                      Dinamometría (Fuerza Manual - Kg)
+                    </Text>
+                  </div>
+
+                  <div className="bg-white p-6 rounded-2xl border-2 border-dashed border-slate-200">
+                    <Row gutter={[16, 16]}>
+                      <Col span={12}>
+                        <Form.Item name="mano_izquierda_1" label={<Text className="text-[10px] uppercase font-bold text-blue-600">Mano IZQ - 1</Text>} className="mb-0">
+                          <InputNumber min={0} className="w-full" precision={1} placeholder="0.0" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item name="mano_izquierda_2" label={<Text className="text-[10px] uppercase font-bold text-blue-600">Mano IZQ - 2</Text>} className="mb-0">
+                          <InputNumber min={0} className="w-full" precision={1} placeholder="0.0" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item name="mano_derecha_1" label={<Text className="text-[10px] uppercase font-bold text-green-600">Mano DER - 1</Text>} className="mb-0">
+                          <InputNumber min={0} className="w-full" precision={1} placeholder="0.0" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item name="mano_derecha_2" label={<Text className="text-[10px] uppercase font-bold text-green-600">Mano DER - 2</Text>} className="mb-0">
+                          <InputNumber min={0} className="w-full" precision={1} placeholder="0.0" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </div>
                 </div>
               </Card>
             </Col>
