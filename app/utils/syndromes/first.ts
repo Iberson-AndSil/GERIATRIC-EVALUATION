@@ -83,6 +83,9 @@ export const interpretSarcopenia = (score: number): string => {
 };
 
 export const interpretICIQ = (puntaje: number) => {
+    if (puntaje === 0) {
+        return { text: "No hay incontinencia", color: "gray" };
+    }
     if (puntaje <= 5) {
         return { text: "Incontinencia leve", color: "green" };
     }

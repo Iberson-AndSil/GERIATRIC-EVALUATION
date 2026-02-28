@@ -12,13 +12,13 @@ interface BristolCardProps {
 export const BristolCard = ({ bristolResult, score, handleBristolChange }: BristolCardProps) => {
 
   const marks = {
+    0: '0',
     1: '1',
     2: '2',
     3: '3',
     4: '4',
     5: '5',
-    6: '6',
-    7: '7'
+    6: '6'
   };
 
   return (
@@ -31,12 +31,14 @@ export const BristolCard = ({ bristolResult, score, handleBristolChange }: Brist
           <div className="mb-6">
             <Text strong className="block mb-2">Escala de Bristol (Tipo de heces)</Text>
             <Slider
-              min={1}
-              max={7}
+              min={0}
+              max={6}
               marks={marks}
+              value={score}
               onChange={val => handleBristolChange('bristolType', val)}
-              trackStyle={{ backgroundColor: '#fa8c16' }}
-              handleStyle={{ borderColor: '#fa8c16' }}
+              trackStyle={score > 0 ? { backgroundColor: '#ff4d4f' } : { backgroundColor: '#f5f5f5' }}
+              handleStyle={score > 0 ? { borderColor: '#ff4d4f' } : { borderColor: '#d9d9d9' }}
+              disabled
             />
             <div className="flex justify-between text-xs text-gray-400 mt-1">
               <span>Estreñimiento</span>
@@ -51,7 +53,7 @@ export const BristolCard = ({ bristolResult, score, handleBristolChange }: Brist
             <Checkbox onChange={e => handleBristolChange('hardStool', e.target.checked)}>Heces duras</Checkbox>
             <Checkbox onChange={e => handleBristolChange('incomplete', e.target.checked)}>Evacuación incompleta tras defecación</Checkbox>
             <Checkbox onChange={e => handleBristolChange('obstruction', e.target.checked)}>Sensación de obstrucción</Checkbox>
-            <Checkbox onChange={e => handleBristolChange('manualAid', e.target.checked)}>Necesita ayuda manual</Checkbox>
+            <Checkbox onChange={e => handleBristolChange('manualAid', e.target.checked)}>Necesita ayuda manual o farmacológica</Checkbox>
             <Checkbox onChange={e => handleBristolChange('lessThanThree', e.target.checked)} className="text-red-500 font-medium">
               &lt; 3 deposiciones/semana
             </Checkbox>

@@ -1,13 +1,13 @@
 import { CalculoItems, RespuestaItem, MonedasCorrectas, BilletesCorrectos, Intrusiones, Recuerdo, InterpretacionResultado } from './types';
 
 export const calcularPuntajeParte1 = (monedas: MonedasCorrectas, billetes: BilletesCorrectos, intrusiones: Intrusiones) => {
-  const totalMonedasCorrectas = Math.max(0, 
+  const totalMonedasCorrectas = Math.max(0,
     Object.values(monedas)
-    .filter(val => val === true).length - intrusiones.monedas);
-  
-  const totalBilletesCorrectos = Math.max(0, 
+      .filter(val => val === true).length - intrusiones.monedas);
+
+  const totalBilletesCorrectos = Math.max(0,
     Object.values(billetes)
-    .filter(val => val === true).length - intrusiones.billetes);
+      .filter(val => val === true).length - intrusiones.billetes);
 
   return totalMonedasCorrectas + totalBilletesCorrectos;
 };
@@ -22,22 +22,26 @@ export const calcularPuntajeParte2 = (calculos: Record<CalculoItems, RespuestaIt
 
 export const calcularPuntajeParte3 = (recuerdo: Recuerdo, intrusiones: Intrusiones) => {
   let puntaje = 0;
-  
+
   if (recuerdo.cantidadMonedas === '11') puntaje += 1;
   if (recuerdo.totalDinero === '9') puntaje += 1;
-  
-  if (recuerdo.monedasRecordadas.centimos20 === 5) puntaje += 2;
-  else if (recuerdo.monedasRecordadas.centimos20 > 0) puntaje += 1;
-  
-  if (recuerdo.monedasRecordadas.centimos50 === 2) puntaje += 2;
-  else if (recuerdo.monedasRecordadas.centimos50 > 0) puntaje += 1;
-  
-  if (recuerdo.monedasRecordadas.sol1 === 1) puntaje += 2;
-  else if (recuerdo.monedasRecordadas.sol1 > 0) puntaje += 1;
-  
-  if (recuerdo.monedasRecordadas.soles2 === 3) puntaje += 2;
-  else if (recuerdo.monedasRecordadas.soles2 > 0) puntaje += 1;
-  
+
+  const centimos20 = Number(recuerdo.monedasRecordadas.centimos20) || 0;
+  if (centimos20 === 5) puntaje += 2;
+  else if (centimos20 > 0) puntaje += 1;
+
+  const centimos50 = Number(recuerdo.monedasRecordadas.centimos50) || 0;
+  if (centimos50 === 2) puntaje += 2;
+  else if (centimos50 > 0) puntaje += 1;
+
+  const sol1 = Number(recuerdo.monedasRecordadas.sol1) || 0;
+  if (sol1 === 1) puntaje += 2;
+  else if (sol1 > 0) puntaje += 1;
+
+  const soles2 = Number(recuerdo.monedasRecordadas.soles2) || 0;
+  if (soles2 === 3) puntaje += 2;
+  else if (soles2 > 0) puntaje += 1;
+
   return Math.max(0, puntaje - intrusiones.recuerdo);
 };
 

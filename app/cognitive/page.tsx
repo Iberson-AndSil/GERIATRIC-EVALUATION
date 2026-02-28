@@ -58,7 +58,7 @@ export default function EvaluacionMonetaria() {
 
   const [recuerdo, setRecuerdo] = useState<Recuerdo>({
     cantidadMonedas: '', totalDinero: '',
-    monedasRecordadas: { centimos20: 0, centimos50: 0, sol1: 0, soles2: 0 },
+    monedasRecordadas: { centimos20: '', centimos50: '', sol1: '', soles2: '' },
   });
 
   const nextStep = () => setCurrentStep(prev => prev + 1);

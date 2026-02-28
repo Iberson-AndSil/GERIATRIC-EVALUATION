@@ -1,5 +1,5 @@
 'use client';
-import { Card, Input, Typography, Button, Space, Row, Col, Divider, Form } from 'antd';
+import { Card, Input, Typography, Button, Space, Row, Col, Divider, Form, Radio } from 'antd';
 import { Recuerdo, Intrusiones } from '../utils/cognitive/types';
 
 const { Text, Title } = Typography;
@@ -27,7 +27,7 @@ export default function Parte5Recuerdo({
       ...prev,
       monedasRecordadas: {
         ...prev.monedasRecordadas,
-        [key]: parseInt(value) || 0
+        [key]: value
       }
     }));
   };
@@ -44,24 +44,26 @@ export default function Parte5Recuerdo({
             <Text strong style={{ display: 'block', marginBottom: '8px' }}>
               1. “¿Cuántas monedas le enseñé antes?”
             </Text>
-            <Input
-              type="number"
-              suffix={<Text type="secondary">monedas</Text>}
-              value={recuerdo.cantidadMonedas}
+            <Radio.Group 
+              value={recuerdo.cantidadMonedas} 
               onChange={(e) => setRecuerdo(prev => ({ ...prev, cantidadMonedas: e.target.value }))}
-            />
+            >
+              <Radio value="correcto">Correcto</Radio>
+              <Radio value="incorrecto">Incorrecto</Radio>
+            </Radio.Group>
             <Text type="secondary" style={{ fontSize: '12px' }}>(Correcto: 11)</Text>
           </Col>
           <Col span={12} xs={24} sm={12}>
             <Text strong style={{ display: 'block', marginBottom: '8px' }}>
               2. “¿Cuánto dinero había en total?”
             </Text>
-            <Input
-              type="number"
-              prefix="S/."
-              value={recuerdo.totalDinero}
+            <Radio.Group 
+              value={recuerdo.totalDinero} 
               onChange={(e) => setRecuerdo(prev => ({ ...prev, totalDinero: e.target.value }))}
-            />
+            >
+              <Radio value="correcto">Correcto</Radio>
+              <Radio value="incorrecto">Incorrecto</Radio>
+            </Radio.Group>
             <Text type="secondary" style={{ fontSize: '12px' }}>(Correcto: 9)</Text>
           </Col>
         </Row>
@@ -76,42 +78,54 @@ export default function Parte5Recuerdo({
       <Row gutter={[16, 16]}>
         <Col span={6} xs={12}>
           <Card size="small" type="inner" title="20 céntimos">
-            <Input
-              type="number"
-              placeholder="0"
+            <Radio.Group 
               value={recuerdo.monedasRecordadas.centimos20}
               onChange={(e) => handleMonedaRecordadaChange('centimos20', e.target.value)}
-            />
+              style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}
+            >
+              <Radio value="correcto">Correcto</Radio>
+              <Radio value="incorrecto">Incorrecto</Radio>
+            </Radio.Group>
+            <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '8px' }}>(Correcto: 5)</Text>
           </Card>
         </Col>
         <Col span={6} xs={12}>
           <Card size="small" type="inner" title="50 céntimos">
-            <Input
-              type="number"
-              placeholder="0"
+            <Radio.Group 
               value={recuerdo.monedasRecordadas.centimos50}
               onChange={(e) => handleMonedaRecordadaChange('centimos50', e.target.value)}
-            />
+              style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}
+            >
+              <Radio value="correcto">Correcto</Radio>
+              <Radio value="incorrecto">Incorrecto</Radio>
+            </Radio.Group>
+            <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '8px' }}>(Correcto: 2)</Text>
           </Card>
         </Col>
         <Col span={6} xs={12}>
           <Card size="small" type="inner" title="1 Sol">
-            <Input
-              type="number"
-              placeholder="0"
+            <Radio.Group 
               value={recuerdo.monedasRecordadas.sol1}
               onChange={(e) => handleMonedaRecordadaChange('sol1', e.target.value)}
-            />
+              style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}
+            >
+              <Radio value="correcto">Correcto</Radio>
+              <Radio value="incorrecto">Incorrecto</Radio>
+            </Radio.Group>
+            <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '8px' }}>(Correcto: 1)</Text>
           </Card>
         </Col>
         <Col span={6} xs={12}>
           <Card size="small" type="inner" title="2 Soles">
-            <Input
-              type="number"
-              placeholder="0"
+            <Radio.Group 
               value={recuerdo.monedasRecordadas.soles2}
               onChange={(e) => handleMonedaRecordadaChange('soles2', e.target.value)}
-            />
+              style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}
+            >
+              <Radio value="correcto">Correcto</Radio>
+              <Radio value="incorrecto">Incorrecto</Radio>
+            </Radio.Group>
+            <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '8px' }}>(Correcto: 3)</Text>
           </Card>
         </Col>
       </Row>

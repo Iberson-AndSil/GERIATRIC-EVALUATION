@@ -43,22 +43,16 @@ const MMSEForm = () => {
 
     const handleValuesChange = (_: any, allValues: any) => {
         let total = 0;
-        const today = new Date();
-
-        if (allValues.date_day === today.getDate()) total += 1;
-        if (allValues.date_month === MONTHS[today.getMonth()]) total += 1;
-        if (allValues.date_year === today.getFullYear()) total += 1;
-        if (allValues.date_weekday === WEEKDAYS[today.getDay()]) total += 1;
-        if (allValues.date_season) total += 1;
-        if (allValues.place_floor === true) total += 1;
-        if (allValues.place_location === true) total += 1;
-        if (allValues.place_city === true) total += 1;
-        if (allValues.place_department === true) total += 1;
-        if (allValues.place_country === true) total += 1;
+        if (allValues.date_orientation === true) total += 5;
+        if (allValues.place_orientation === true) total += 5;
 
         if (allValues.memory_words?.length) total += allValues.memory_words.length;
         if (allValues.recall_words?.length) total += allValues.recall_words.length;
-        if (allValues.calculation === true) total += 5;
+        
+        const atencionScore = allValues.calc_mode === 'deletreo' 
+            ? (allValues.spelling?.length || 0)
+            : (allValues.calculation?.length || 0);
+        total += atencionScore;
 
         if (allValues.name_pencil === true) total += 1;
         if (allValues.name_clock === true) total += 1;
@@ -69,7 +63,7 @@ const MMSEForm = () => {
         if (allValues.command_close_eyes === true) total += 1;
         if (allValues.copy_drawing === true) total += 4;
 
-        if (allValues.write_sentence?.trim().length > 5) total += 1;
+        if (allValues.write_sentence === true) total += 1;
 
         setScore(total);
 
@@ -124,7 +118,7 @@ const MMSEForm = () => {
                 form={form}
                 layout="vertical"
                 onValuesChange={handleValuesChange}
-                initialValues={{ memory_words: [], recall_words: [] }}
+                initialValues={{ memory_words: [], recall_words: [], calc_mode: 'resta' }}
             >
                 <Row gutter={[16, 16]}>
                     <Col xs={24} md={16}>
@@ -132,65 +126,22 @@ const MMSEForm = () => {
                             title={<span className="text-blue-600"><EnvironmentOutlined /> ORIENTACIÓN</span>}
                             className="shadow-sm rounded-xl border-t-4 border-t-blue-500 !mb-4"
                         >
-                            <Divider orientation="left" className="!border-gray-200 !mt-0" plain><Text>¿Qué día es hoy? (Validación Automática)</Text></Divider>
-                            <Row gutter={8}>
-                                <Col span={3}>
-                                    <Form.Item name="date_day" label="Día">
-                                        <Select placeholder="Día">
-                                            {days.map(d => <Option key={d} value={d}>{d}</Option>)}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={6}>
-                                    <Form.Item name="date_month" label="Mes">
-                                        <Select placeholder="Mes">
-                                            {MONTHS.map(m => <Option key={m} value={m}>{m}</Option>)}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={4}>
-                                    <Form.Item name="date_year" label="Año">
-                                        <Select placeholder="Año">
-                                            {years.map(y => <Option key={y} value={y}>{y}</Option>)}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={5}>
-                                    <Form.Item name="date_weekday" label="S. Sem.">
-                                        <Select placeholder="Día Semana">
-                                            {WEEKDAYS.map(w => <Option key={w} value={w}>{w}</Option>)}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={6}>
-                                    <Form.Item name="date_season" label="Estación">
-                                        <Input placeholder="Escriba..." />
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                            <Divider orientation="left" className="!border-gray-200 !mt-0" plain><Text>¿Dónde estamos?</Text></Divider>
-                            <Row gutter={8}>
-                                <Col span={10}>
-                                    <Form.Item name="place_location" label="Lugar">
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Divider orientation="left" className="!border-gray-200 !mt-0" plain><Text>¿Qué día es hoy?</Text></Divider>
+                                    <Form.Item name="date_orientation" label={<Text><Text type="secondary">(Día del mes, mes, año, día de la semana y estación)</Text></Text>}>
                                         <Select placeholder="Seleccione">
-                                            <Option value={true}><span className="text-green-600"><CheckCircleOutlined /> Correcto</span></Option>
-                                            <Option value={false}><span className="text-red-500"><CloseCircleOutlined /> Incorrecto</span></Option>
+                                            <Option value={true}><span className="text-green-600"><CheckCircleOutlined /> Correcto (5 pts)</span></Option>
+                                            <Option value={false}><span className="text-red-500"><CloseCircleOutlined /> Incorrecto (0 pts)</span></Option>
                                         </Select>
                                     </Form.Item>
                                 </Col>
-                                <Col span={6}>
-                                    <Form.Item name="place_floor" label="Piso/Planta">
+                                <Col span={12}>
+                                    <Divider orientation="left" className="!border-gray-200 !mt-0" plain><Text>¿Dónde estamos?</Text></Divider>
+                                    <Form.Item name="place_orientation" label={<Text><Text type="secondary">(Lugar, piso/planta, ciudad, departamento y país)</Text></Text>}>
                                         <Select placeholder="Seleccione">
-                                            <Option value={true}><span className="text-green-600">Correcto</span></Option>
-                                            <Option value={false}><span className="text-red-500">Incorrecto</span></Option>
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={8}>
-                                    <Form.Item name="place_city" label="Ciudad">
-                                        <Select placeholder="Seleccione">
-                                            <Option value={true}><span className="text-green-600">Correcto</span></Option>
-                                            <Option value={false}><span className="text-red-500">Incorrecto</span></Option>
+                                            <Option value={true}><span className="text-green-600"><CheckCircleOutlined /> Correcto (5 pts)</span></Option>
+                                            <Option value={false}><span className="text-red-500"><CloseCircleOutlined /> Incorrecto (0 pts)</span></Option>
                                         </Select>
                                     </Form.Item>
                                 </Col>
@@ -250,11 +201,21 @@ const MMSEForm = () => {
                                     </Col>
                                 </Row>
                             </div>
+                            <Divider plain className="my-2 !border-gray-200">Leer y ejecutar: "CIERRE LOS OJOS"</Divider>
+                            <Form.Item name="command_close_eyes" className="flex justify-center mb-4">
+                                <Radio.Group size="large" buttonStyle="solid">
+                                    <Radio.Button value={true}><CheckCircleOutlined /></Radio.Button>
+                                    <Radio.Button value={false}>X</Radio.Button>
+                                </Radio.Group>
+                            </Form.Item>
                             <Row gutter={8}>
                                 <Col span={11} >
                                     <Divider plain className="!border-gray-200 !mt-0"><Text>Escribir frase (Sujeto+Predicado)</Text></Divider>
-                                    <Form.Item name="write_sentence">
-                                        <Input.TextArea rows={1} placeholder="Escriba aquí..." />
+                                    <Form.Item name="write_sentence" className="flex justify-center mb-0 mt-2">
+                                        <Radio.Group size="large" buttonStyle="solid">
+                                            <Radio.Button value={true}><CheckCircleOutlined /></Radio.Button>
+                                            <Radio.Button value={false}>X</Radio.Button>
+                                        </Radio.Group>
                                     </Form.Item>
                                 </Col>
                                 <Col span={2} className="!flex !justify-center !mt-0">
@@ -317,15 +278,47 @@ const MMSEForm = () => {
                                 </Checkbox.Group>
                             </Form.Item>
 
-                            <Divider orientation="left" plain className="!border-gray-200 !mt-12"><Text>Restar 7 a partir de 100, 5 veces consecutivas.</Text></Divider>
+                            <Divider orientation="left" plain className="!border-gray-200 !mt-12"><Text>Atención y Cálculo</Text></Divider>
+                            <Form.Item name="calc_mode" className="flex justify-center mb-2">
+                                <Radio.Group buttonStyle="solid" size="small">
+                                    <Radio.Button value="resta">Resta</Radio.Button>
+                                    <Radio.Button value="deletreo">Deletreo</Radio.Button>
+                                </Radio.Group>
+                            </Form.Item>
+                            
                             <Form.Item
-                                name="calculation"
-                                extra="Serie: 93-86-79-72-65" className="w-full"
+                                noStyle
+                                shouldUpdate={(prevValues, currentValues) => prevValues.calc_mode !== currentValues.calc_mode}
                             >
-                                <Select placeholder="Evaluar respuesta">
-                                    <Option value={true}><span className="text-green-600">Correcto (5 ptos)</span></Option>
-                                    <Option value={false}><span className="text-red-500">Incorrecto (0 ptos)</span></Option>
-                                </Select>
+                                {({ getFieldValue }) => {
+                                    const mode = getFieldValue('calc_mode');
+                                    if (mode === 'deletreo') {
+                                        return (
+                                            <>
+                                                <div className="text-center text-xs text-gray-500 mb-2">Deletrear "MUNDO" al revés</div>
+                                                <Form.Item name="spelling" className="w-full flex justify-center">
+                                                    <Checkbox.Group className="w-full">
+                                                        <div className="flex gap-2 flex-wrap justify-center">
+                                                            {["O", "D", "N", "U", "M"].map(l => <Checkbox key={l} value={l}>{l}</Checkbox>)}
+                                                        </div>
+                                                    </Checkbox.Group>
+                                                </Form.Item>
+                                            </>
+                                        );
+                                    }
+                                    return (
+                                        <>
+                                            <div className="text-center text-xs text-gray-500 mb-2">Restar 7 a partir de 100, 5 veces</div>
+                                            <Form.Item name="calculation" className="w-full flex justify-center">
+                                                <Checkbox.Group className="w-full">
+                                                    <div className="flex gap-2 flex-wrap justify-center">
+                                                        {["93", "86", "79", "72", "65"].map(n => <Checkbox key={n} value={n}>{n}</Checkbox>)}
+                                                    </div>
+                                                </Checkbox.Group>
+                                            </Form.Item>
+                                        </>
+                                    );
+                                }}
                             </Form.Item>
 
                             <Divider orientation="left" plain className="!border-gray-200 !mt-12"><Text>Recuerdo Diferido</Text></Divider>

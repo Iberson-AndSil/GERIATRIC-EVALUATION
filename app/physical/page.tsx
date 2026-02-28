@@ -19,12 +19,9 @@ const SPPBEvaluation = () => {
     const [tandemScore, setTandemScore] = useState(0);
     const [chairStandScore, setChairStandScore] = useState(0);
     const [walkScore, setWalkScore] = useState(0);
+    const [walkTimeMs, setWalkTimeMs] = useState<number | null>(null);
     const { currentPatient, currentResultId } = useGlobalContext();
     const [loading, setLoading] = useState(false);
-    const [firstMeasure, setFirstMeasure] = useState<number | null>(null);
-    const [secondMeasure, setSecondMeasure] = useState<number | null>(null);
-    const [averageScore, setAverageScore] = useState<number | null>(null);
-    const [strengthCategory, setStrengthCategory] = useState<string>('');
     const [api, contextHolder] = notification.useNotification();
 
     const steps = [
@@ -51,19 +48,7 @@ const SPPBEvaluation = () => {
         return 0;
     };
 
-    const calculateResults = (first: number | null, second: number | null) => {
-        if (first !== null && second !== null) {
-            const avg = (first + second) / 2;
-            setAverageScore(avg);
-            if (avg >= 40) setStrengthCategory('Excelente');
-            else if (avg >= 30) setStrengthCategory('Buena');
-            else if (avg >= 20) setStrengthCategory('Normal');
-            else setStrengthCategory('Baja');
-        } else {
-            setAverageScore(null);
-            setStrengthCategory('');
-        }
-    };
+
 
     const onFinish = (values: any) => {
         let score = 0;
@@ -89,10 +74,14 @@ const SPPBEvaluation = () => {
         try {
             setLoading(true);
             if (!currentPatient?.dni) throw new Error("No se ha seleccionado un paciente");
-            const dynamometry = averageScore?.toString() || "0";
             const Balance = totalScore.toString();
-            await actualizarResultado(currentPatient.dni, currentResultId || "", 'dynamometry', dynamometry);
             await actualizarResultado(currentPatient.dni, currentResultId || "", 'Balance', Balance);
+            
+            if (walkTimeMs) {
+                const speed = (4 / walkTimeMs).toFixed(2);
+                await actualizarResultado(currentPatient.dni, currentResultId || "", 'walking_speed', speed);
+            }
+
             api.success({ message: 'Éxito', description: 'Datos guardados correctamente' });
             router.push('/mental');
         } catch (err: any) {
@@ -224,8 +213,17 @@ const SPPBEvaluation = () => {
                         <div className="space-y-4">
                             <Form.Item
                                 name="walkTime"
-                                label="Tiempo registrado"
-                                className="mb-0"
+                                label={
+                                    <div className="flex justify-between w-full">
+                                        <span>Tiempo registrado (seg)</span>
+                                        {walkTimeMs ? (
+                                            <span className="text-blue-600 font-medium">
+                                                Velocidad: {(4 / walkTimeMs).toFixed(2)} m/s
+                                            </span>
+                                        ) : null}
+                                    </div>
+                                }
+                                className="mb-0 w-full"
                                 rules={[{ required: true, message: 'Requerido' }]}
                             >
                                 <div className="flex items-center gap-3">
@@ -233,7 +231,7 @@ const SPPBEvaluation = () => {
                                         min={0} step={0.1}
                                         className="w-full"
                                         placeholder="0.0"
-                                        onChange={(val) => setWalkScore(calculateWalkScore(val))}
+                                        onChange={(val) => { setWalkTimeMs(val); setWalkScore(calculateWalkScore(val)); }}
                                         addonAfter="seg"
                                     />
                                     <div className="flex flex-col items-center px-2 bg-gray-50 rounded border border-gray-200">
@@ -301,26 +299,26 @@ const SPPBEvaluation = () => {
                     </Title>
                     <Text type="secondary" className="text-lg">Batería Corta de Desempeño Físico (SPPB)</Text>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+                <div className="flex justify-center items-center">
 
-                    {/* COLUMNA IZQUIERDA: SPPB */}
-                    <div className="md:col-span-2 flex flex-col">
+                    {/* BATERIA SPPB */}
+                    <div className="w-full max-w-3xl flex flex-col">
                         <Card
                             title={<span className="text-blue-600 font-bold text-base"><ClockCircleOutlined className="mr-2" /> Batería SPPB</span>}
                             className="shadow-sm rounded-xl border-t-4 border-t-blue-500 h-full flex flex-col"
                             bodyStyle={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px' }}
                             size="small"
                         >
-                            <Steps current={currentStep} size="small" className="mb-6" items={steps} />
+                            <Steps current={currentStep} size="small" className="mb-6 px-4" items={steps} />
 
-                            <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ parallelPosition: false, semiTandemPosition: false, standUpTest: 'able' }} className="flex-1 flex flex-col">
+                            <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ parallelPosition: false, semiTandemPosition: false, standUpTest: 'able' }} className="flex-1 flex flex-col pt-2">
                                 {/* Altura mínima controlada pero razonable */}
                                 <div className="flex-1 min-h-[320px]">
                                     {renderStepContent(currentStep)}
                                 </div>
 
                                 {currentStep < 3 && (
-                                    <div className="flex justify-between mt-4 pt-4 border-t border-gray-100">
+                                    <div className="flex justify-between mt-6 pt-4 border-t border-gray-100">
                                         <Button disabled={currentStep === 0} onClick={prevStep} icon={<ArrowLeftOutlined />}>
                                             Atrás
                                         </Button>
@@ -339,60 +337,6 @@ const SPPBEvaluation = () => {
                         </Card>
                     </div>
 
-                    {/* COLUMNA DERECHA: Dinamometría */}
-                    <div className="md:col-span-1 flex flex-col">
-                        <Card
-                            title={<span className="text-purple-600 font-bold text-base"><ThunderboltOutlined className="mr-2" /> Dinamometría</span>}
-                            className="shadow-sm rounded-xl border-t-4 border-t-purple-500 h-full flex flex-col"
-                            bodyStyle={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '24px' }}
-                            size="small"
-                        >
-                            <Form layout="vertical" className="flex-1 flex flex-col space-y-4">
-                                <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                                    <Text type="secondary" className="text-xs uppercase font-bold block mb-3 text-purple-800">Mano Dominante</Text>
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600">1ª Medida</span>
-                                            <InputNumber min={0} max={100} step={0.1} placeholder="0.0" className="w-24" size="middle"
-                                                onChange={(val) => { setFirstMeasure(val); calculateResults(val, secondMeasure); }}
-                                            />
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600">2ª Medida</span>
-                                            <InputNumber min={0} max={100} step={0.1} placeholder="0.0" className="w-24" size="middle"
-                                                onChange={(val) => { setSecondMeasure(val); calculateResults(firstMeasure, val); }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Resultado Promedio */}
-                                <div className="p-4 bg-white rounded-lg border border-gray-200 text-center flex-1 flex flex-col justify-center items-center">
-                                    <div className="text-xs text-gray-400 uppercase font-bold mb-1">Promedio</div>
-                                    <div className="text-3xl font-bold text-gray-700 mb-2">{averageScore ? averageScore.toFixed(1) : '--'} <span className="text-sm font-normal text-gray-400">kg</span></div>
-
-                                    {strengthCategory ? (
-                                        <Tag color={strengthCategory === 'Excelente' ? 'success' : strengthCategory === 'Buena' ? 'blue' : strengthCategory === 'Normal' ? 'warning' : 'error'}>
-                                            {strengthCategory}
-                                        </Tag>
-                                    ) : (
-                                        <span className="text-xs text-gray-300">-</span>
-                                    )}
-                                </div>
-
-                                {/* Protocolo Compacto */}
-                                <div className="mt-auto pt-4 border-t border-gray-100">
-                                    <div className="flex items-center gap-1 mb-2 text-purple-700">
-                                        <InfoCircleOutlined className="text-xs" /> <span className="font-bold text-xs">Protocolo</span>
-                                    </div>
-                                    <ul className="text-xs text-gray-500 space-y-1 pl-1 list-none">
-                                        <li>• Codo a 90°, muñeca neutral.</li>
-                                        <li>• 3 intentos, usar mejores.</li>
-                                    </ul>
-                                </div>
-                            </Form>
-                        </Card>
-                    </div>
                 </div>
 
                 <div className="flex justify-center gap-4 pb-8 mt-10">

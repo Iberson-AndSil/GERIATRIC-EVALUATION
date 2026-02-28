@@ -44,12 +44,12 @@ export default function ResultadosEvaluacion({
 
   const calcularPuntajeRecuerdoLocal = () => {
     let puntaje = 0;
-    if (recuerdo.cantidadMonedas === '11') puntaje += 1;
-    if (recuerdo.totalDinero === '9') puntaje += 1;
-    if (Number(recuerdo.monedasRecordadas.centimos20) === 5) puntaje += 2;
-    if (Number(recuerdo.monedasRecordadas.centimos50) === 2) puntaje += 2;
-    if (Number(recuerdo.monedasRecordadas.sol1) === 1) puntaje += 2;
-    if (Number(recuerdo.monedasRecordadas.soles2) === 3) puntaje += 2;
+    if (recuerdo.cantidadMonedas === 'correcto') puntaje += 1;
+    if (recuerdo.totalDinero === 'correcto') puntaje += 1;
+    if (recuerdo.monedasRecordadas.centimos20 === 'correcto') puntaje += 1;
+    if (recuerdo.monedasRecordadas.centimos50 === 'correcto') puntaje += 1;
+    if (recuerdo.monedasRecordadas.sol1 === 'correcto') puntaje += 1;
+    if (recuerdo.monedasRecordadas.soles2 === 'correcto') puntaje += 1;
     return Math.max(0, puntaje - intrusiones.recuerdo);
   };
 
@@ -81,14 +81,14 @@ export default function ResultadosEvaluacion({
           <Card size="small"><Statistic title="Parte II" value={puntajeParte2} suffix="/10" valueStyle={{ fontSize: '18px' }} /></Card>
         </Col>
         <Col span={6}>
-          <Card size="small"><Statistic title="Parte III" value={puntajeParte3} suffix="/10" valueStyle={{ fontSize: '18px' }} /></Card>
+          <Card size="small"><Statistic title="Parte III" value={puntajeParte3} suffix="/6" valueStyle={{ fontSize: '18px' }} /></Card>
         </Col>
         <Col span={6}>
           <Card size="small" bodyStyle={{ backgroundColor: interpretacion.color === "red" ? '#fff1f0' : '#f6ffed' }}>
             <Statistic 
               title="TOTAL" 
               value={puntajeTotal} 
-              suffix="/31" 
+              suffix="/27" 
               valueStyle={{ color: interpretacion.color === "red" ? '#cf1322' : '#3f8600', fontWeight: 'bold', fontSize: '18px' }} 
             />
           </Card>
@@ -108,23 +108,23 @@ export default function ResultadosEvaluacion({
           <Col span={12}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <Text type="secondary">Cantidad (11):</Text>
-              {recuerdo.cantidadMonedas === '11' ? <Text type="success" strong>+1</Text> : <Text type="danger">0</Text>}
+              {recuerdo.cantidadMonedas === 'correcto' ? <Text type="success" strong>+1</Text> : <Text type="danger">0</Text>}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <Text type="secondary">Dinero (S/ 9):</Text>
-              {recuerdo.totalDinero === '9' ? <Text type="success" strong>+1</Text> : <Text type="danger">0</Text>}
+              {recuerdo.totalDinero === 'correcto' ? <Text type="success" strong>+1</Text> : <Text type="danger">0</Text>}
             </div>
           </Col>
           <Col span={12} style={{ borderLeft: '1px solid #f0f0f0' }}>
             <Row gutter={[8, 4]}>
               {[
-                { label: '5 de 0.20', ok: Number(recuerdo.monedasRecordadas.centimos20) === 5 },
-                { label: '2 de 0.50', ok: Number(recuerdo.monedasRecordadas.centimos50) === 2 },
-                { label: '1 de 1.00', ok: Number(recuerdo.monedasRecordadas.sol1) === 1 },
-                { label: '3 de 2.00', ok: Number(recuerdo.monedasRecordadas.soles2) === 3 },
+                { label: '5 de 0.20', ok: recuerdo.monedasRecordadas.centimos20 === 'correcto' },
+                { label: '2 de 0.50', ok: recuerdo.monedasRecordadas.centimos50 === 'correcto' },
+                { label: '1 de 1.00', ok: recuerdo.monedasRecordadas.sol1 === 'correcto' },
+                { label: '3 de 2.00', ok: recuerdo.monedasRecordadas.soles2 === 'correcto' },
               ].map((item, idx) => (
                 <Col span={12} key={idx} style={{ fontSize: '12px' }}>
-                  {item.label}: {item.ok ? <Text type="success">ok</Text> : <Text type="secondary">x</Text>}
+                  {item.label}: {item.ok ? <Text type="success">+1</Text> : <Text type="danger">0</Text>}
                 </Col>
               ))}
             </Row>
