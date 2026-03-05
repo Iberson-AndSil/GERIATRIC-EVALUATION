@@ -35,9 +35,9 @@ export const useDepression = () => {
     setScore(total);
 
     if (total >= 2) {
-      setDepresionResult('Síntomas depresivos. Sugiere la necesidad de realizar una evaluación geriátrica más completa o un diagnóstico clínico de depresión. ');
+      setDepresionResult('Síntomas depresivos. Sugiere la necesidad de realizar una evaluación geriátrica más completa o un diagnóstico clínico de depresión.');
     } else {
-      setDepresionResult('Ausencia de síntomas depresivos clínicamente significativos.)');
+      setDepresionResult('Ausencia de síntomas depresivos clínicamente significativos.');
     }
   };
 

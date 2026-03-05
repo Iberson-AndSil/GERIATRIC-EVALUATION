@@ -1,5 +1,6 @@
 import React from "react";
 import { Card, Form, Switch, Checkbox, Typography, Badge } from "antd";
+import { SmileOutlined } from "@ant-design/icons";
 import { FallsResponses } from "../../type";
 
 const { Text } = Typography;
@@ -10,7 +11,9 @@ interface Props {
 }
 
 const FallsCard: React.FC<Props> = ({ responses, onResponseChange }) => {
-  const score = [responses.neededMedicalAssistance, responses.couldNotGetUp, responses.fearOfFalling].filter(Boolean).length;
+  const score = (responses.neededMedicalAssistance ? 1 : 0) + 
+                (responses.couldNotGetUp ? 1 : 0) + 
+                (responses.fearOfFalling ? 3 : 0);
 
   return (
     <Card 
@@ -47,8 +50,9 @@ const FallsCard: React.FC<Props> = ({ responses, onResponseChange }) => {
         </div>
       )}
       {!responses.hasFallen && (
-          <div className="h-32 flex items-center justify-center text-gray-400 italic bg-gray-50 rounded-lg">
-              Sin antecedentes recientes
+          <div className="bg-green-50 p-4 rounded-lg border border-green-200 flex items-center gap-3 animate-fade-in">
+              <SmileOutlined className="text-green-600 text-xl" />
+              <Text strong className="text-green-700">Sin Riesgo de caídas</Text>
           </div>
       )}
     </Card>

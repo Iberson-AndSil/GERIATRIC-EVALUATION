@@ -1,6 +1,6 @@
 'use client';
 import { Badge, Card, Form, Radio, Typography } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
+import { EyeOutlined, SmileOutlined, MehOutlined, FrownOutlined } from '@ant-design/icons';
 import { SensoryData } from '@/app/utils/syndromes/useSensory';
 
 const { Text } = Typography;
@@ -108,15 +108,20 @@ export const SensoryCard = ({ sensoryResult, score, handleSensoryChange }: Senso
             <div
                className={`mt-6 p-3 rounded-lg border flex items-center justify-between gap-3 ${score === 0
                      ? 'bg-green-50 border-green-200 text-green-800'
-                     : 'bg-orange-50 border-orange-200 text-orange-800'
+                     : score <= 2
+                     ? 'bg-orange-50 border-orange-200 text-orange-800'
+                     : 'bg-red-50 border-red-200 text-red-800'
                   }`}
             >
-               <Text strong className="text-inherit">
-                  {sensoryResult}
-               </Text>
+               <div className="flex items-center gap-2">
+                  {score === 0 ? <SmileOutlined className="text-xl" /> : score <= 2 ? <MehOutlined className="text-xl" /> : <FrownOutlined className="text-xl" />}
+                  <Text strong className="text-inherit">
+                     {sensoryResult}
+                  </Text>
+               </div>
                <Badge
                   count={score}
-                  color={score > 0 ? 'orange' : 'green'}
+                  color={score === 0 ? 'green' : score <= 2 ? 'orange' : 'red'}
                />
             </div>
          )}

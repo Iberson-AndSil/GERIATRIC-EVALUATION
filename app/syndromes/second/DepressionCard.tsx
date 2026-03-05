@@ -55,13 +55,13 @@ export const DepressionCard = ({ depresionResult, score, handleDepresionChange }
 
       {depresionResult && (
         <div
-          className={`mt-4 p-3 rounded-lg border flex items-center justify-between gap-3 ${depresionResult.includes('Depresión')
+          className={`mt-4 p-3 rounded-lg border flex items-center justify-between gap-3 ${score >= 2
             ? 'bg-red-50 border-red-200 text-red-700'
             : 'bg-green-50 border-green-200 text-green-700'
             }`}
         >
           <div className="flex items-center gap-2">
-            {depresionResult.includes('Depresión')
+            {score >= 2
               ? <FrownOutlined className="text-xl" />
               : <SmileOutlined className="text-xl" />
             }

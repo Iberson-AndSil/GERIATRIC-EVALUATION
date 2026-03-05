@@ -293,13 +293,13 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 />
             </div>
             <Divider orientation="left" orientationMargin="0" className="!mt-0">
-                <Text strong>Evaluadores</Text>
+                <Text strong translate="no">Evaluadores</Text>
             </Divider>
-            <Row gutter={[16, 0]} className="!m-0">
-                <Col xs={24} md={8} >
+            <Row gutter={[16, 16]} className="!m-0">
+                <Col xs={24} sm={12} md={8}>
                     <Form.Item
                         name="nameDoctor"
-                        label={<Text strong>Médico Tratante</Text>}
+                        label={<Text strong translate="no">Médico Tratante</Text>}
                         rules={[{ required: true, message: 'Requerido' }]}
                         className="!mb-0 !pb-0 block"
                     >
@@ -311,10 +311,10 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={8}>
+                <Col xs={24} sm={12} md={8}>
                     <Form.Item
                         name="nameLicensed"
-                        label={<Text strong>Licenciado</Text>}
+                        label={<Text strong translate="no">Licenciado</Text>}
                     >
                         <Input
                             placeholder="Ingrese su nombre completo"
@@ -324,10 +324,10 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={8}>
+                <Col xs={24} sm={24} md={8}>
                     <Form.Item
                         name="dateEvaluation"
-                        label={<Text strong>Fecha de Evaluación</Text>}
+                        label={<Text strong translate="no">Fecha de Evaluación</Text>}
                         rules={[{ required: true, message: 'Requerido' }]}
                     >
                         <Input
@@ -339,12 +339,12 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 </Col>
             </Row>
             <Divider orientation="left" orientationMargin="0" className="!mt-0">
-                <Text strong>Identificación del Paciente</Text>
+                <Text strong translate="no">Identificación del Paciente</Text>
             </Divider>
-            <Row gutter={[16, 0]}>
-                <Col xs={24} md={8}>
+            <Row gutter={[16, 16]}>
+                <Col xs={24} sm={24} md={12} lg={8}>
                     <Form.Item
-                        label={<Text strong>Apellidos y Nombres</Text>}
+                        label={<Text strong translate="no">Apellidos y Nombres</Text>}
                         name="nombre"
                         rules={[{ required: true, message: 'Por favor ingrese su nombre completo' }]}
                     >
@@ -356,9 +356,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={4}>
+                <Col xs={24} sm={12} md={6} lg={4}>
                     <Form.Item
-                        label={<Text strong>DNI</Text>}
+                        label={<Text strong translate="no">DNI</Text>}
                         name="dni"
                         rules={[
                             { required: true, message: 'Por favor ingrese su DNI' },
@@ -373,9 +373,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={6}>
+                <Col xs={24} sm={24} md={12} lg={8} xl={6}>
                     <Form.Item
-                        label={<Text strong>Fecha de Nacimiento</Text>}
+                        label={<Text strong translate="no">Fecha de Nacimiento</Text>}
                         required
                     >
                         <Space.Compact block>
@@ -437,9 +437,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         </Space.Compact>
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={2}>
+                <Col xs={12} sm={8} md={4} lg={2}>
                     <Form.Item
-                        label={<Text strong>Edad</Text>}
+                        label={<Text strong translate="no">Edad</Text>}
                         name="edad"
                     >
                         <InputNumber
@@ -450,9 +450,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={4}>
+                <Col xs={12} sm={16} md={6} lg={4}>
                     <Form.Item
-                        label={<Text strong>Sexo</Text>}
+                        label={<Text strong translate="no">Sexo</Text>}
                         name="sexo"
                         rules={[{ required: true, message: 'Por favor seleccione su sexo' }]}
                     >
@@ -463,25 +463,25 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                             buttonStyle="solid"
                         >
                             <Radio.Button value="F" className="w-1/2 text-center">
-                                <WomanOutlined /> F
+                                <WomanOutlined /> <span translate="no">F</span>
                             </Radio.Button>
                             <Radio.Button value="M" className="w-1/2 text-center">
-                                <ManOutlined /> M
+                                <ManOutlined /> <span translate="no">M</span>
                             </Radio.Button>
                         </Radio.Group>
                     </Form.Item>
                 </Col>
             </Row>
             <Divider orientation="left" orientationMargin="0" className="!mt-0">
-                <Text strong>Información Demográfica</Text>
+                <Text strong translate="no">Información Demográfica</Text>
             </Divider>
-            <Row gutter={[16, 0]}>
+            <Row gutter={[16, 16]}>
                 <Form.Item name="fecha_nacimiento" hidden>
                     <Input />
                 </Form.Item>
-                <Col xs={24} md={6}>
+                <Col xs={24} sm={12} md={8} lg={6}>
                     <Form.Item
-                        label={<Text strong>Zona Residencia</Text>}
+                        label={<Text strong translate="no">Zona Residencia</Text>}
                         name="zona_residencia"
                         rules={[{ required: true, message: 'Por favor seleccione su zona de residencia' }]}
                     >
@@ -494,9 +494,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={6}>
+                <Col xs={24} sm={12} md={8} lg={6}>
                     <Form.Item
-                        label={<Text strong>Teléfono</Text>}
+                        label={<Text strong translate="no">Teléfono</Text>}
                         name="telefono"
                         rules={[{ pattern: /^\d{9}$/, message: 'Ingrese 9 dígitos' }]}
                     >
@@ -508,9 +508,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={6}>
+                <Col xs={24} sm={12} md={8} lg={6}>
                     <Form.Item
-                        label={<Text strong>Email</Text>}
+                        label={<Text strong translate="no">Email</Text>}
                         name="email"
                         rules={[{ type: 'email', message: 'Email inválido' }]}
                     >
@@ -522,9 +522,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={6}>
+                <Col xs={24} sm={12} md={24} lg={6}>
                     <Form.Item
-                        label={<Text strong>¿Con quién vive?</Text>}
+                        label={<Text strong translate="no">¿Con quién vive?</Text>}
                         name="con_quien_vive"
                         rules={[{ required: true, message: 'Por favor especifique con quién vive' }]}
                     >
@@ -541,9 +541,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 </Col>
             </Row>
             <Row gutter={[16, 0]}>
-                <Col xs={24} md={5}>
+                <Col xs={24} sm={12} md={8} lg={6} xl={5}>
                     <Form.Item
-                        label={<Text strong>Departamento</Text>}
+                        label={<Text strong translate="no">Departamento</Text>}
                         name="department"
                     >
                         <Select
@@ -566,9 +566,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={5}>
+                <Col xs={24} sm={12} md={8} lg={6} xl={5}>
                     <Form.Item
-                        label={<Text strong>Provincia</Text>}
+                        label={<Text strong translate="no">Provincia</Text>}
                         name="province"
                     >
                         <Select
@@ -595,9 +595,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         </Select>
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={5}>
+                <Col xs={24} sm={12} md={8} lg={6} xl={5}>
                     <Form.Item
-                        label={<Text strong>Distrito</Text>}
+                        label={<Text strong translate="no">Distrito</Text>}
                         name="district"
                     >
                         <Select
@@ -623,9 +623,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         </Select>
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={9}>
+                <Col xs={24} sm={24} md={16} lg={10} xl={9}>
                     <Form.Item
-                        label={<Text strong>Domicilio</Text>}
+                        label={<Text strong translate="no">Domicilio</Text>}
                         name="domicilio"
                         rules={[{ required: true, message: 'Por favor ingrese su domicilio' }]}
                     >
@@ -639,12 +639,12 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 </Col>
             </Row>
             <Divider orientation="left" orientationMargin="0" className="!mt-0">
-                <Text strong>Información Socioeconómica</Text>
+                <Text strong translate="no">Información Socioeconómica</Text>
             </Divider>
             <Row gutter={[16, 16]}>
-                <Col xs={24} md={8}>
+                <Col xs={24} sm={12} md={8}>
                     <Form.Item
-                        label={<Text strong>Actividad Económica</Text>}
+                        label={<Text strong translate="no">Actividad Económica</Text>}
                         name="economic_activity"
                         rules={[{ required: true, message: 'Por favor seleccione su sistema de pensión' }]}
                     >
@@ -658,9 +658,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                         />
                     </Form.Item>
                 </Col>
-                <Col xs={24} md={8}>
+                <Col xs={24} sm={12} md={8}>
                     <Form.Item
-                        label={<Text strong>Ocupación Económica</Text>}
+                        label={<Text strong translate="no">Ocupación Económica</Text>}
                         name="ocupacion"
                         rules={[{ required: true, message: 'Por favor ingrese su ocupación' }]}
                     >
@@ -673,9 +673,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                     </Form.Item>
                 </Col>
 
-                <Col xs={24} md={8}>
+                <Col xs={24} sm={24} md={8}>
                     <Form.Item
-                        label={<Text strong>IPRESS</Text>}
+                        label={<Text strong translate="no">IPRESS</Text>}
                         name="ipress"
                         rules={[{ required: true, message: 'Ingrese IPRESS' }]}
                     >
@@ -689,9 +689,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 </Col>
             </Row>
             <Row gutter={[16, 16]}>
-                <Col xs={24} md={8}>
+                <Col xs={24} sm={12} md={8}>
                     <Form.Item
-                        label={<Text strong>Ingreso Económico (S/.)</Text>}
+                        label={<Text strong translate="no">Ingreso Económico (S/.)</Text>}
                         name="ingreso_economico"
                         rules={[{ required: true, message: 'Por favor ingrese su ingreso económico' }]}
                     >
@@ -708,9 +708,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                     </Form.Item>
                 </Col>
 
-                <Col xs={24} md={8}>
+                <Col xs={24} sm={12} md={8}>
                     <Form.Item
-                        label={<Text strong>Nivel Educativo</Text>}
+                        label={<Text strong translate="no">Nivel Educativo</Text>}
                         name="nivel_educativo"
                         rules={[{ required: true, message: 'Por favor seleccione nivel y grado' }]}
                     >
@@ -726,9 +726,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                     </Form.Item>
                 </Col>
 
-                <Col xs={24} md={8}>
+                <Col xs={24} sm={24} md={8}>
                     <Form.Item
-                        label={<Text strong>Sistema de Pensión</Text>}
+                        label={<Text strong translate="no">Sistema de Pensión</Text>}
                         name="sistema_pension"
                         rules={[{ required: true, message: 'Por favor seleccione su sistema de pensión' }]}
                     >

@@ -1,5 +1,5 @@
 import { Badge, Card, Radio, Space, Typography } from 'antd';
-import { MedicineBoxOutlined, CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
+import { MedicineBoxOutlined, SmileOutlined, MehOutlined, FrownOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
@@ -40,15 +40,15 @@ export const AdherenceCard = ({ adherenciaData, adherenciaResult, score, handleA
 
       {adherenciaResult && (
         <div
-          className={`mt-2 p-3 rounded-lg border flex items-center justify-between gap-3 ${score >= 2
-            ? 'bg-red-50 border-red-200 text-red-700'
-            : score === 1
+          className={`mt-2 p-3 rounded-lg border flex items-center justify-between gap-3 ${score === 4
+            ? 'bg-green-50 border-green-200 text-green-700'
+            : score >= 2
               ? 'bg-orange-50 border-orange-200 text-orange-700'
-              : 'bg-green-50 border-green-200 text-green-700'
+              : 'bg-red-50 border-red-200 text-red-700'
             }`}
         >
           <div className='flex items-center gap-2'>
-            {score >= 2 ? <CloseCircleFilled /> : <CheckCircleFilled />}
+            {score === 4 ? <SmileOutlined className="text-xl" /> : score >= 2 ? <MehOutlined className="text-xl" /> : <FrownOutlined className="text-xl" />}
 
             <Text strong className="text-inherit">
               {adherenciaResult}
@@ -56,7 +56,7 @@ export const AdherenceCard = ({ adherenciaData, adherenciaResult, score, handleA
           </div>
           <Badge
             count={score}
-            color={score >= 2 ? 'red' : score === 1 ? 'orange' : 'green'}
+            color={score === 4 ? 'green' : score >= 2 ? 'orange' : 'red'}
           />
         </div>
       )}

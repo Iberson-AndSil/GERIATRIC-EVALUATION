@@ -26,20 +26,20 @@ export const useAdherence = () => {
     }
 
     let puntuacion = 0;
-    if (data.olvido === 'si') puntuacion++;
-    if (data.tomarMedicamento === 'no') puntuacion++;
-    if (data.dejarMedicacion === 'si') puntuacion++;
-    if (data.sientaMal === 'si') puntuacion++;
+    if (data.olvido === 'no') puntuacion++;
+    if (data.tomarMedicamento === 'si') puntuacion++;
+    if (data.dejarMedicacion === 'no') puntuacion++;
+    if (data.sientaMal === 'no') puntuacion++;
 
     setScore(puntuacion);
 
     let resultado = '';
-    if (puntuacion < 2) {
-      resultado += 'Deficiente adherencia (Incumplimiento de tratamiento farmacológico)';
-    } else if (puntuacion <= 3 && puntuacion >= 2) {
-      resultado += 'Media adherencia (Cumplimiento moderado de tratamiento farmacológico)';
+    if (puntuacion === 4) {
+      resultado = 'Alta adherencia (Cumplimiento de tratamiento farmacológico)';
+    } else if (puntuacion >= 2 && puntuacion <= 3) {
+      resultado = 'Media adherencia (Cumplimiento moderado de tratamiento farmacológico)';
     } else {
-      resultado += 'Alta adherencia (Cumplimiento de tratamiento farmacológico)';
+      resultado = 'Deficiente adherencia (Incumplimiento de tratamiento farmacológico)';
     }
 
     setAdherenciaResult(resultado);

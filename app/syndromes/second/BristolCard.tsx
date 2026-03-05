@@ -4,12 +4,13 @@ import { AlertOutlined } from '@ant-design/icons';
 const { Text } = Typography;
 
 interface BristolCardProps {
+  bristolData: any;
   bristolResult: string | null;
   score: number;
   handleBristolChange: (field: any, value: any) => void;
 }
 
-export const BristolCard = ({ bristolResult, score, handleBristolChange }: BristolCardProps) => {
+export const BristolCard = ({ bristolData, bristolResult, score, handleBristolChange }: BristolCardProps) => {
 
   const marks = {
     0: '0',
@@ -38,7 +39,6 @@ export const BristolCard = ({ bristolResult, score, handleBristolChange }: Brist
               onChange={val => handleBristolChange('bristolType', val)}
               trackStyle={score > 0 ? { backgroundColor: '#ff4d4f' } : { backgroundColor: '#f5f5f5' }}
               handleStyle={score > 0 ? { borderColor: '#ff4d4f' } : { borderColor: '#d9d9d9' }}
-              disabled
             />
             <div className="flex justify-between text-xs text-gray-400 mt-1">
               <span>Estreñimiento</span>
@@ -49,12 +49,12 @@ export const BristolCard = ({ bristolResult, score, handleBristolChange }: Brist
 
           <div className="flex flex-col gap-2">
             <Text strong>Síntomas asociados:</Text>
-            <Checkbox onChange={e => handleBristolChange('effort', e.target.checked)}>Esfuerzo para defecar</Checkbox>
-            <Checkbox onChange={e => handleBristolChange('hardStool', e.target.checked)}>Heces duras</Checkbox>
-            <Checkbox onChange={e => handleBristolChange('incomplete', e.target.checked)}>Evacuación incompleta tras defecación</Checkbox>
-            <Checkbox onChange={e => handleBristolChange('obstruction', e.target.checked)}>Sensación de obstrucción</Checkbox>
-            <Checkbox onChange={e => handleBristolChange('manualAid', e.target.checked)}>Necesita ayuda manual o farmacológica</Checkbox>
-            <Checkbox onChange={e => handleBristolChange('lessThanThree', e.target.checked)} className="text-red-500 font-medium">
+            <Checkbox checked={bristolData.effort} onChange={e => handleBristolChange('effort', e.target.checked)}>Esfuerzo para defecar</Checkbox>
+            <Checkbox checked={bristolData.hardStool} onChange={e => handleBristolChange('hardStool', e.target.checked)}>Heces duras</Checkbox>
+            <Checkbox checked={bristolData.incomplete} onChange={e => handleBristolChange('incomplete', e.target.checked)}>Evacuación incompleta tras defecación</Checkbox>
+            <Checkbox checked={bristolData.obstruction} onChange={e => handleBristolChange('obstruction', e.target.checked)}>Sensación de obstrucción</Checkbox>
+            <Checkbox checked={bristolData.manualAid} onChange={e => handleBristolChange('manualAid', e.target.checked)}>Necesita ayuda manual o farmacológica</Checkbox>
+            <Checkbox checked={bristolData.lessThanThree} onChange={e => handleBristolChange('lessThanThree', e.target.checked)} className="text-red-500 font-medium">
               &lt; 3 deposiciones/semana
             </Checkbox>
           </div>

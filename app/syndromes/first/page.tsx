@@ -43,11 +43,9 @@ export default function SyndromesPage() {
             // Cálculos
             const sarcScore = Object.values(responses.sarcopenia).reduce((acc, curr) => acc + (curr || 0), 0);
 
-            const fallsScore = [
-                responses.falls.neededMedicalAssistance,
-                responses.falls.couldNotGetUp,
-                responses.falls.fearOfFalling
-            ].filter(Boolean).length;
+            const fallsScore = (responses.falls.neededMedicalAssistance ? 1 : 0) +
+                (responses.falls.couldNotGetUp ? 1 : 0) +
+                (responses.falls.fearOfFalling ? 3 : 0);
 
             const cognitiveScore = [
                 responses.cognitive.rememberQuickly,

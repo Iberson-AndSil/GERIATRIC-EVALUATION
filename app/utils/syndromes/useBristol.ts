@@ -16,7 +16,21 @@ export const useBristol = () => {
   const [score, setScore] = useState<number>(0);
 
   const handleBristolChange = (field: keyof BristolData, value: any) => {
-    const newData = { ...bristolData, [field]: value };
+    let newData = { ...bristolData, [field]: value };
+
+    if (field === 'bristolType') {
+      const v = Number(value);
+      newData = {
+        ...newData,
+        effort: v >= 1,
+        hardStool: v >= 2,
+        incomplete: v >= 3,
+        obstruction: v >= 4,
+        manualAid: v >= 5,
+        lessThanThree: v >= 6,
+      };
+    }
+
     setBristolData(newData);
     evaluateBristol(newData);
   };

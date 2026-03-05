@@ -74,6 +74,7 @@ export default function Home() {
           </Col>
           <Col xs={24} lg={12}>
             <BristolCard
+              bristolData={bristolData}
               bristolResult={bristolResult}
               score={bristolScore}
               handleBristolChange={handleBristolChange}

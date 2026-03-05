@@ -106,15 +106,16 @@ const PatientFormContent = () => {
             color: '#1890ff',
             fontWeight: 500
           }}
+          translate="no"
         >
           INFORMACION SOCIOECONÓMICA
         </Title>
 
-        <div className="flex">
-          <Col xs={24} md={24}>
+        <Row gutter={[16, 16]}>
+          <Col span={24}>
             <BasicInfoSection form={form}/>
           </Col>
-        </div>
+        </Row>
         <Row className="flex justify-center mt-12 gap-4">
           <Col>
             <Link href="/" passHref>
@@ -124,7 +125,7 @@ const PatientFormContent = () => {
                 size="large"
                 style={{ minWidth: '120px' }}
               >
-                Atrás
+                <span translate="no">Atrás</span>
               </Button>
             </Link>
           </Col>
@@ -137,7 +138,7 @@ const PatientFormContent = () => {
               loading={loading}
               icon={<SaveOutlined />}
             >
-              Guardar Paciente
+              <span translate="no">Guardar Paciente</span>
             </Button>
           </Col>
         </Row>
