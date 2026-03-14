@@ -105,10 +105,10 @@ const MarcadoresForm = () => {
               <Row gutter={12}>
                 <Col span={12}><Form.Item className="no-margin-item mb-2" name="hba1c" label={<span className="text-xs">HbA1c (%)</span>}><InputNumber className="w-full" precision={2} /></Form.Item></Col>
                 <Col span={12}><Form.Item className="no-margin-item mb-2" name="glucosa" label={<span className="text-xs">Glucosa (mg/dL)</span>}><InputNumber className="w-full" /></Form.Item></Col>
-                <Col span={12}><Form.Item className="no-margin-item mb-2" name="colesterol" label={<span className="text-xs">Col. Total (mg/dL)</span>}><InputNumber className="w-full" /></Form.Item></Col>
+                <Col span={12}><Form.Item className="no-margin-item mb-2" name="colesterol" label={<span className="text-xs">Colesterol Total (mg/dL)</span>}><InputNumber className="w-full" /></Form.Item></Col>
                 <Col span={12}><Form.Item className="no-margin-item mb-2" name="hdl" label={<span className="text-xs">HDL (mg/dL)</span>}><InputNumber className="w-full" /></Form.Item></Col>
                 <Col span={12}><Form.Item className="no-margin-item mb-2" name="ldl" label={<span className="text-xs">LDL (mg/dL)</span>}><InputNumber className="w-full" /></Form.Item></Col>
-                <Col span={12}><Form.Item className="no-margin-item mb-2" name="trigliceridos" label={<span className="text-xs">Triglic. (mg/dL)</span>}><InputNumber className="w-full" /></Form.Item></Col>
+                <Col span={12}><Form.Item className="no-margin-item mb-2" name="trigliceridos" label={<span className="text-xs">Triglicéridos (mg/dL)</span>}><InputNumber className="w-full" /></Form.Item></Col>
                 <Col span={24}><Form.Item name="fecha_metabolismo" label={<span className="text-xs">Fecha Análisis</span>} className="no-margin-item mb-2"><DatePicker className="w-full" format="DD/MM/YYYY" /></Form.Item></Col>
               </Row>
             </Card>

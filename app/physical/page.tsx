@@ -33,10 +33,8 @@ const SPPBEvaluation = () => {
 
     // --- LÓGICA DE CÁLCULO (Sin cambios) ---
     const calculateChairStandScore = (time: any) => {
-        if (time <= 11.19) return 4;
-        if (time <= 13.69) return 3;
-        if (time <= 16.69) return 2;
-        if (time <= 60) return 1;
+        if (time >= 10) return 2;
+        if (time >= 3) return 1;
         return 0;
     };
 
@@ -57,13 +55,6 @@ const SPPBEvaluation = () => {
         score += tandemScore;
         score += chairStandScore;
         score += walkScore;
-
-        if (values.standUpTest === 'able') {
-            if (values.fiveRepsTime < 8.7) score += 4;
-            else if (values.fiveRepsTime < 11.4) score += 3;
-            else if (values.fiveRepsTime < 13.6) score += 2;
-            else if (values.fiveRepsTime < 16.7) score += 1;
-        }
 
         setTotalScore(score);
         setEvaluationCompleted(true);
@@ -188,16 +179,15 @@ const SPPBEvaluation = () => {
                                                     min={0} step={0.1}
                                                     className="w-full"
                                                     onChange={(val) => setChairStandScore(calculateChairStandScore(val))}
-                                                    addonAfter="seg"
+                                                    addonAfter="segundos"
                                                 />
                                                 <Badge count={chairStandScore} showZero color="blue" title="Puntos" />
                                             </div>
                                         </Form.Item>
-                                        <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-500 bg-white p-2 rounded border border-blue-100">
-                                            <span>≤11.19: <b>4pts</b></span>
-                                            <span>11.2-13.69: <b>3pts</b></span>
-                                            <span>13.7-16.69: <b>2pts</b></span>
-                                            <span>&gt;16.7: <b>1pt</b></span>
+                                        <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-gray-500 bg-white p-2 rounded border border-blue-100">
+                                            <span>≥10s: <b>2pts</b></span>
+                                            <span>3-9.9s: <b>1pt</b></span>
+                                            <span>&lt;3s: <b>0pts</b></span>
                                         </div>
                                     </div>
                                 )}
