@@ -47,6 +47,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const items = [
     { key: "/", icon: <HomeOutlined />, label: "Inicio", onClick: () => router.push("/") },
+    { key: "/family", icon: <HomeOutlined />, label: "Socioeconómico", onClick: () => router.push("/family") },
     {
       key: "/syndromes",
       icon: <FileSearchOutlined />,
@@ -56,26 +57,41 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         { key: "/syndromes/second", icon: <MedicineBoxOutlined />, label: "Segunda Parte", onClick: () => router.push("/syndromes/second") },
       ],
     },
-    { key: "/social", icon: <AuditOutlined />, label: "Valoración Social", onClick: () => router.push("/social") },
-    { key: "/funtional", icon: <AuditOutlined />, label: "Valoración Funcional", onClick: () => router.push("/funtional") },
-    { key: "/physical", icon: <ExperimentOutlined />, label: "Valoración Física", onClick: () => router.push("/physical") },
-    { key: "/mental", icon: <MailOutlined />, label: "Valoración Mental", onClick: () => router.push("/mental") },
-    { key: "/cognitive", icon: <ReadOutlined />, label: "Valoración Cognitiva", onClick: () => router.push("/cognitive") },
-    { key: "/mmse30", icon: <CheckCircleOutlined />, label: "MMSE 30", onClick: () => router.push("/mmse30") },
-    { key: "/moca", icon: <DeploymentUnitOutlined />, label: "MOCA", onClick: () => router.push("/moca") },
-    { key: "/affective", icon: <SmileOutlined />, label: "Afectividad", onClick: () => router.push("/affective") },
-    { key: "/nutritional", icon: <MedicineBoxOutlined />, label: "Valoración Nutricional", onClick: () => router.push("/nutritional") },
-    { key: "/clinic", icon: <CheckCircleOutlined />, label: "Valoración Clínica", onClick: () => router.push("/clinic") },
-    { key: "/markers", icon: <ReadOutlined />, label: "Marcadores Bioquímicos", onClick: () => router.push("/markers") },
     {
-      key: "/results",
+      key: "/geriatricAssessment",
       icon: <FileSearchOutlined />,
-      label: "Resultados",
+      label: "Valoración Geriátrica",
       children: [
+        { key: "/social", icon: <AuditOutlined />, label: "Valoración Social", onClick: () => router.push("/social") },
+        { key: "/funtional", icon: <AuditOutlined />, label: "Valoración Funcional", onClick: () => router.push("/funtional") },
+      ],
+    },
+    {
+      key: "/mentalAssessment",
+      icon: <FileSearchOutlined />,
+      label: "Valoración Mental",
+      children: [
+        { key: "/mental", icon: <MailOutlined />, label: "Valoración Mental", onClick: () => router.push("/mental") },
+        { key: "/cognitive", icon: <ReadOutlined />, label: "Valoración Cognitiva", onClick: () => router.push("/cognitive") },
+        { key: "/mmse30", icon: <CheckCircleOutlined />, label: "MMSE 30", onClick: () => router.push("/mmse30") },
+        { key: "/moca", icon: <DeploymentUnitOutlined />, label: "MOCA", onClick: () => router.push("/moca") },
+        { key: "/affective", icon: <SmileOutlined />, label: "Afectividad", onClick: () => router.push("/affective") },
+      ],
+    },
+    {
+      key: "/clinicAssessment",
+      icon: <FileSearchOutlined />,
+      label: "Valoración Clínica",
+      children: [
+        { key: "/physical", icon: <ExperimentOutlined />, label: "Valoración Física", onClick: () => router.push("/physical") },
+        { key: "/nutritional", icon: <MedicineBoxOutlined />, label: "Valoración Nutricional", onClick: () => router.push("/nutritional") },
+        { key: "/clinic", icon: <CheckCircleOutlined />, label: "Valoración Clínica", onClick: () => router.push("/clinic") },
+        { key: "/markers", icon: <ReadOutlined />, label: "Marcadores Bioquímicos", onClick: () => router.push("/markers") },
         { key: "/comorbidity", icon: <HeartOutlined />, label: "Comorbilidades", onClick: () => router.push("/comorbidity") },
         { key: "/fragility", icon: <MedicineBoxOutlined />, label: "Fragilidad", onClick: () => router.push("/fragility") },
       ],
     },
+
     { key: "/dashboard", icon: <DashboardOutlined />, label: "Dashboard", onClick: () => router.push("/dashboard") },
     {
       key: "sub-dashboard",
