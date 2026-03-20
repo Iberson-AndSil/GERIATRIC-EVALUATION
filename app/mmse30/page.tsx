@@ -48,8 +48,8 @@ const MMSEForm = () => {
 
         if (allValues.memory_words?.length) total += allValues.memory_words.length;
         if (allValues.recall_words?.length) total += allValues.recall_words.length;
-        
-        const atencionScore = allValues.calc_mode === 'deletreo' 
+
+        const atencionScore = allValues.calc_mode === 'deletreo'
             ? (allValues.spelling?.length || 0)
             : (allValues.calculation?.length || 0);
         total += atencionScore;
@@ -159,7 +159,7 @@ const MMSEForm = () => {
                                             <Form.Item name="name_pencil" label="Lápiz" className="mb-0">
                                                 <Radio.Group size="large" buttonStyle="solid">
                                                     <Radio.Button value={true}><CheckCircleOutlined /></Radio.Button>
-                                                    <Radio.Button value={false}>X</Radio.Button>
+                                                    <Radio.Button value={false}><CloseCircleOutlined /></Radio.Button>
                                                 </Radio.Group>
                                             </Form.Item>
                                         </Col>
@@ -167,7 +167,7 @@ const MMSEForm = () => {
                                             <Form.Item name="name_clock" label="Reloj" className="mb-0">
                                                 <Radio.Group size="large" buttonStyle="solid">
                                                     <Radio.Button value={true}><CheckCircleOutlined /></Radio.Button>
-                                                    <Radio.Button value={false}>X</Radio.Button>
+                                                    <Radio.Button value={false}><CloseCircleOutlined /></Radio.Button>
                                                 </Radio.Group>
                                             </Form.Item>
                                         </Col>
@@ -181,7 +181,7 @@ const MMSEForm = () => {
                                     <Form.Item name="repeat_phrase" className="flex justify-center items-center" label="Opciones">
                                         <Radio.Group size="large" buttonStyle="solid">
                                             <Radio.Button value={true}><CheckCircleOutlined /></Radio.Button>
-                                            <Radio.Button value={false}>X</Radio.Button>
+                                            <Radio.Button value={false}><CloseCircleOutlined /></Radio.Button>
                                         </Radio.Group>
                                     </Form.Item>
                                 </Col>
@@ -191,13 +191,13 @@ const MMSEForm = () => {
                             <div className="p-2 rounded mb-4 text-xs">
                                 <Row gutter={16}>
                                     <Col span={8} className="!flex !justify-center">
-                                        <Form.Item name="command_right_hand" label="1. Mano derecha" className="mb-1"><Radio.Group size="large" buttonStyle="solid"><Radio.Button value={true}><CheckCircleOutlined /></Radio.Button><Radio.Button value={false}>X</Radio.Button></Radio.Group></Form.Item>
+                                        <Form.Item name="command_right_hand" label="1. Mano derecha" className="mb-1"><Radio.Group size="large" buttonStyle="solid"><Radio.Button value={true}><CheckCircleOutlined /></Radio.Button><Radio.Button value={false}><CloseCircleOutlined /></Radio.Button></Radio.Group></Form.Item>
                                     </Col>
                                     <Col span={8} className="!flex !justify-center">
-                                        <Form.Item name="command_fold_paper" label="2. Dobla mitad" className="mb-1"><Radio.Group size="large" buttonStyle="solid"><Radio.Button value={true}><CheckCircleOutlined /></Radio.Button><Radio.Button value={false}>X</Radio.Button></Radio.Group></Form.Item>
+                                        <Form.Item name="command_fold_paper" label="2. Dobla mitad" className="mb-1"><Radio.Group size="large" buttonStyle="solid"><Radio.Button value={true}><CheckCircleOutlined /></Radio.Button><Radio.Button value={false}><CloseCircleOutlined /></Radio.Button></Radio.Group></Form.Item>
                                     </Col>
                                     <Col span={8} className="!flex !justify-center">
-                                        <Form.Item name="command_floor" label="3. Al suelo" className="mb-1"><Radio.Group size="large" buttonStyle="solid"><Radio.Button value={true}><CheckCircleOutlined /></Radio.Button><Radio.Button value={false}>X</Radio.Button ></Radio.Group></Form.Item>
+                                        <Form.Item name="command_floor" label="3. Al suelo" className="mb-1"><Radio.Group size="large" buttonStyle="solid"><Radio.Button value={true}><CheckCircleOutlined /></Radio.Button><Radio.Button value={false}><CloseCircleOutlined /></Radio.Button ></Radio.Group></Form.Item>
                                     </Col>
                                 </Row>
                             </div>
@@ -205,7 +205,7 @@ const MMSEForm = () => {
                             <Form.Item name="command_close_eyes" className="flex justify-center mb-4">
                                 <Radio.Group size="large" buttonStyle="solid">
                                     <Radio.Button value={true}><CheckCircleOutlined /></Radio.Button>
-                                    <Radio.Button value={false}>X</Radio.Button>
+                                    <Radio.Button value={false}><CloseCircleOutlined /></Radio.Button>
                                 </Radio.Group>
                             </Form.Item>
                             <Row gutter={8}>
@@ -214,7 +214,7 @@ const MMSEForm = () => {
                                     <Form.Item name="write_sentence" className="flex justify-center mb-0 mt-2">
                                         <Radio.Group size="large" buttonStyle="solid">
                                             <Radio.Button value={true}><CheckCircleOutlined /></Radio.Button>
-                                            <Radio.Button value={false}>X</Radio.Button>
+                                            <Radio.Button value={false}><CloseCircleOutlined /></Radio.Button>
                                         </Radio.Group>
                                     </Form.Item>
                                 </Col>
@@ -233,7 +233,7 @@ const MMSEForm = () => {
                                                     <Radio.Button value={true}>
                                                         <CheckCircleOutlined />
                                                     </Radio.Button>
-                                                    <Radio.Button value={false}>X</Radio.Button>
+                                                    <Radio.Button value={false}><CloseCircleOutlined /></Radio.Button>
                                                 </Radio.Group>
                                             </Form.Item>
 
@@ -285,7 +285,7 @@ const MMSEForm = () => {
                                     <Radio.Button value="deletreo">Deletreo</Radio.Button>
                                 </Radio.Group>
                             </Form.Item>
-                            
+
                             <Form.Item
                                 noStyle
                                 shouldUpdate={(prevValues, currentValues) => prevValues.calc_mode !== currentValues.calc_mode}
