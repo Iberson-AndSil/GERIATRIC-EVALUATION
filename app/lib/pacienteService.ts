@@ -100,7 +100,7 @@ export const agregarModuloAArray = async (
   );
 };
 
-export const crearRegistroResultados = async (pacienteId: string, gijon: number) => {
+export const crearRegistroResultados = async (pacienteId: string, datosIniciales?: any) => {
   if (!pacienteId) throw new Error("pacienteId no puede estar vacío");
   try {
     const resultadosRef = collection(db, "pacientes", pacienteId, "resultados");
@@ -109,7 +109,7 @@ export const crearRegistroResultados = async (pacienteId: string, gijon: number)
     await setDoc(nuevoResultadoRef, {
       fecha: serverTimestamp(),
       completado: false,
-      gijon: gijon
+      ...(datosIniciales || {})
     });
 
     return nuevoResultadoRef.id;
@@ -139,6 +139,38 @@ export const actualizarResultado = async (
     }, { merge: true });
   } catch (error) {
     console.error("Error al actualizar/crear resultado:", error);
+    throw error;
+  }
+};
+
+export const guardarActualizarMultiplesResultados = async (
+  pacienteId: string,
+  resultadoId: string | null,
+  datos: Record<string, any>
+): Promise<string> => {
+  const pId = String(pacienteId).trim();
+
+  try {
+    if (!resultadoId) {
+      const resultadosRef = collection(db, "pacientes", pId, "resultados");
+      const nuevoResultadoRef = doc(resultadosRef);
+      await setDoc(nuevoResultadoRef, {
+        fecha: serverTimestamp(),
+        completado: false,
+        ...datos
+      });
+      return nuevoResultadoRef.id;
+    } else {
+      const rId = String(resultadoId).trim();
+      const resultadoRef = doc(db, "pacientes", pId, "resultados", rId);
+      await setDoc(resultadoRef, {
+        ...datos,
+        ultimaModificacion: serverTimestamp()
+      }, { merge: true });
+      return rId;
+    }
+  } catch (error) {
+    console.error("Error en guardarActualizarMultiplesResultados:", error);
     throw error;
   }
 };

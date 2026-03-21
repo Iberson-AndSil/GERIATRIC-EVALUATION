@@ -140,7 +140,7 @@ const ProfundIndexForm = () => {
       <div className="text-center mb-8">
         <Title level={3} style={{ color: "#0050b3", margin: 0 }}>
           <DashboardOutlined className="mr-2" />
-          ÍNDICE PROFUND
+          ÍNDICE DE COMORBILIDAD
         </Title>
         <Text type="secondary" className="text-lg italic">
           Variables pronósticas en pacientes pluripatológicos
@@ -148,9 +148,9 @@ const ProfundIndexForm = () => {
       </div>
 
       <Card className="max-w-6xl mx-auto shadow-md rounded-xl overflow-hidden border-none">
-        <Form 
-          form={form} 
-          layout="vertical" 
+        <Form
+          form={form}
+          layout="vertical"
           onValuesChange={(_, all) => recalcular(all)}
         >
           <Row gutter={32}>

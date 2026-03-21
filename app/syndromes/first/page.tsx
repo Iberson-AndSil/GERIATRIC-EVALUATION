@@ -5,7 +5,7 @@ import { ArrowLeftOutlined, SaveOutlined, MedicineBoxOutlined } from "@ant-desig
 import Link from "next/link";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { useRouter } from 'next/navigation';
-import { actualizarResultado } from "@/app/lib/pacienteService";
+import { actualizarResultado, crearRegistroResultados } from "@/app/lib/pacienteService";
 import { AllResponses } from "../../type";
 
 import SarcopeniaCard from "./SarcopeniaCard";
@@ -18,7 +18,7 @@ const { Title, Text } = Typography;
 export default function SyndromesPage() {
     const [loading, setLoading] = useState(false);
     const [api, contextHolder] = notification.useNotification();
-    const { currentPatient, currentResultId } = useGlobalContext();
+    const { currentPatient, currentResultId, setCurrentResultId } = useGlobalContext();
     const router = useRouter();
 
     const [responses, setResponses] = useState<AllResponses>({
@@ -58,12 +58,23 @@ export default function SyndromesPage() {
                 (responses.incontinence.impact || 0) +
                 (responses.incontinence.situations?.length || 0);
 
-            await Promise.all([
-                actualizarResultado(currentPatient.dni, currentResultId || "", 'sarcopenia', sarcScore.toString()),
-                actualizarResultado(currentPatient.dni, currentResultId || "", 'caida', fallsScore.toString()),
-                actualizarResultado(currentPatient.dni, currentResultId || "", 'deterioro', cognitiveScore.toString()),
-                actualizarResultado(currentPatient.dni, currentResultId || "", 'incontinencia', incontinenceScore.toString())
-            ]);
+            let resId = currentResultId;
+            if (!resId) {
+                resId = await crearRegistroResultados(currentPatient.dni, {
+                    sarcopenia: sarcScore.toString(),
+                    caida: fallsScore.toString(),
+                    deterioro: cognitiveScore.toString(),
+                    incontinencia: incontinenceScore.toString()
+                });
+                setCurrentResultId(resId);
+            } else {
+                await Promise.all([
+                    actualizarResultado(currentPatient.dni, resId, 'sarcopenia', sarcScore.toString()),
+                    actualizarResultado(currentPatient.dni, resId, 'caida', fallsScore.toString()),
+                    actualizarResultado(currentPatient.dni, resId, 'deterioro', cognitiveScore.toString()),
+                    actualizarResultado(currentPatient.dni, resId, 'incontinencia', incontinenceScore.toString())
+                ]);
+            }
 
             api.success({ message: 'Guardado exitoso', description: 'Evaluación registrada correctamente.' });
             router.push('/syndromes/second');

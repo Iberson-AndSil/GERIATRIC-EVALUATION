@@ -9,7 +9,7 @@ import ABVDForm from "./ABVDForm";
 import AIVDForm from "./AIVDForm";
 import { PuntajesType, RespuestasType } from "../type";
 import { useGlobalContext } from "@/app/context/GlobalContext";
-import { actualizarResultado } from "../lib/pacienteService";
+import { guardarActualizarMultiplesResultados } from "../lib/pacienteService";
 
 const { Title, Text } = Typography;
 
@@ -28,7 +28,7 @@ export default function FunctionalAssessmentPage() {
   });
 
   const [respuestas, setRespuestas] = useState<RespuestasType>({});
-  const { currentPatient, currentResultId } = useGlobalContext();
+  const { currentPatient, currentResultId, setCurrentResultId } = useGlobalContext();
   const router = useRouter();
   const [form] = Form.useForm();
   const [api, contextHolder] = notification.useNotification();
@@ -45,9 +45,11 @@ export default function FunctionalAssessmentPage() {
       const abvdScore = obtenerPuntajeTotal();
       const aivdScore = puntajeTotal();
 
-      await actualizarResultado(currentPatient.dni, currentResultId || "", "abvdScore", abvdScore);
-
-      await actualizarResultado(currentPatient.dni, currentResultId || "", "aivdScore", aivdScore);
+      const newId = await guardarActualizarMultiplesResultados(currentPatient.dni, currentResultId, {
+        abvdScore: abvdScore,
+        aivdScore: aivdScore
+      });
+      setCurrentResultId(newId);
 
       api.success({
         message: "Éxito",

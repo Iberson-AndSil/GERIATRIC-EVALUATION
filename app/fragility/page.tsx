@@ -5,7 +5,7 @@ import { Form, Radio, Card, Row, Col, Typography, Space, Button, notification, S
 import { SaveOutlined, HeartOutlined, CheckCircleOutlined, SyncOutlined, ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { useGlobalContext } from "@/app/context/GlobalContext";
-import { actualizarResultado, obtenerResultadoPorId } from "../lib/pacienteService";
+import { guardarActualizarMultiplesResultados, obtenerResultadoPorId } from "../lib/pacienteService";
 import Link from "next/link";
 
 const { Title, Text } = Typography;
@@ -55,7 +55,7 @@ const FragilidadForm: React.FC = () => {
 
   const [api, contextHolder] = notification.useNotification();
   const router = useRouter();
-  const { currentPatient, currentResultId } = useGlobalContext();
+  const { currentPatient, currentResultId, setCurrentResultId } = useGlobalContext();
 
   const categoria = useMemo(() => {
     if (score >= 3) return { label: "FRÁGIL", color: "red", icon: <CheckCircleOutlined /> };
@@ -90,7 +90,7 @@ const FragilidadForm: React.FC = () => {
   }, [currentPatient?.dni, currentResultId, form, api]);
 
   const saveToFirebase = async () => {
-    if (!currentPatient?.dni || !currentResultId) {
+    if (!currentPatient?.dni) {
       api.warning({ message: "Atención", description: "No hay paciente seleccionado." });
       return;
     }
@@ -107,14 +107,15 @@ const FragilidadForm: React.FC = () => {
       ];
       const maxDynamo = Math.max(...dynamoValues);
 
-      await actualizarResultado(currentPatient.dni, currentResultId, "evaluacion_fragilidad", {
-        ...values,
-        score_fragilidad: score,
-        categoria: categoria.label,
+      const newId = await guardarActualizarMultiplesResultados(currentPatient.dni, currentResultId, {
+        evaluacion_fragilidad: {
+          ...values,
+          score_fragilidad: score,
+          categoria: categoria.label,
+        },
+        dynamometry: maxDynamo
       });
-
-      // También guardamos el valor máximo en el campo de nivel superior 'dynamometry'
-      await actualizarResultado(currentPatient.dni, currentResultId, "dynamometry", maxDynamo);
+      setCurrentResultId(newId);
       api.success({ message: "Éxito", description: "Evaluación guardada correctamente." });
       router.push("/");
     } catch (error: any) {

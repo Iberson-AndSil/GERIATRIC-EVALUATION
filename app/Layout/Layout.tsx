@@ -22,6 +22,7 @@ import {
   CheckCircleOutlined,
   DeploymentUnitOutlined,
   SmileOutlined,
+  FileTextOutlined,
 } from "@ant-design/icons";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 
@@ -35,15 +36,46 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isReady, setIsReady] = useState(false);
   const [openKeys, setOpenKeys] = useState<string[]>([]);
 
+  const parentKeysMap: Record<string, string> = {
+    "/syndromes/first": "/syndromes",
+    "/syndromes/second": "/syndromes",
+    "/social": "/geriatricAssessment",
+    "/funtional": "/geriatricAssessment",
+    "/mental": "/mentalAssessment",
+    "/cognitive": "/mentalAssessment",
+    "/mmse30": "/mentalAssessment",
+    "/moca": "/mentalAssessment",
+    "/pfeiffer": "/mentalAssessment",
+    "/affective": "/mentalAssessment",
+    "/physical": "/clinicAssessment",
+    "/nutritional": "/clinicAssessment",
+    "/clinic": "/clinicAssessment",
+    "/markers": "/clinicAssessment",
+    "/comorbidity": "/clinicAssessment",
+    "/fragility": "/clinicAssessment",
+    "/dashboard/reports": "sub-dashboard",
+    "/dashboard/analytics": "sub-dashboard",
+  };
+
   useEffect(() => {
     if (pathname) {
-      const pathParts = pathname.split('/');
-      if (pathParts.length > 2) {
-        const parentKey = `/${pathParts[1]}`;
+      const parentKey = parentKeysMap[pathname];
+      if (parentKey && openKeys[0] !== parentKey) {
         setOpenKeys([parentKey]);
+      } else if (!parentKey) {
+        setOpenKeys([]);
       }
     }
   }, [pathname]);
+
+  const onOpenChange = (keys: string[]) => {
+    const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
+    if (latestOpenKey) {
+      setOpenKeys([latestOpenKey]);
+    } else {
+      setOpenKeys([]);
+    }
+  };
 
   const items = [
     { key: "/", icon: <HomeOutlined />, label: "Inicio", onClick: () => router.push("/") },
@@ -71,11 +103,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       icon: <FileSearchOutlined />,
       label: "Valoración Mental",
       children: [
-        { key: "/mental", icon: <MailOutlined />, label: "Valoración Mental", onClick: () => router.push("/mental") },
+        { key: "/mental", icon: <MailOutlined />, label: "Valoración de CVRS", onClick: () => router.push("/mental") },
         { key: "/cognitive", icon: <ReadOutlined />, label: "Valoración Cognitiva", onClick: () => router.push("/cognitive") },
         { key: "/mmse30", icon: <CheckCircleOutlined />, label: "MMSE 30", onClick: () => router.push("/mmse30") },
         { key: "/moca", icon: <DeploymentUnitOutlined />, label: "MOCA", onClick: () => router.push("/moca") },
-        { key: "/affective", icon: <SmileOutlined />, label: "Afectividad", onClick: () => router.push("/affective") },
+        { key: "/pfeiffer", icon: <FileTextOutlined />, label: "PFEIFFER", onClick: () => router.push("/pfeiffer") },
+        { key: "/affective", icon: <SmileOutlined />, label: "Valoración Afectiva", onClick: () => router.push("/affective") },
       ],
     },
     {
@@ -85,9 +118,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       children: [
         { key: "/physical", icon: <ExperimentOutlined />, label: "Valoración Física", onClick: () => router.push("/physical") },
         { key: "/nutritional", icon: <MedicineBoxOutlined />, label: "Valoración Nutricional", onClick: () => router.push("/nutritional") },
-        { key: "/clinic", icon: <CheckCircleOutlined />, label: "Valoración Clínica", onClick: () => router.push("/clinic") },
+        { key: "/clinic", icon: <CheckCircleOutlined />, label: "Antecedentes Médicos", onClick: () => router.push("/clinic") },
         { key: "/markers", icon: <ReadOutlined />, label: "Marcadores Bioquímicos", onClick: () => router.push("/markers") },
-        { key: "/comorbidity", icon: <HeartOutlined />, label: "Comorbilidades", onClick: () => router.push("/comorbidity") },
+        { key: "/comorbidity", icon: <HeartOutlined />, label: "Índice de Comorbilidad", onClick: () => router.push("/comorbidity") },
         { key: "/fragility", icon: <MedicineBoxOutlined />, label: "Fragilidad", onClick: () => router.push("/fragility") },
       ],
     },
@@ -130,7 +163,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 items={items}
                 selectedKeys={[pathname]}
                 openKeys={openKeys}
-                onOpenChange={(keys) => setOpenKeys(keys)}
+                onOpenChange={onOpenChange}
               />
             </Sider>
 

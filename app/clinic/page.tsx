@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-    Form, Input, Checkbox, Card, Row, Col, Typography, 
-    Select, InputNumber, Space, Badge, Button, 
+import {
+    Form, Input, Checkbox, Card, Row, Col, Typography,
+    Select, InputNumber, Space, Badge, Button,
     Radio, notification, Empty, Tag
 } from 'antd';
-import { 
-    FileSearchOutlined, 
-    CheckSquareOutlined, 
+import {
+    FileSearchOutlined,
+    CheckSquareOutlined,
     PlusOutlined,
     DeleteOutlined,
     HeartOutlined,
@@ -105,7 +105,7 @@ const ErgonomicClinicAssessment: React.FC = () => {
             await actualizarResultado(
                 currentPatient.dni,
                 currentResultId || "",
-                'clinica', 
+                'clinica',
                 score
             );
 
@@ -135,7 +135,8 @@ const ErgonomicClinicAssessment: React.FC = () => {
             {/* HEADER LOCAL DE LA PÁGINA */}
             <div className="page-header">
                 <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
-                    VALORACIÓN CLÍNICA Y COMORBILIDADES
+                    Comorbilidades / Medicación habitual / Hospitalizaciones
+
                 </Title>
                 {currentPatient && (
                     <Space size="large" className="patient-banner">
@@ -146,16 +147,16 @@ const ErgonomicClinicAssessment: React.FC = () => {
                 )}
             </div>
 
-            <Form 
-                form={form} 
-                layout="vertical" 
+            <Form
+                form={form}
+                layout="vertical"
                 initialValues={{ medicamentos: [{}], enfermedades_activas: [] }}
                 className="main-form"
             >
                 <div className="content-layout">
                     {/* COLUMNA 1: Medicación y Antecedentes */}
                     <div className="column column-left">
-                        <Card 
+                        <Card
                             title={<Space><MedicineBoxFilled /> Medicación</Space>}
                             extra={<Badge count={numMedicamentos} color={getPolifarmaciaColor()} />}
                             className="flex-column-card"
@@ -180,7 +181,7 @@ const ErgonomicClinicAssessment: React.FC = () => {
                             </Form.List>
                         </Card>
 
-                        <Card 
+                        <Card
                             title={<Space><HistoryOutlined /> Antecedentes</Space>}
                             className="mt-4"
                             styles={{ body: { padding: '12px' } }}
@@ -193,7 +194,7 @@ const ErgonomicClinicAssessment: React.FC = () => {
 
                     {/* COLUMNA 2: Comorbilidades Grid */}
                     <div className="column column-center">
-                        <Card 
+                        <Card
                             title={<Space><CheckSquareOutlined /> Comorbilidades / Antecedentes</Space>}
                             className="flex-column-card"
                             styles={{ body: { padding: '12px', overflowY: 'auto', flex: 1 } }}
@@ -214,8 +215,8 @@ const ErgonomicClinicAssessment: React.FC = () => {
 
                     {/* COLUMNA 3: Oncología y Detalles */}
                     <div className="column column-right">
-                        <Card 
-                            title={<Text strong style={{ color: '#cf1322' }}>VALORACIÓN ONCOLÓGICA</Text>} 
+                        <Card
+                            title={<Text strong style={{ color: '#cf1322' }}>VALORACIÓN ONCOLÓGICA</Text>}
                             styles={{ header: { background: '#fff1f0', padding: '0 12px', minHeight: '40px' }, body: { padding: '12px' } }}
                             className="mb-4"
                         >
@@ -238,7 +239,7 @@ const ErgonomicClinicAssessment: React.FC = () => {
                             </Row>
                         </Card>
 
-                        <Card 
+                        <Card
                             title={<Space><FileSearchOutlined /> Detalles Específicos</Space>}
                             className="flex-column-card"
                             styles={{ body: { padding: 0, overflowY: 'auto', flex: 1 } }}

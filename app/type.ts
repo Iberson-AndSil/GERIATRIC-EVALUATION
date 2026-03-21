@@ -68,6 +68,7 @@ export type BristolData = {
 };
 
 export type AdherenceData = {
+  tomaMedicamentoPregunta?: string | null;
   olvido: string | null;
   tomarMedicamento: string | null;
   dejarMedicacion: string | null;

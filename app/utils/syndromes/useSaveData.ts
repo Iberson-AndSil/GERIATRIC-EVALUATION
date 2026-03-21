@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGlobalContext } from '@/app/context/GlobalContext';
 import { DepressionData, SensoryData, BristolData, AdherenceData } from '../../type';
-import { actualizarResultado } from '@/app/lib/pacienteService';
+import { actualizarResultado, crearRegistroResultados } from '@/app/lib/pacienteService';
 import { notification } from 'antd';
 
 export const useSaveData = () => {
-  const { currentPatient, currentResultId } = useGlobalContext();
+  const { currentPatient, currentResultId, setCurrentResultId } = useGlobalContext();
   const router = useRouter();
   const [api] = notification.useNotification();
   const [loading, setLoading] = useState(false);
@@ -39,11 +39,12 @@ export const useSaveData = () => {
       ].reduce((a, b) => a + b, 0);
 
       const puntajeMoriski = () => {
+        if (adherenciaData.tomaMedicamentoPregunta === 'no') return 0;
         let puntuacion = 0;
-        if (adherenciaData.olvido === 'si') puntuacion++;
+        if (adherenciaData.olvido === 'no') puntuacion++;
         if (adherenciaData.tomarMedicamento === 'si') puntuacion++;
-        if (adherenciaData.dejarMedicacion === 'si') puntuacion++;
-        if (adherenciaData.sientaMal === 'si') puntuacion++;
+        if (adherenciaData.dejarMedicacion === 'no') puntuacion++;
+        if (adherenciaData.sientaMal === 'no') puntuacion++;
         return puntuacion;
       };
 
@@ -52,33 +53,23 @@ export const useSaveData = () => {
       const bristol = puntajeBristol.toString();
       const adherencia = puntajeMoriski().toString();
 
-      await actualizarResultado(
-        currentPatient.dni,
-        currentResultId || "",
-        'depresion',
-        depresion
-      );
-
-      await actualizarResultado(
-        currentPatient.dni,
-        currentResultId || "",
-        'sensorial',
-        sensorial
-      );
-
-      await actualizarResultado(
-        currentPatient.dni,
-        currentResultId || "",
-        'bristol',
-        bristol
-      );
-
-      await actualizarResultado(
-        currentPatient.dni,
-        currentResultId || "",
-        'adherencia',
-        adherencia
-      );
+      let resId = currentResultId;
+      if (!resId) {
+        resId = await crearRegistroResultados(currentPatient.dni, {
+          depresion: depresion,
+          sensorial: sensorial,
+          bristol: bristol,
+          adherencia: adherencia
+        });
+        setCurrentResultId(resId);
+      } else {
+        await Promise.all([
+          actualizarResultado(currentPatient.dni, resId, 'depresion', depresion),
+          actualizarResultado(currentPatient.dni, resId, 'sensorial', sensorial),
+          actualizarResultado(currentPatient.dni, resId, 'bristol', bristol),
+          actualizarResultado(currentPatient.dni, resId, 'adherencia', adherencia)
+        ]);
+      }
 
       api.success({
         message: 'Éxito',

@@ -13,7 +13,7 @@ import {
 import { useGlobalContext } from "../context/GlobalContext";
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
-import { actualizarResultado } from "../lib/pacienteService";
+import { actualizarResultado, crearRegistroResultados } from "../lib/pacienteService";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -29,7 +29,7 @@ const WEEKDAYS = [
 
 const MMSEForm = () => {
     const router = useRouter();
-    const { currentPatient, currentResultId } = useGlobalContext();
+    const { currentPatient, currentResultId, setCurrentResultId } = useGlobalContext();
     const [score, setScore] = useState(0);
     const [interpretation, setInterpretation] = useState("Pendiente de evaluación");
     const [form] = Form.useForm();
@@ -78,12 +78,18 @@ const MMSEForm = () => {
             setLoading(true);
             if (!currentPatient) throw new Error("Seleccione un paciente primero");
 
-            await actualizarResultado(
-                currentPatient.dni,
-                currentResultId || "",
-                'mmse30',
-                score
-            );
+            let resId = currentResultId;
+            if (!resId) {
+                resId = await crearRegistroResultados(currentPatient.dni, { mmse30: score });
+                setCurrentResultId(resId);
+            } else {
+                await actualizarResultado(
+                    currentPatient.dni,
+                    resId,
+                    'mmse30',
+                    score
+                );
+            }
 
             api.success({
                 message: 'Éxito',

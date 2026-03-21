@@ -27,7 +27,7 @@ export default function SocialPage() {
         if (!resultadoId) {
             if (!currentPatient) return;
             setCurrentPatient(currentPatient);
-            resultadoId = await crearRegistroResultados(currentPatient.dni, score);
+            resultadoId = await crearRegistroResultados(currentPatient.dni, { gijon: score });
             setCurrentResultId(resultadoId);
             router.push("/funtional/");
         } else {
