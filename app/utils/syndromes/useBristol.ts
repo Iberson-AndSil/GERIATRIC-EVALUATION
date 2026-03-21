@@ -3,7 +3,7 @@ import { BristolData } from '../../type';
 
 export const useBristol = () => {
   const [bristolData, setBristolData] = useState<BristolData>({
-    bristolType: '1',
+    bristolType: '0',
     effort: false,
     hardStool: false,
     incomplete: false,
@@ -22,12 +22,7 @@ export const useBristol = () => {
       const v = Number(value);
       newData = {
         ...newData,
-        effort: v >= 1,
-        hardStool: v >= 2,
-        incomplete: v >= 3,
-        obstruction: v >= 4,
-        manualAid: v >= 5,
-        lessThanThree: v >= 6,
+        hardStool: v >= 1,
       };
     }
 

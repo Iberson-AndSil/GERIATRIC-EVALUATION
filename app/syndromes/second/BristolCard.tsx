@@ -35,10 +35,10 @@ export const BristolCard = ({ bristolData, bristolResult, score, handleBristolCh
               min={0}
               max={6}
               marks={marks}
-              value={score}
+              value={Number(bristolData.bristolType) || 0}
               onChange={val => handleBristolChange('bristolType', val)}
-              trackStyle={score > 0 ? { backgroundColor: '#ff4d4f' } : { backgroundColor: '#f5f5f5' }}
-              handleStyle={score > 0 ? { borderColor: '#ff4d4f' } : { borderColor: '#d9d9d9' }}
+              trackStyle={Number(bristolData.bristolType) > 0 ? { backgroundColor: '#ff4d4f' } : { backgroundColor: '#f5f5f5' }}
+              handleStyle={Number(bristolData.bristolType) > 0 ? { borderColor: '#ff4d4f' } : { borderColor: '#d9d9d9' }}
             />
             <div className="flex justify-between text-xs text-gray-400 mt-1">
               <span>Estreñimiento</span>
@@ -70,8 +70,8 @@ export const BristolCard = ({ bristolData, bristolResult, score, handleBristolCh
       {bristolResult && (
         <div
           className={`mt-4 p-3 rounded-lg border flex items-center justify-between gap-3 ${score >= 2
-              ? 'bg-orange-50 border-orange-200 text-orange-800'
-              : 'bg-green-50 border-green-200 text-green-800'
+            ? 'bg-orange-50 border-orange-200 text-orange-800'
+            : 'bg-green-50 border-green-200 text-green-800'
             }`}
         >
           <AlertOutlined />
