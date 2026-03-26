@@ -203,17 +203,8 @@ const SPPBEvaluation = () => {
                         <div className="space-y-4">
                             <Form.Item
                                 name="walkTime"
-                                label={
-                                    <div className="flex justify-between w-full">
-                                        <span>Tiempo registrado (seg)</span>
-                                        {walkTimeMs ? (
-                                            <span className="text-blue-600 font-medium">
-                                                Velocidad: {(4 / walkTimeMs).toFixed(2)} m/s
-                                            </span>
-                                        ) : null}
-                                    </div>
-                                }
-                                className="mb-0 w-full"
+                                label="Tiempo registrado para caminar 4 metros"
+                                className="mb-2 w-full"
                                 rules={[{ required: true, message: 'Requerido' }]}
                             >
                                 <div className="flex items-center gap-3">
@@ -222,14 +213,26 @@ const SPPBEvaluation = () => {
                                         className="w-full"
                                         placeholder="0.0"
                                         onChange={(val) => { setWalkTimeMs(val); setWalkScore(calculateWalkScore(val)); }}
-                                        addonAfter="seg"
+                                        addonAfter="segundos"
                                     />
-                                    <div className="flex flex-col items-center px-2 bg-gray-50 rounded border border-gray-200">
+                                    <div className="flex flex-col items-center px-4 py-1 bg-gray-50 rounded border border-gray-200">
                                         <span className="text-[10px] uppercase font-bold text-gray-400">Puntos</span>
                                         <span className={`text-lg font-bold ${walkScore >= 3 ? 'text-green-600' : 'text-orange-500'}`}>{walkScore}</span>
                                     </div>
                                 </div>
                             </Form.Item>
+
+                            {walkTimeMs ? (
+                                <div className="bg-blue-50 p-3 rounded-lg border border-blue-200 flex items-center justify-between mb-4 mt-2">
+                                    <div className="flex flex-col">
+                                        <Text className="text-blue-800 font-medium text-xs uppercase">Velocidad de Marcha Calculada</Text>
+                                        <Text className="text-blue-600 text-xs">(Distancia: 4 metros / Tiempo: {walkTimeMs}s)</Text>
+                                    </div>
+                                    <Text strong className="text-blue-700 text-2xl">
+                                        {(4 / walkTimeMs).toFixed(2)} <span className="text-base font-normal">m/s</span>
+                                    </Text>
+                                </div>
+                            ) : null}
 
                             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden text-xs">
                                 <div className="bg-gray-50 px-3 py-1 border-b border-gray-200 font-semibold text-gray-500">Referencia</div>
@@ -256,11 +259,19 @@ const SPPBEvaluation = () => {
                             status={totalScore >= 10 ? "success" : "warning"}
                             title={<span className="text-xl font-bold">Evaluación Completada</span>}
                             subTitle={
-                                <div className="mt-2">
-                                    <div className="text-4xl font-bold text-gray-800 mb-1">{totalScore} <span className="text-xl text-gray-400 font-light">/ 12</span></div>
-                                    <Tag color={totalScore >= 10 ? 'green' : totalScore >= 7 ? 'orange' : 'red'}>
-                                        {totalScore >= 10 ? 'Normal' : totalScore >= 7 ? 'Moderado' : 'Severo'}
-                                    </Tag>
+                                <div className="mt-4 flex flex-col items-center gap-3">
+                                    <div>
+                                        <div className="text-4xl font-bold text-gray-800 mb-1">{totalScore} <span className="text-xl text-gray-400 font-light">/ 12</span></div>
+                                        <Tag color={totalScore >= 10 ? 'green' : totalScore >= 7 ? 'orange' : 'red'}>
+                                            {totalScore >= 10 ? 'Normal' : totalScore >= 7 ? 'Moderado' : 'Severo'}
+                                        </Tag>
+                                    </div>
+                                    {walkTimeMs && (
+                                        <div className="mt-4 bg-gray-50 p-3 rounded-lg border border-gray-200 w-full max-w-[200px]">
+                                            <Text type="secondary" className="block text-xs uppercase font-bold mb-1">Velocidad de marcha</Text>
+                                            <Text strong className="text-blue-600 text-lg">{(4 / walkTimeMs).toFixed(2)} m/s</Text>
+                                        </div>
+                                    )}
                                 </div>
                             }
                             className="p-0"

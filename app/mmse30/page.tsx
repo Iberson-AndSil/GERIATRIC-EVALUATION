@@ -43,8 +43,12 @@ const MMSEForm = () => {
 
     const handleValuesChange = (_: any, allValues: any) => {
         let total = 0;
-        if (allValues.date_orientation === true) total += 5;
-        if (allValues.place_orientation === true) total += 5;
+        [
+            'date_day', 'date_month', 'date_year', 'date_weekday', 'date_season',
+            'place_floor', 'place_location', 'place_city', 'place_department', 'place_country'
+        ].forEach(field => {
+            if (allValues[field] === true) total += 1;
+        });
 
         if (allValues.memory_words?.length) total += allValues.memory_words.length;
         if (allValues.recall_words?.length) total += allValues.recall_words.length;
@@ -134,22 +138,48 @@ const MMSEForm = () => {
                         >
                             <Row gutter={16}>
                                 <Col span={12}>
-                                    <Divider orientation="left" className="!border-gray-200 !mt-0" plain><Text>¿Qué día es hoy?</Text></Divider>
-                                    <Form.Item name="date_orientation" label={<Text><Text type="secondary">(Día del mes, mes, año, día de la semana y estación)</Text></Text>}>
-                                        <Select placeholder="Seleccione">
-                                            <Option value={true}><span className="text-green-600"><CheckCircleOutlined /> Correcto (5 pts)</span></Option>
-                                            <Option value={false}><span className="text-red-500"><CloseCircleOutlined /> Incorrecto (0 pts)</span></Option>
-                                        </Select>
-                                    </Form.Item>
+                                    <Divider orientation="left" className="!border-gray-200 !mt-0" plain><Text>¿Qué día es hoy? (5 pts)</Text></Divider>
+                                    <div className="flex flex-col gap-2 bg-gray-50/50 p-2 rounded-lg">
+                                        {[
+                                            { name: 'date_day', label: 'Día' },
+                                            { name: 'date_month', label: 'Mes' },
+                                            { name: 'date_year', label: 'Año' },
+                                            { name: 'date_weekday', label: 'Día de la semana' },
+                                            { name: 'date_season', label: 'Estación' },
+                                        ].map(item => (
+                                            <div key={item.name} className="flex justify-between items-center bg-white px-3 py-1.5 rounded shadow-sm border border-gray-200">
+                                                <Text>{item.label}</Text>
+                                                <Form.Item name={item.name} noStyle>
+                                                    <Radio.Group size="middle" buttonStyle="solid">
+                                                        <Radio.Button value={true}><CheckCircleOutlined /></Radio.Button>
+                                                        <Radio.Button value={false}><CloseCircleOutlined /></Radio.Button>
+                                                    </Radio.Group>
+                                                </Form.Item>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </Col>
                                 <Col span={12}>
-                                    <Divider orientation="left" className="!border-gray-200 !mt-0" plain><Text>¿Dónde estamos?</Text></Divider>
-                                    <Form.Item name="place_orientation" label={<Text><Text type="secondary">(Lugar, piso/planta, ciudad, departamento y país)</Text></Text>}>
-                                        <Select placeholder="Seleccione">
-                                            <Option value={true}><span className="text-green-600"><CheckCircleOutlined /> Correcto (5 pts)</span></Option>
-                                            <Option value={false}><span className="text-red-500"><CloseCircleOutlined /> Incorrecto (0 pts)</span></Option>
-                                        </Select>
-                                    </Form.Item>
+                                    <Divider orientation="left" className="!border-gray-200 !mt-0" plain><Text>¿Dónde estamos? (5 pts)</Text></Divider>
+                                    <div className="flex flex-col gap-2 bg-gray-50/50 p-2 rounded-lg border border-gray-100">
+                                        {[
+                                            { name: 'place_floor', label: 'Piso' },
+                                            { name: 'place_location', label: 'Lugar' },
+                                            { name: 'place_city', label: 'Ciudad' },
+                                            { name: 'place_department', label: 'Departamento' },
+                                            { name: 'place_country', label: 'País' },
+                                        ].map(item => (
+                                            <div key={item.name} className="flex justify-between items-center bg-white px-3 py-1.5 rounded shadow-sm border border-gray-200">
+                                                <Text>{item.label}</Text>
+                                                <Form.Item name={item.name} noStyle>
+                                                    <Radio.Group size="middle" buttonStyle="solid">
+                                                        <Radio.Button value={true}><CheckCircleOutlined /></Radio.Button>
+                                                        <Radio.Button value={false}><CloseCircleOutlined /></Radio.Button>
+                                                    </Radio.Group>
+                                                </Form.Item>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </Col>
                             </Row>
                         </Card>
