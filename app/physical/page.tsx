@@ -67,7 +67,7 @@ const SPPBEvaluation = () => {
             if (!currentPatient?.dni) throw new Error("No se ha seleccionado un paciente");
             const Balance = totalScore.toString();
             await actualizarResultado(currentPatient.dni, currentResultId || "", 'Balance', Balance);
-            
+
             if (walkTimeMs) {
                 const speed = (4 / walkTimeMs).toFixed(2);
                 await actualizarResultado(currentPatient.dni, currentResultId || "", 'walking_speed', speed);
@@ -135,7 +135,7 @@ const SPPBEvaluation = () => {
                                             placeholder="0.0"
                                             className="w-32"
                                             onChange={(val) => setTandemScore(calculateTandemScore(val))}
-                                            addonAfter="seg"
+                                            addonAfter="segundos"
                                         />
                                         <Tag color={tandemScore === 2 ? 'success' : tandemScore === 1 ? 'warning' : 'error'}>
                                             {tandemScore} Puntos

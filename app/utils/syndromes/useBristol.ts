@@ -22,7 +22,12 @@ export const useBristol = () => {
       const v = Number(value);
       newData = {
         ...newData,
-        hardStool: v >= 1,
+        hardStool: v === 1 || v === 2,
+      };
+    } else if (field === 'hardStool' && value === true) {
+      newData = {
+        ...newData,
+        bristolType: '2',
       };
     }
 

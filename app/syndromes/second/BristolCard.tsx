@@ -48,9 +48,9 @@ export const BristolCard = ({ bristolData, bristolResult, score, handleBristolCh
           </div>
 
           <div className="flex flex-col gap-2">
-            <Text strong>Síntomas asociados:</Text>
+            <Text strong>Criterios de Roma IV:</Text>
             <Checkbox checked={bristolData.effort} onChange={e => handleBristolChange('effort', e.target.checked)}>Esfuerzo para defecar</Checkbox>
-            <Checkbox checked={bristolData.hardStool} onChange={e => handleBristolChange('hardStool', e.target.checked)}>Heces duras</Checkbox>
+            <Checkbox checked={bristolData.hardStool} disabled={Number(bristolData.bristolType) > 2} onChange={e => handleBristolChange('hardStool', e.target.checked)}>Heces duras</Checkbox>
             <Checkbox checked={bristolData.incomplete} onChange={e => handleBristolChange('incomplete', e.target.checked)}>Evacuación incompleta tras defecación</Checkbox>
             <Checkbox checked={bristolData.obstruction} onChange={e => handleBristolChange('obstruction', e.target.checked)}>Sensación de obstrucción</Checkbox>
             <Checkbox checked={bristolData.manualAid} onChange={e => handleBristolChange('manualAid', e.target.checked)}>Necesita ayuda manual o farmacológica</Checkbox>

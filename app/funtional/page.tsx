@@ -90,10 +90,10 @@ export default function FunctionalAssessmentPage() {
 
   const obtenerInterpretacion = () => {
     const total = obtenerPuntajeTotal();
-    if (total >= 100) return "Independiente";
-    if (total >= 60) return "Dependencia leve";
-    if (total >= 40 && total <= 55) return "Dependencia moderada";
-    if (total >= 20 && total <= 35) return "Dependencia grave";
+    if (total === 100) return "Independencia";
+    if (total >= 91) return "Dependencia leve";
+    if (total >= 61) return "Dependencia moderada";
+    if (total >= 21) return "Dependencia severa";
     return "Dependencia total";
   };
 
