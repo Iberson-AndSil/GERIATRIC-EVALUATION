@@ -77,7 +77,7 @@ export default function Parte5Recuerdo({
       
       <Row gutter={[16, 16]}>
         <Col span={6} xs={12}>
-          <Card size="small" type="inner" title="20 céntimos">
+          <Card size="small" type="inner" title={<span translate="no" className="notranslate">20 céntimos</span>}>
             <Radio.Group 
               value={recuerdo.monedasRecordadas.centimos20}
               onChange={(e) => handleMonedaRecordadaChange('centimos20', e.target.value)}
@@ -90,7 +90,7 @@ export default function Parte5Recuerdo({
           </Card>
         </Col>
         <Col span={6} xs={12}>
-          <Card size="small" type="inner" title="50 céntimos">
+          <Card size="small" type="inner" title={<span translate="no" className="notranslate">50 céntimos</span>}>
             <Radio.Group 
               value={recuerdo.monedasRecordadas.centimos50}
               onChange={(e) => handleMonedaRecordadaChange('centimos50', e.target.value)}
@@ -103,7 +103,7 @@ export default function Parte5Recuerdo({
           </Card>
         </Col>
         <Col span={6} xs={12}>
-          <Card size="small" type="inner" title="1 Sol">
+          <Card size="small" type="inner" title={<span translate="no" className="notranslate">1 Sol</span>}>
             <Radio.Group 
               value={recuerdo.monedasRecordadas.sol1}
               onChange={(e) => handleMonedaRecordadaChange('sol1', e.target.value)}
@@ -116,7 +116,7 @@ export default function Parte5Recuerdo({
           </Card>
         </Col>
         <Col span={6} xs={12}>
-          <Card size="small" type="inner" title="2 Soles">
+          <Card size="small" type="inner" title={<span translate="no" className="notranslate">2 Soles</span>}>
             <Radio.Group 
               value={recuerdo.monedasRecordadas.soles2}
               onChange={(e) => handleMonedaRecordadaChange('soles2', e.target.value)}

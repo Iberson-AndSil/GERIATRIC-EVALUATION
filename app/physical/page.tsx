@@ -256,14 +256,14 @@ const SPPBEvaluation = () => {
                 return (
                     <div className="animate-fadeIn h-full flex flex-col justify-center items-center">
                         <Result
-                            status={totalScore >= 10 ? "success" : "warning"}
+                            status={totalScore >= 10 ? "success" : totalScore >= 7 ? "info" : totalScore >= 4 ? "warning" : "error"}
                             title={<span className="text-xl font-bold">Evaluación Completada</span>}
                             subTitle={
                                 <div className="mt-4 flex flex-col items-center gap-3">
                                     <div>
                                         <div className="text-4xl font-bold text-gray-800 mb-1">{totalScore} <span className="text-xl text-gray-400 font-light">/ 12</span></div>
-                                        <Tag color={totalScore >= 10 ? 'green' : totalScore >= 7 ? 'orange' : 'red'}>
-                                            {totalScore >= 10 ? 'Normal' : totalScore >= 7 ? 'Moderado' : 'Severo'}
+                                        <Tag color={totalScore >= 10 ? 'green' : totalScore >= 7 ? 'blue' : totalScore >= 4 ? 'orange' : 'red'}>
+                                            {totalScore >= 10 ? 'Sin limitación en rendimiento físico' : totalScore >= 7 ? 'Limitación leve en rendimiento físico' : totalScore >= 4 ? 'Limitación moderada en rendimiento físico' : 'Limitación grave en rendimiento físico'}
                                         </Tag>
                                     </div>
                                     {walkTimeMs && (

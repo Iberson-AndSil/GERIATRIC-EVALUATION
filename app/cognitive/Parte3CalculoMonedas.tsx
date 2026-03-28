@@ -30,10 +30,10 @@ export default function Parte3CalculoMonedas({ calculos, setCalculos, nextStep, 
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
              <Tag color="blue">{key.toUpperCase()}</Tag>
-             <Text strong className="text-gray-800">{title}</Text>
+             <Text strong className="text-gray-800" translate="no">{title}</Text>
           </div>
-          <Text type="secondary" className="block text-sm">{subtitle}</Text>
-          <Text type="success" className="block text-xs mt-1 font-medium">Respuesta esperada: {correctAnswer}</Text>
+          <Text type="secondary" className="block text-sm" translate="no">{subtitle}</Text>
+          <Text type="success" className="block text-xs mt-1 font-medium">Respuesta esperada: <span translate="no" className="notranslate">{correctAnswer}</span></Text>
         </div>
         
         <div className="flex-shrink-0">

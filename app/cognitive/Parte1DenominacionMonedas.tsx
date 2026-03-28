@@ -59,7 +59,7 @@ export default function Parte1DenominacionMonedas({
                     : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-gray-50'}
                 `}
               >
-                <span className={`font-semibold ${isSelected ? 'text-blue-700' : 'text-gray-600'}`}>
+                <span translate="no" className={`font-semibold notranslate ${isSelected ? 'text-blue-700' : 'text-gray-600'}`}>
                     {moneda.label}
                 </span>
                 {isSelected && <CheckCircleFilled className="text-blue-500 text-lg" />}

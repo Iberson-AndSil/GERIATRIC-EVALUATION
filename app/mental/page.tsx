@@ -250,7 +250,7 @@ const MentalEvaluationPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gray-50/50 p-6">
+    <div translate="no" className="min-h-screen w-full bg-gray-50/50 p-6 notranslate">
       {contextHolder}
       <div className="max-w-[1200px] mx-auto">
         <div className="text-center mb-8">

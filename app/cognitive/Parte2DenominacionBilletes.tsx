@@ -56,7 +56,7 @@ export default function Parte2DenominacionBilletes({
                     : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-gray-50'}
                 `}
               >
-                <span className={`font-bold mb-1 ${isSelected ? 'text-blue-700' : 'text-gray-600'}`}>
+                <span translate="no" className={`font-bold mb-1 notranslate ${isSelected ? 'text-blue-700' : 'text-gray-600'}`}>
                     {billete.label}
                 </span>
                 {isSelected && <CheckCircleFilled className="text-blue-500" />}
