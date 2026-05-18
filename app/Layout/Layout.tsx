@@ -137,6 +137,21 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     },
   ];
 
+  useEffect(() => {
+    setIsReady(true);
+  }, []);
+
+  if (!isReady) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw', background: '#f0f2f5' }}>
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <h2 className="mt-4 text-blue-500 font-semibold" translate="no">Cargando aplicación...</h2>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <StyleProvider hashPriority="high">
       <ConfigProvider theme={{ token: { colorPrimary: "#1890ff" } }}>
