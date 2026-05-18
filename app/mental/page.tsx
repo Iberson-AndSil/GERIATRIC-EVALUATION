@@ -238,7 +238,7 @@ const MentalEvaluationPage = () => {
         description: "Los resultados de la encuesta SF-12 se han guardado con éxito.",
       });
 
-      setTimeout(() => router.push("/clinic"), 1500); // Routea al que sigue orgánicamente según prefiramos
+      setTimeout(() => router.push("/cognitive"), 1500); // Routea al que sigue orgánicamente según prefiramos
     } catch (err: any) {
       api.error({
         message: "Error de Guardado",
@@ -301,7 +301,7 @@ const MentalEvaluationPage = () => {
 
         {!isSubmitted && (
             <div className="flex justify-center mt-8">
-              <Link href="/physical">
+              <Link href="/funtional">
                 <Button icon={<ArrowLeftOutlined />} size="large">Volver Atrás</Button>
               </Link>
             </div>

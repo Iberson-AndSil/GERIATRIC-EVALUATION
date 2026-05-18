@@ -7,6 +7,7 @@ import { NotificationPlacement } from "antd/es/notification/interface";
 import { BasicInfoSection } from "./BasicInfoSection";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useGlobalContext } from "@/app/context/GlobalContext";
 
 const { Title } = Typography;
 
@@ -15,6 +16,7 @@ const PatientFormContent = () => {
   const [api, contextHolder] = notification.useNotification();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { setCurrentPatient } = useGlobalContext();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -66,6 +68,7 @@ const PatientFormContent = () => {
       };
       
       await axios.post("/api/pacientes", patientData);
+      setCurrentPatient(patientData as any);
       openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
       router.push('/syndromes/first');
     } catch (err: unknown) {

@@ -1,13 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Input, Typography, Button, Tag, Statistic, Row, Col } from 'antd';
+import { InputNumber, Typography, Button, Tag, Statistic, Row, Col } from 'antd';
 import { ArrowLeftOutlined, ClockCircleOutlined, ThunderboltFilled, PlayCircleOutlined, PauseCircleOutlined } from '@ant-design/icons';
 
 const { Text, Title } = Typography;
 
 interface Props {
-  animales: string[];
-  setAnimales: React.Dispatch<React.SetStateAction<string[]>>;
+  cantidadAnimales: number | null;
+  setCantidadAnimales: React.Dispatch<React.SetStateAction<number | null>>;
   tiempoFluencia: number;
   setTiempoFluencia: React.Dispatch<React.SetStateAction<number>>;
   nextStep: () => void;
@@ -15,15 +15,14 @@ interface Props {
 }
 
 export default function Parte4FluenciaVerbal({
-  animales,
-  setAnimales,
+  cantidadAnimales,
+  setCantidadAnimales,
   tiempoFluencia,
   setTiempoFluencia,
   nextStep,
   prevStep
 }: Props) {
   const [isRunning, setIsRunning] = useState(false);
-  const [inputValue, setInputValue] = useState(''); // Estado para controlar el texto del input
 
   // Lógica del Cronómetro
   useEffect(() => {
@@ -45,19 +44,14 @@ export default function Parte4FluenciaVerbal({
     }
   };
 
-  // Manejador del Input (Enter)
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault(); // Evita comportamientos por defecto
-      
-      const value = inputValue.trim();
-      
-      if (value) {
-        setAnimales(prev => [...prev, value]);
-        setInputValue(''); // Limpia el input automáticamente
-      }
-    }
+  const getClassification = (count: number | null) => {
+    if (count === null) return null;
+    if (count >= 15) return { text: "Función cognitiva normal", color: "green" };
+    if (count >= 11) return { text: "Probable deterioro cognitivo", color: "orange" };
+    return { text: "Alta probabilidad de deterioro cognitivo", color: "red" };
   };
+
+  const clasificacion = getClassification(cantidadAnimales);
 
   return (
     <div className="animate-fadeIn">
@@ -102,52 +96,43 @@ export default function Parte4FluenciaVerbal({
             </div>
 
             {/* Input de Animales */}
-            <div>
-                <Text strong className="mb-2 block">Ingresar Animal (Presionar Enter):</Text>
-                <div className="flex gap-2">
-                    <Input
+            <div className="mt-6">
+                <Text strong className="mb-2 block">Cantidad total de animales mencionados:</Text>
+                <div className="flex items-center gap-4">
+                    <InputNumber
                         size="large"
-                        placeholder={isRunning ? "Escriba aquí..." : "Presione 'Comenzar Tiempo' primero"}
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        disabled={!isRunning} // Se bloquea si no está corriendo el tiempo
-                        prefix={<ThunderboltFilled className={isRunning ? "text-yellow-500" : "text-gray-300"} />}
-                        className="rounded-lg py-3"
-                        autoFocus={isRunning}
+                        min={0}
+                        placeholder="Ej. 12"
+                        value={cantidadAnimales}
+                        onChange={(val) => setCantidadAnimales(val)}
+                        className="rounded-lg w-full max-w-[200px]"
                     />
                 </div>
-                {!isRunning && tiempoFluencia === 60 && (
-                     <Text type="secondary" className="text-xs mt-2 block text-center">
-                        El campo se habilitará cuando inicie el cronómetro.
-                     </Text>
-                )}
-                 {!isRunning && tiempoFluencia === 0 && (
+                {!isRunning && tiempoFluencia === 0 && (
                      <Text type="danger" className="text-xs mt-2 block text-center">
-                        Tiempo finalizado.
+                        Tiempo finalizado. Por favor, ingrese la cantidad.
                      </Text>
                 )}
             </div>
         </div>
 
-        {/* Panel Derecho: Lista de Resultados */}
-        <div className="w-full md:w-1/2 h-[300px] border border-gray-200 rounded-xl bg-gray-50 p-4 flex flex-col">
-            <div className="flex justify-between items-center mb-2 border-b border-gray-200 pb-2">
-                <Text strong>Registrados</Text>
-                <Tag color="blue">{animales.length}</Tag>
-            </div>
-            <div className="flex-1 overflow-y-auto content-start flex flex-wrap gap-2">
-                {animales.map((animal, index) => (
-                    <Tag key={index} className="m-0 text-sm py-1 px-3 rounded-full bg-white border border-gray-300">
-                        {index + 1}. {animal}
-                    </Tag>
-                ))}
-                {animales.length === 0 && (
-                    <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm italic">
-                        Sin registros aún...
+        {/* Panel Derecho: Clasificación */}
+        <div className="w-full md:w-1/2 border border-gray-200 rounded-xl bg-gray-50 p-6 flex flex-col items-center justify-center min-h-[300px]">
+            <Text strong className="text-gray-500 mb-2 uppercase text-xs tracking-wider">Clasificación Cognitiva (Fluencia)</Text>
+            {clasificacion ? (
+                <div className="text-center animate-fadeIn">
+                    <div className="text-5xl font-bold mb-4" style={{ color: clasificacion.color }}>
+                        {cantidadAnimales}
                     </div>
-                )}
-            </div>
+                    <Tag color={clasificacion.color} className="text-base px-4 py-1">
+                        {clasificacion.text}
+                    </Tag>
+                </div>
+            ) : (
+                <div className="text-gray-400 text-sm italic text-center">
+                    Ingrese la cantidad de animales para ver la clasificación.
+                </div>
+            )}
         </div>
       </div>
 

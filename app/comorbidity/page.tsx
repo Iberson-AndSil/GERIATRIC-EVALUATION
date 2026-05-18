@@ -89,7 +89,11 @@ const ProfundIndexForm = () => {
           hemoglobina: infoBD.hb > 0 && infoBD.hb < 10,
           barthel60: infoBD.barthel > 0 && infoBD.barthel < 60,
           hospitalizaciones: infoBD.hosp >= 4,
-          cuidador: p.con_quien_vive && !p.con_quien_vive.includes("Cónyuge"),
+          cuidador: (() => {
+            if (!p.con_quien_vive) return true;
+            const arr = Array.isArray(p.con_quien_vive) ? p.con_quien_vive : [p.con_quien_vive];
+            return !arr.some((v: string) => v.toLowerCase().includes("conyugue") || v.toLowerCase().includes("cónyuge"));
+          })(),
           claseFuncional: resPrevio?.indice_profund?.claseFuncional || false,
         };
 

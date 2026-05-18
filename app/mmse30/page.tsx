@@ -65,7 +65,7 @@ const MMSEForm = () => {
         if (allValues.command_fold_paper === true) total += 1;
         if (allValues.command_floor === true) total += 1;
         if (allValues.command_close_eyes === true) total += 1;
-        if (allValues.copy_drawing === true) total += 4;
+        if (allValues.copy_drawing === true) total += 1;
 
         if (allValues.write_sentence === true) total += 1;
 

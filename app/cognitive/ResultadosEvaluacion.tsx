@@ -23,7 +23,7 @@ interface ResultadosEvaluacionProps {
   monedasCorrectas: MonedasCorrectas;
   billetesCorrectos: BilletesCorrectos;
   calculos: Record<CalculoItems, RespuestaItem>;
-  animales: string[];
+  cantidadAnimales: number | null;
   intrusiones: Intrusiones;
   recuerdo: Recuerdo;
   fileHandle: any;
@@ -34,6 +34,7 @@ export default function ResultadosEvaluacion({
   monedasCorrectas,
   billetesCorrectos,
   calculos,
+  cantidadAnimales,
   intrusiones,
   recuerdo,
   resetEvaluation
@@ -46,10 +47,17 @@ export default function ResultadosEvaluacion({
     let puntaje = 0;
     if (recuerdo.cantidadMonedas === 'correcto') puntaje += 1;
     if (recuerdo.totalDinero === 'correcto') puntaje += 1;
-    if (recuerdo.monedasRecordadas.centimos20 === 'correcto') puntaje += 1;
-    if (recuerdo.monedasRecordadas.centimos50 === 'correcto') puntaje += 1;
-    if (recuerdo.monedasRecordadas.sol1 === 'correcto') puntaje += 1;
-    if (recuerdo.monedasRecordadas.soles2 === 'correcto') puntaje += 1;
+    if (recuerdo.monedasRecordadas.centimos20?.includes('tipo')) puntaje += 1;
+    if (recuerdo.monedasRecordadas.centimos20?.includes('cantidad')) puntaje += 1;
+    
+    if (recuerdo.monedasRecordadas.centimos50?.includes('tipo')) puntaje += 1;
+    if (recuerdo.monedasRecordadas.centimos50?.includes('cantidad')) puntaje += 1;
+    
+    if (recuerdo.monedasRecordadas.sol1?.includes('tipo')) puntaje += 1;
+    if (recuerdo.monedasRecordadas.sol1?.includes('cantidad')) puntaje += 1;
+    
+    if (recuerdo.monedasRecordadas.soles2?.includes('tipo')) puntaje += 1;
+    if (recuerdo.monedasRecordadas.soles2?.includes('cantidad')) puntaje += 1;
     return Math.max(0, puntaje - intrusiones.recuerdo);
   };
 
@@ -59,9 +67,27 @@ export default function ResultadosEvaluacion({
   const puntajeTotal = puntajeParte1 + puntajeParte2 + puntajeParte3;
   const interpretacion = interpretarResultado(puntajeTotal);
 
+  const getClassification = (count: number | null) => {
+    if (count === null) return null;
+    if (count >= 15) return { text: "Función cognitiva normal", color: "green" };
+    if (count >= 11) return { text: "Probable deterioro cognitivo", color: "orange" };
+    return { text: "Alta probabilidad de deterioro cognitivo", color: "red" };
+  };
+
+  const clasificacionFluencia = getClassification(cantidadAnimales);
+
   const handleSaveData = async () => {
     try {
       await actualizarResultado(currentPatient!.dni, currentResultId || "", 'cognitivo_total', puntajeTotal);
+      
+      // Save Fluency data
+      if (cantidadAnimales !== null) {
+          await actualizarResultado(currentPatient!.dni, currentResultId || "", 'fluencia_verbal_cantidad', cantidadAnimales);
+          if (clasificacionFluencia) {
+              await actualizarResultado(currentPatient!.dni, currentResultId || "", 'fluencia_verbal_clasificacion', clasificacionFluencia.text);
+          }
+      }
+
       api.success({ message: 'Éxito', description: 'Resultados guardados', placement: 'topRight' });
       router.push('/mmse30');
     } catch (err) {
@@ -81,14 +107,14 @@ export default function ResultadosEvaluacion({
           <Card size="small"><Statistic title="Parte II" value={puntajeParte2} suffix="/10" valueStyle={{ fontSize: '18px' }} /></Card>
         </Col>
         <Col span={6}>
-          <Card size="small"><Statistic title="Parte III" value={puntajeParte3} suffix="/6" valueStyle={{ fontSize: '18px' }} /></Card>
+          <Card size="small"><Statistic title="Parte III" value={puntajeParte3} suffix="/10" valueStyle={{ fontSize: '18px' }} /></Card>
         </Col>
         <Col span={6}>
           <Card size="small" bodyStyle={{ backgroundColor: interpretacion.color === "red" ? '#fff1f0' : '#f6ffed' }}>
             <Statistic 
               title="TOTAL" 
               value={puntajeTotal} 
-              suffix="/27" 
+              suffix="/31" 
               valueStyle={{ color: interpretacion.color === "red" ? '#cf1322' : '#3f8600', fontWeight: 'bold', fontSize: '18px' }} 
             />
           </Card>
@@ -118,15 +144,20 @@ export default function ResultadosEvaluacion({
           <Col span={12} style={{ borderLeft: '1px solid #f0f0f0' }}>
             <Row gutter={[8, 4]}>
               {[
-                { label: '5 de 0.20', ok: recuerdo.monedasRecordadas.centimos20 === 'correcto' },
-                { label: '2 de 0.50', ok: recuerdo.monedasRecordadas.centimos50 === 'correcto' },
-                { label: '1 de 1.00', ok: recuerdo.monedasRecordadas.sol1 === 'correcto' },
-                { label: '3 de 2.00', ok: recuerdo.monedasRecordadas.soles2 === 'correcto' },
-              ].map((item, idx) => (
-                <Col span={12} key={idx} style={{ fontSize: '12px' }}>
-                  {item.label}: {item.ok ? <Text type="success">+1</Text> : <Text type="danger">0</Text>}
-                </Col>
-              ))}
+                { label: '5 de 0.20', vals: recuerdo.monedasRecordadas.centimos20 || [] },
+                { label: '2 de 0.50', vals: recuerdo.monedasRecordadas.centimos50 || [] },
+                { label: '1 de 1.00', vals: recuerdo.monedasRecordadas.sol1 || [] },
+                { label: '3 de 2.00', vals: recuerdo.monedasRecordadas.soles2 || [] },
+              ].map((item, idx) => {
+                let pts = 0;
+                if (item.vals.includes('tipo')) pts += 1;
+                if (item.vals.includes('cantidad')) pts += 1;
+                return (
+                  <Col span={12} key={idx} style={{ fontSize: '12px' }}>
+                    {item.label}: {pts > 0 ? <Text type="success">+{pts}</Text> : <Text type="danger">0</Text>}
+                  </Col>
+                );
+              })}
             </Row>
           </Col>
         </Row>
@@ -134,6 +165,28 @@ export default function ResultadosEvaluacion({
           <Text type="secondary" style={{ fontSize: '11px' }}>Intrusiones: -{intrusiones.recuerdo}</Text>
         </div>
       </Card>
+
+      {/* Fluencia Verbal Results */}
+      {cantidadAnimales !== null && clasificacionFluencia && (
+          <Card size="small" style={{ marginTop: '12px' }} title={<Text strong style={{fontSize: '14px'}}>Fluencia Verbal (Distracción)</Text>}>
+            <Row justify="space-between" align="middle">
+              <Col>
+                <Text type="secondary">Cantidad de animales mencionados:</Text>
+              </Col>
+              <Col>
+                <Text strong style={{ fontSize: '16px' }}>{cantidadAnimales}</Text>
+              </Col>
+            </Row>
+            <Row justify="space-between" align="middle" style={{ marginTop: '8px' }}>
+              <Col>
+                <Text type="secondary">Clasificación:</Text>
+              </Col>
+              <Col>
+                <Text strong style={{ color: clasificacionFluencia.color }}>{clasificacionFluencia.text}</Text>
+              </Col>
+            </Row>
+          </Card>
+      )}
 
       <div style={{ textAlign: 'right', marginTop: '16px' }}>
         <Space>

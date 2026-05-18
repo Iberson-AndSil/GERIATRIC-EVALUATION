@@ -34,10 +34,10 @@ export type Recuerdo = {
   cantidadMonedas: string;
   totalDinero: string;
   monedasRecordadas: {
-    centimos20: string;
-    centimos50: string;
-    sol1: string;
-    soles2: string;
+    centimos20: string[];
+    centimos50: string[];
+    sol1: string[];
+    soles2: string[];
   };
 };
 

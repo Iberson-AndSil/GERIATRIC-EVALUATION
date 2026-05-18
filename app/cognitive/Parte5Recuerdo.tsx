@@ -1,5 +1,5 @@
 'use client';
-import { Card, Input, Typography, Button, Space, Row, Col, Divider, Form, Radio } from 'antd';
+import { Card, Input, Typography, Button, Space, Row, Col, Divider, Form, Radio, Checkbox } from 'antd';
 import { Recuerdo, Intrusiones } from '../utils/cognitive/types';
 
 const { Text, Title } = Typography;
@@ -22,12 +22,12 @@ export default function Parte5Recuerdo({
   prevStep
 }: Parte5RecuerdoProps) {
   
-  const handleMonedaRecordadaChange = (key: keyof Recuerdo['monedasRecordadas'], value: string) => {
+  const handleMonedaRecordadaChange = (key: keyof Recuerdo['monedasRecordadas'], checkedValues: string[]) => {
     setRecuerdo(prev => ({
       ...prev,
       monedasRecordadas: {
         ...prev.monedasRecordadas,
-        [key]: value
+        [key]: checkedValues
       }
     }));
   };
@@ -78,54 +78,50 @@ export default function Parte5Recuerdo({
       <Row gutter={[16, 16]}>
         <Col span={6} xs={12}>
           <Card size="small" type="inner" title={<span translate="no" className="notranslate">20 céntimos</span>}>
-            <Radio.Group 
+            <Checkbox.Group 
               value={recuerdo.monedasRecordadas.centimos20}
-              onChange={(e) => handleMonedaRecordadaChange('centimos20', e.target.value)}
-              style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}
+              onChange={(checked) => handleMonedaRecordadaChange('centimos20', checked as string[])}
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
             >
-              <Radio value="correcto">Correcto</Radio>
-              <Radio value="incorrecto">Incorrecto</Radio>
-            </Radio.Group>
-            <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '8px' }}>(Correcto: 5)</Text>
+              <Checkbox value="tipo">Recuerda moneda</Checkbox>
+              <Checkbox value="cantidad" disabled={!recuerdo.monedasRecordadas.centimos20?.includes('tipo')}>Recuerda cantidad (5)</Checkbox>
+            </Checkbox.Group>
           </Card>
         </Col>
         <Col span={6} xs={12}>
           <Card size="small" type="inner" title={<span translate="no" className="notranslate">50 céntimos</span>}>
-            <Radio.Group 
+            <Checkbox.Group 
               value={recuerdo.monedasRecordadas.centimos50}
-              onChange={(e) => handleMonedaRecordadaChange('centimos50', e.target.value)}
-              style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}
+              onChange={(checked) => handleMonedaRecordadaChange('centimos50', checked as string[])}
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
             >
-              <Radio value="correcto">Correcto</Radio>
-              <Radio value="incorrecto">Incorrecto</Radio>
-            </Radio.Group>
-            <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '8px' }}>(Correcto: 2)</Text>
+              <Checkbox value="tipo">Recuerda moneda</Checkbox>
+              <Checkbox value="cantidad" disabled={!recuerdo.monedasRecordadas.centimos50?.includes('tipo')}>Recuerda cantidad (2)</Checkbox>
+            </Checkbox.Group>
           </Card>
         </Col>
         <Col span={6} xs={12}>
           <Card size="small" type="inner" title={<span translate="no" className="notranslate">1 Sol</span>}>
-            <Radio.Group 
+            <Checkbox.Group 
               value={recuerdo.monedasRecordadas.sol1}
-              onChange={(e) => handleMonedaRecordadaChange('sol1', e.target.value)}
-              style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}
+              onChange={(checked) => handleMonedaRecordadaChange('sol1', checked as string[])}
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
             >
-              <Radio value="correcto">Correcto</Radio>
-              <Radio value="incorrecto">Incorrecto</Radio>
-            </Radio.Group>
-            <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '8px' }}>(Correcto: 1)</Text>
+              <Checkbox value="tipo">Recuerda moneda</Checkbox>
+              <Checkbox value="cantidad" disabled={!recuerdo.monedasRecordadas.sol1?.includes('tipo')}>Recuerda cantidad (1)</Checkbox>
+            </Checkbox.Group>
           </Card>
         </Col>
         <Col span={6} xs={12}>
           <Card size="small" type="inner" title={<span translate="no" className="notranslate">2 Soles</span>}>
-            <Radio.Group 
+            <Checkbox.Group 
               value={recuerdo.monedasRecordadas.soles2}
-              onChange={(e) => handleMonedaRecordadaChange('soles2', e.target.value)}
-              style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}
+              onChange={(checked) => handleMonedaRecordadaChange('soles2', checked as string[])}
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
             >
-              <Radio value="correcto">Correcto</Radio>
-              <Radio value="incorrecto">Incorrecto</Radio>
-            </Radio.Group>
-            <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '8px' }}>(Correcto: 3)</Text>
+              <Checkbox value="tipo">Recuerda moneda</Checkbox>
+              <Checkbox value="cantidad" disabled={!recuerdo.monedasRecordadas.soles2?.includes('tipo')}>Recuerda cantidad (3)</Checkbox>
+            </Checkbox.Group>
           </Card>
         </Col>
       </Row>

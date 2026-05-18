@@ -38,30 +38,67 @@ interface ResultadoClinico {
     mano_izquierda_2?: number;
     mano_derecha_1?: number;
     mano_derecha_2?: number;
+    dfs_score?: number;
   };
 }
 
-const SCORE_MAP: Record<string, number> = {
-  SI: 1,
-  DISMINUYO: 1,
-  CASI_NUNCA: 1,
+const extractVariables = (values: FragilidadValues, maxDynamo: number) => {
+  const exhaustoNum = values.exhausto === "SI" ? 1 : 0;
+  const apetitoNum = values.apetito === "DISMINUYO" ? 1 : 0;
+  const funcionalNum = (values.caminar === "SI" || values.escaleras === "SI") ? 1 : 0;
+  
+  let actividadNum = 4; // Default
+  if (values.actividad === "MAS_UNA") actividadNum = 1;
+  else if (values.actividad === "UNA_VEZ") actividadNum = 2;
+  else if (values.actividad === "MES") actividadNum = 3;
+  else if (values.actividad === "CASI_NUNCA") actividadNum = 4;
+
+  return { exhaustoNum, apetitoNum, funcionalNum, actividadNum, fuerzaMuscular: maxDynamo };
+};
+
+const calcularDFS = (sexo: string | undefined, vars: ReturnType<typeof extractVariables>) => {
+  const { exhaustoNum, apetitoNum, funcionalNum, actividadNum, fuerzaMuscular } = vars;
+  
+  if (sexo === "M") {
+    return ((2.280336 * exhaustoNum - 0.592393) * 0.3762) +
+           ((4.058274 * apetitoNum - 0.263501) * 0.3130) +
+           ((0.092326 * fuerzaMuscular - 3.986646) * -0.4653) +
+           ((3.098226 * funcionalNum - 0.365971) * 0.6146) +
+           ((1.005942 * actividadNum - 1.571803) * 0.4680);
+  } else {
+    return ((2.077707 * exhaustoNum - 0.757295) * 0.4088) +
+           ((3.341539 * apetitoNum - 0.332289) * 0.3325) +
+           ((0.132827 * fuerzaMuscular - 3.534515) * -0.4910) +
+           ((2.627085 * funcionalNum - 0.461808) * 0.6012) +
+           ((0.918866 * actividadNum - 1.523633) * 0.4818);
+  }
+};
+
+const obtenerClasificacionSHAREFI = (dfs: number, sexo: string | undefined) => {
+  if (sexo === "M") {
+    if (dfs < 1.211878526) return { label: "NO FRÁGIL", color: "green", icon: <CheckCircleOutlined /> };
+    if (dfs < 3.0052612772) return { label: "PRE-FRÁGIL", color: "orange", icon: <SyncOutlined spin /> };
+    return { label: "FRÁGIL", color: "red", icon: <CheckCircleOutlined /> };
+  } else {
+    if (dfs < 0.3151361243) return { label: "NO FRÁGIL", color: "green", icon: <CheckCircleOutlined /> };
+    if (dfs < 2.1301121973) return { label: "PRE-FRÁGIL", color: "orange", icon: <SyncOutlined spin /> };
+    return { label: "FRÁGIL", color: "red", icon: <CheckCircleOutlined /> };
+  }
 };
 
 const FragilidadForm: React.FC = () => {
   const [form] = Form.useForm<FragilidadValues>();
   const [loading, setLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(true);
-  const [score, setScore] = useState<number>(0);
+  const [dfsScore, setDfsScore] = useState<number>(0);
 
   const [api, contextHolder] = notification.useNotification();
   const router = useRouter();
   const { currentPatient, currentResultId, setCurrentResultId } = useGlobalContext();
 
   const categoria = useMemo(() => {
-    if (score >= 3) return { label: "FRÁGIL", color: "red", icon: <CheckCircleOutlined /> };
-    if (score >= 1) return { label: "PRE-FRÁGIL", color: "orange", icon: <SyncOutlined spin /> };
-    return { label: "NO FRÁGIL", color: "green", icon: <CheckCircleOutlined /> };
-  }, [score]);
+    return obtenerClasificacionSHAREFI(dfsScore, currentPatient?.sexo);
+  }, [dfsScore, currentPatient?.sexo]);
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -78,7 +115,21 @@ const FragilidadForm: React.FC = () => {
             ...(frag || {}),
           } as FragilidadValues;
           form.setFieldsValue(initialValues);
-          if (frag?.score_fragilidad) setScore(frag.score_fragilidad);
+          if (frag?.dfs_score !== undefined) {
+            setDfsScore(frag.dfs_score);
+          } else {
+            // Re-calculate for legacy data
+            const dynamoValues = [
+              frag?.mano_izquierda_1 || 0,
+              frag?.mano_izquierda_2 || 0,
+              frag?.mano_derecha_1 || 0,
+              frag?.mano_derecha_2 || 0,
+            ];
+            const maxDynamo = Math.max(...dynamoValues);
+            const vars = extractVariables(initialValues, maxDynamo);
+            const calculatedDfs = calcularDFS(currentPatient?.sexo, vars);
+            setDfsScore(calculatedDfs);
+          }
         }
       } catch (error) {
         api.error({ message: "Error al sincronizar datos previos" });
@@ -110,7 +161,8 @@ const FragilidadForm: React.FC = () => {
       const newId = await guardarActualizarMultiplesResultados(currentPatient.dni, currentResultId, {
         evaluacion_fragilidad: {
           ...values,
-          score_fragilidad: score,
+          score_fragilidad: dfsScore, // Keep for legacy if needed, or remove. We'll add dfs_score
+          dfs_score: dfsScore,
           categoria: categoria.label,
         },
         dynamometry: maxDynamo
@@ -126,12 +178,16 @@ const FragilidadForm: React.FC = () => {
   };
 
   const handleValuesChange = (_: any, allValues: FragilidadValues) => {
-    let puntos = 0;
-    const keys: (keyof FragilidadValues)[] = ["exhausto", "apetito", "caminar", "escaleras", "actividad"];
-    keys.forEach((key) => {
-      if (SCORE_MAP[allValues[key] as string]) puntos++;
-    });
-    setScore(puntos);
+    const dynamoValues = [
+      allValues.mano_izquierda_1 || 0,
+      allValues.mano_izquierda_2 || 0,
+      allValues.mano_derecha_1 || 0,
+      allValues.mano_derecha_2 || 0,
+    ];
+    const maxDynamo = Math.max(...dynamoValues);
+    const vars = extractVariables(allValues, maxDynamo);
+    const calculatedDfs = calcularDFS(currentPatient?.sexo, vars);
+    setDfsScore(calculatedDfs);
   };
 
   return (
@@ -248,15 +304,15 @@ const FragilidadForm: React.FC = () => {
               <Card className="sticky top-6 border-0 bg-slate-100 rounded-3xl overflow-hidden shadow-sm p-3">
                 <div className={`p-8 text-center transition-all`}>
                   <Statistic
-                    title={<span className="uppercase tracking-widest text-xs font-bold text-slate-900 opacity-90">Puntuación Total</span>}
-                    value={score}
+                    title={<span className="uppercase tracking-widest text-xs font-bold text-slate-900 opacity-90">DFS (Discrete Factor Score)</span>}
+                    value={dfsScore}
+                    precision={3}
                     valueStyle={{
                       color: "#0f172a",
                       fontSize: "4.5rem",
                       fontWeight: "900",
                       lineHeight: 1,
                     }}
-                    suffix={<span className="text-slate-800 text-2xl font-bold opacity-60">/ 5</span>}
                   />
                 </div>
 

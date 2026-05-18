@@ -6,7 +6,7 @@ import { SensoryData } from '@/app/utils/syndromes/useSensory';
 const { Text } = Typography;
 
 interface SensoryCardProps {
-   sensoryResult: string | null;
+   sensoryResult: string[] | null;
    score: number;
    handleSensoryChange: (field: keyof SensoryData, value: string) => void;
 }
@@ -115,9 +115,13 @@ export const SensoryCard = ({ sensoryResult, score, handleSensoryChange }: Senso
             >
                <div className="flex items-center gap-2">
                   {score === 0 ? <SmileOutlined className="text-xl" /> : score <= 2 ? <MehOutlined className="text-xl" /> : <FrownOutlined className="text-xl" />}
-                  <Text strong className="text-inherit">
-                     {sensoryResult}
-                  </Text>
+                  <div className="flex flex-col">
+                     {sensoryResult.map((res, index) => (
+                        <Text key={index} strong className="text-inherit">
+                           • {res}
+                        </Text>
+                     ))}
+                  </div>
                </div>
                <Badge
                   count={score}

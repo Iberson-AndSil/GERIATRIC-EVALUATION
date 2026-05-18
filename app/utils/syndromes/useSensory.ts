@@ -9,7 +9,7 @@ export const useSensory = () => {
     usaAudifonos: null,
   });
 
-  const [sensoryResult, setSensoryResult] = useState<string | null>(null);
+  const [sensoryResult, setSensoryResult] = useState<string[] | null>(null);
   const [score, setScore] = useState<number>(0);
 
   const handleSensoryChange = (field: keyof SensoryData, value: string) => {
@@ -28,18 +28,26 @@ export const useSensory = () => {
     const totalScore = Object.values(data).filter(v => v === 'si').length;
     setScore(totalScore);
 
-    const problemasVista = data.dificultadVista === 'si';
-    const problemasOido = data.dificultadEscucha === 'si';
+    const resultado: string[] = [];
 
-    let resultado = 'Resultado: ';
-    if (problemasVista && problemasOido) {
-      resultado += 'Deterioro visual y auditivo significativo';
-    } else if (problemasVista) {
-      resultado += 'Deterioro visual significativo';
-    } else if (problemasOido) {
-      resultado += 'Deterioro auditivo significativo';
+    if (data.dificultadVista === 'si') {
+      if (data.usaAnteojos === 'si') {
+        resultado.push('Deterioro visual evaluado');
+      } else {
+        resultado.push('Deterioro visual no evaluado');
+      }
     } else {
-      resultado += 'Sin deterioro sensorial significativo';
+      resultado.push('Sin deterioro visual');
+    }
+
+    if (data.dificultadEscucha === 'si') {
+      if (data.usaAudifonos === 'si') {
+        resultado.push('Deterioro auditivo evaluado');
+      } else {
+        resultado.push('Deterioro auditivo no evaluado');
+      }
+    } else {
+      resultado.push('Sin deterioro auditivo');
     }
 
     setSensoryResult(resultado);

@@ -71,7 +71,7 @@ export default function FunctionalAssessmentPage() {
         orina: null,
       });
 
-      router.push("/physical");
+      router.push("/mental");
     } catch (err: unknown) {
       console.error("Error al guardar:", err);
       api.error({

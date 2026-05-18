@@ -74,7 +74,7 @@ const SPPBEvaluation = () => {
             }
 
             api.success({ message: 'Éxito', description: 'Datos guardados correctamente' });
-            router.push('/mental');
+            router.push('/nutritional');
         } catch (err: any) {
             api.error({ message: 'Error', description: err.message || 'Error desconocido' });
         } finally {
@@ -341,7 +341,7 @@ const SPPBEvaluation = () => {
                 </div>
 
                 <div className="flex justify-center gap-4 pb-8 mt-10">
-                    <Link href="/funtional">
+                    <Link href="/affective">
                         <Button icon={<ArrowLeftOutlined />}>Volver</Button>
                     </Link>
                     <Button

@@ -54,7 +54,11 @@ const ResultsCard = ({ results, onReset, onSave }: ResultsCardProps) => {
                                     </Text>
                                     <div style={{ marginTop: 8 }}>
                                         <Progress
-                                            percent={Math.round((dimension.rawScore / dimension.maxPossible) * 100)}
+                                            percent={
+                                                dimKey === 'PHYSICAL'
+                                                    ? Math.round(((dimension.rawScore - 6) / 14) * 100)
+                                                    : Math.round(((dimension.rawScore - 6) / 21) * 100)
+                                            }
                                             status="active"
                                             showInfo={false}
                                         />
@@ -77,7 +81,7 @@ const ResultsCard = ({ results, onReset, onSave }: ResultsCardProps) => {
                         style={{ marginBottom: 8 }}
                     />
                     <Progress
-                        percent={Math.round((results.totalScore / totalMaxPossible) * 100)}
+                        percent={Math.round(((results.totalScore - 12) / 35) * 100)}
                         status="active"
                         style={{ maxWidth: 400, margin: '0 auto' }}
                     />

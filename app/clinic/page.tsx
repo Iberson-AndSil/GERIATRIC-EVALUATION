@@ -88,7 +88,8 @@ const ErgonomicClinicAssessment: React.FC = () => {
             comorbilidades: (values.enfermedades_activas || []).map((enf: string) => ({
                 nombre: enf,
                 anio_dx: values.detalles?.[enf]?.anio || null,
-                metodo_dx: values.detalles?.[enf]?.metodo || "No especificado",
+                metodo_dx: values.detalles?.[enf]?.metodo || [],
+                metodo_otros: values.detalles?.[enf]?.metodo_otros || "",
                 tto_actual: values.detalles?.[enf]?.tto || ""
             }))
         };
@@ -268,12 +269,26 @@ const ErgonomicClinicAssessment: React.FC = () => {
                                                 </td>
                                                 <td>
                                                     <Form.Item name={['detalles', enf, 'metodo']} className="mb-1">
-                                                        <Select size="small" variant="borderless" className="w-full" placeholder="M">
+                                                        <Select mode="multiple" size="small" variant="borderless" className="w-full" placeholder="M" maxTagCount="responsive">
                                                             <Option value="CLINICO">Clínico</Option>
                                                             <Option value="IMAGEN">Imagen</Option>
                                                             <Option value="LAB">Lab</Option>
                                                             <Option value="BIOPSIA">Biopsia</Option>
+                                                            <Option value="OTROS">Otros</Option>
                                                         </Select>
+                                                    </Form.Item>
+                                                    <Form.Item noStyle shouldUpdate={(prev, current) => prev.detalles?.[enf]?.metodo !== current.detalles?.[enf]?.metodo}>
+                                                        {({ getFieldValue }) => {
+                                                            const metodos = getFieldValue(['detalles', enf, 'metodo']) || [];
+                                                            if (metodos.includes('OTROS')) {
+                                                                return (
+                                                                    <Form.Item name={['detalles', enf, 'metodo_otros']} className="mb-1">
+                                                                        <Input size="small" variant="borderless" placeholder="Especifique otro método..." style={{ borderBottom: '1px dashed #d9d9d9', borderRadius: 0 }} />
+                                                                    </Form.Item>
+                                                                );
+                                                            }
+                                                            return null;
+                                                        }}
                                                     </Form.Item>
                                                     <Form.Item name={['detalles', enf, 'tto']} className="no-margin-item">
                                                         <Input size="small" variant="borderless" className="w-full" placeholder="Tratamiento" prefix={<HeartOutlined style={{ color: '#ff4d4f' }} />} />

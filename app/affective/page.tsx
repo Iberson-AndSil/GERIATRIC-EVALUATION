@@ -59,7 +59,7 @@ export default function Cuestionario() {
       if (!currentPatient?.dni) throw new Error("Seleccione un paciente");
       await actualizarResultado(currentPatient!.dni, currentResultId || "", 'afectiva', puntajeActual);
       api.success({ message: 'Guardado', description: 'GDS-15 registrado.', placement: 'topRight' });
-      router.push('/nutritional');
+      router.push('/physical');
     } catch (err: any) {
       api.error({ message: 'Error', description: err.message });
     } finally {

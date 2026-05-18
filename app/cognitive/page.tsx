@@ -50,7 +50,7 @@ export default function EvaluacionMonetaria() {
     item7: { estado: null, intentos: 0 },
   });
 
-  const [animales, setAnimales] = useState<string[]>([]);
+  const [cantidadAnimales, setCantidadAnimales] = useState<number | null>(null);
   
   const [intrusiones, setIntrusiones] = useState<Intrusiones>({
     monedas: 0, billetes: 0, recuerdo: 0,
@@ -58,7 +58,7 @@ export default function EvaluacionMonetaria() {
 
   const [recuerdo, setRecuerdo] = useState<Recuerdo>({
     cantidadMonedas: '', totalDinero: '',
-    monedasRecordadas: { centimos20: '', centimos50: '', sol1: '', soles2: '' },
+    monedasRecordadas: { centimos20: [], centimos50: [], sol1: [], soles2: [] },
   });
 
   const nextStep = () => setCurrentStep(prev => prev + 1);
@@ -73,9 +73,9 @@ export default function EvaluacionMonetaria() {
       case 1: return <Parte1DenominacionMonedas monedasCorrectas={monedasCorrectas} setMonedasCorrectas={setMonedasCorrectas} intrusiones={intrusiones} handleIntrusionChange={handleIntrusionChange} nextStep={nextStep} />;
       case 2: return <Parte2DenominacionBilletes billetesCorrectos={billetesCorrectos} setBilletesCorrectos={setBilletesCorrectos} intrusiones={intrusiones} handleIntrusionChange={handleIntrusionChange} nextStep={nextStep} prevStep={prevStep} />;
       case 3: return <Parte3CalculoMonedas calculos={calculos} setCalculos={setCalculos} nextStep={nextStep} prevStep={prevStep} />;
-      case 4: return <Parte4FluenciaVerbal animales={animales} setAnimales={setAnimales} tiempoFluencia={tiempoFluencia} setTiempoFluencia={setTiempoFluencia} nextStep={nextStep} prevStep={prevStep} />;
+      case 4: return <Parte4FluenciaVerbal cantidadAnimales={cantidadAnimales} setCantidadAnimales={setCantidadAnimales} tiempoFluencia={tiempoFluencia} setTiempoFluencia={setTiempoFluencia} nextStep={nextStep} prevStep={prevStep} />;
       case 5: return <Parte5Recuerdo recuerdo={recuerdo} setRecuerdo={setRecuerdo} intrusiones={intrusiones} handleIntrusionChange={handleIntrusionChange} nextStep={nextStep} prevStep={prevStep} />;
-      case 6: return <ResultadosEvaluacion monedasCorrectas={monedasCorrectas} billetesCorrectos={billetesCorrectos} calculos={calculos} animales={animales} intrusiones={intrusiones} recuerdo={recuerdo} fileHandle={currentPatient} resetEvaluation={() => setCurrentStep(1)} />;
+      case 6: return <ResultadosEvaluacion monedasCorrectas={monedasCorrectas} billetesCorrectos={billetesCorrectos} calculos={calculos} cantidadAnimales={cantidadAnimales} intrusiones={intrusiones} recuerdo={recuerdo} fileHandle={currentPatient} resetEvaluation={() => setCurrentStep(1)} />;
       default: return null;
     }
   };
