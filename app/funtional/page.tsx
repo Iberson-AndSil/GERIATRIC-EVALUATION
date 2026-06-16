@@ -1,33 +1,33 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Form, Typography, Button, Row, Col, notification, Divider } from "antd";
+import { Form, Typography, Button, Row, Col, notification } from "antd";
 import { ArrowLeftOutlined, MedicineBoxOutlined, SaveOutlined } from "@ant-design/icons";
 import Link from "next/link";
 
 import ABVDForm from "./ABVDForm";
 import AIVDForm from "./AIVDForm";
-import { PuntajesType, RespuestasType } from "../type";
+import { ScoresType, ResponsesType } from "../type";
 import { useGlobalContext } from "@/app/context/GlobalContext";
-import { guardarActualizarMultiplesResultados } from "../lib/pacienteService";
+import { saveOrUpdateMultipleResults } from "../lib/pacienteService";
 
 const { Title, Text } = Typography;
 
 export default function FunctionalAssessmentPage() {
-  const [puntajes, setPuntajes] = useState<PuntajesType>({
-    comer: null,
-    trasladarse: null,
-    aseo: null,
-    retrete: null,
-    banarse: null,
-    desplazarse: null,
-    escaleras: null,
-    vestirse: null,
-    heces: null,
-    orina: null,
+  const [abvdScores, setAbvdScores] = useState<ScoresType>({
+    eat: null,
+    transfer: null,
+    grooming: null,
+    toilet: null,
+    bathing: null,
+    walking: null,
+    stairs: null,
+    dressing: null,
+    bowels: null,
+    bladder: null,
   });
 
-  const [respuestas, setRespuestas] = useState<RespuestasType>({});
+  const [aivdResponses, setAivdResponses] = useState<ResponsesType>({});
   const { currentPatient, currentResultId, setCurrentResultId } = useGlobalContext();
   const router = useRouter();
   const [form] = Form.useForm();
@@ -39,44 +39,44 @@ export default function FunctionalAssessmentPage() {
       setLoading(true);
 
       if (!currentPatient?.dni) {
-        throw new Error("No se ha seleccionado un paciente");
+        throw new Error("No patient has been selected");
       }
 
-      const abvdScore = obtenerPuntajeTotal();
-      const aivdScore = puntajeTotal();
+      const abvdScore = getAbvdTotalScore();
+      const aivdScore = getAivdTotalScore();
 
-      const newId = await guardarActualizarMultiplesResultados(currentPatient.dni, currentResultId, {
+      const newId = await saveOrUpdateMultipleResults(currentPatient.dni, currentResultId, {
         abvdScore: abvdScore,
         aivdScore: aivdScore
       });
       setCurrentResultId(newId);
 
       api.success({
-        message: "Éxito",
-        description: "Resultados de ABVD y AIVD guardados correctamente",
+        message: "Success",
+        description: "ABVD and AIVD results saved successfully",
         placement: "topRight",
       });
 
       form.resetFields();
-      setPuntajes({
-        comer: null,
-        trasladarse: null,
-        aseo: null,
-        retrete: null,
-        banarse: null,
-        desplazarse: null,
-        escaleras: null,
-        vestirse: null,
-        heces: null,
-        orina: null,
+      setAbvdScores({
+        eat: null,
+        transfer: null,
+        grooming: null,
+        toilet: null,
+        bathing: null,
+        walking: null,
+        stairs: null,
+        dressing: null,
+        bowels: null,
+        bladder: null,
       });
 
       router.push("/mental");
     } catch (err: unknown) {
-      console.error("Error al guardar:", err);
+      console.error("Error saving functional assessment:", err);
       api.error({
         message: "Error",
-        description: err instanceof Error ? err.message : "Ocurrió un error al guardar",
+        description: err instanceof Error ? err.message : "An error occurred while saving",
         placement: "topRight",
       });
     } finally {
@@ -84,12 +84,12 @@ export default function FunctionalAssessmentPage() {
     }
   };
 
-  const obtenerPuntajeTotal = () => {
-    return Object.values(puntajes).reduce((acc: any, curr: any) => acc + (curr || 0), 0);
+  const getAbvdTotalScore = () => {
+    return Object.values(abvdScores).reduce((acc: any, curr: any) => acc + (curr || 0), 0);
   };
 
-  const obtenerInterpretacion = () => {
-    const total = obtenerPuntajeTotal();
+  const getAbvdInterpretation = () => {
+    const total = getAbvdTotalScore();
     if (total === 100) return "Independencia";
     if (total >= 91) return "Dependencia leve";
     if (total >= 61) return "Dependencia moderada";
@@ -97,12 +97,12 @@ export default function FunctionalAssessmentPage() {
     return "Dependencia total";
   };
 
-  const puntajeTotal = () => {
-    return Object.values(respuestas).reduce((acc: any, curr: any) => acc + (curr || 0), 0);
+  const getAivdTotalScore = () => {
+    return Object.values(aivdResponses).reduce((acc: any, curr: any) => acc + (curr || 0), 0);
   };
 
-  const interpretacionAIVD = () => {
-    const total = puntajeTotal();
+  const getAivdInterpretation = () => {
+    const total = getAivdTotalScore();
     if (total <= 3) return "Función Normal";
     if (total >= 4) return "Deterioro Funcional";
     return "Disfunción severa";
@@ -125,17 +125,22 @@ export default function FunctionalAssessmentPage() {
         <Col xs={24} xl={12}>
           <div className="h-full">
             <ABVDForm
-              puntajes={puntajes}
-              setPuntajes={setPuntajes}
-              total={obtenerPuntajeTotal()}
-              interpretacion={obtenerInterpretacion()}
+              scores={abvdScores}
+              setScores={setAbvdScores}
+              total={getAbvdTotalScore()}
+              interpretation={getAbvdInterpretation()}
             />
           </div>
         </Col>
 
         <Col xs={24} xl={12}>
           <div className="h-full">
-            <AIVDForm respuestas={respuestas} setRespuestas={setRespuestas} total={puntajeTotal()} interpretacion={interpretacionAIVD()} />
+            <AIVDForm 
+              responses={aivdResponses} 
+              setResponses={setAivdResponses} 
+              total={getAivdTotalScore()} 
+              interpretation={getAivdInterpretation()} 
+            />
           </div>
         </Col>
       </Row>

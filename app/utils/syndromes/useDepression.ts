@@ -2,51 +2,54 @@ import { useState } from 'react';
 import { DepressionData } from '../../type';
 
 export const useDepression = () => {
-  const [depresionData, setDepresionData] = useState<DepressionData>({
-    vidaSatisfecha: null,
-    impotente: null,
-    problemasMemoria: null,
-    aburrido: null,
+  const [depressionData, setDepressionData] = useState<DepressionData>({
+    satisfiedLife: null,
+    helpless: null,
+    memoryProblems: null,
+    bored: null,
   });
 
-  const [depresionResult, setDepresionResult] = useState<string | null>(null);
+  const [depressionResult, setDepressionResult] = useState<string | null>(null);
   const [score, setScore] = useState<number>(0);
 
-  const handleDepresionChange = (field: keyof DepressionData, value: string) => {
-    const newData = { ...depresionData, [field]: value };
-    setDepresionData(newData);
-    evaluateDepresion(newData);
+  const handleDepressionChange = (field: keyof DepressionData, value: string) => {
+    const newData = { ...depressionData, [field]: value };
+    setDepressionData(newData);
+    evaluateDepression(newData);
   };
 
-  const evaluateDepresion = (data: DepressionData) => {
+  const evaluateDepression = (data: DepressionData) => {
     if (Object.values(data).some(v => v === null)) {
-      setDepresionResult(null);
+      setDepressionResult(null);
       setScore(0);
       return;
     }
 
     let total = 0;
 
-    if (data.vidaSatisfecha === 'no') total += 1;
-    if (data.impotente === 'si') total += 1;
-    if (data.problemasMemoria === 'si') total += 1;
-    if (data.aburrido === 'si') total += 1;
+    if (data.satisfiedLife === 'no') total += 1;
+    if (data.helpless === 'si') total += 1;
+    if (data.memoryProblems === 'si') total += 1;
+    if (data.bored === 'si') total += 1;
 
     setScore(total);
 
     if (total >= 2) {
-      setDepresionResult('Síntomas depresivos. Sugiere la necesidad de realizar una evaluación geriátrica más completa o un diagnóstico clínico de depresión.');
+      setDepressionResult('Síntomas depresivos. Sugiere la necesidad de realizar una evaluación geriátrica más completa o un diagnóstico clínico de depresión.');
     } else {
-      setDepresionResult('Ausencia de síntomas depresivos clínicamente significativos.');
+      setDepressionResult('Ausencia de síntomas depresivos clínicamente significativos.');
     }
   };
 
   return {
-    depresionData,
-    depresionResult,
+    depressionData,
+    depressionResult,
     score,
-    handleDepresionChange
+    handleDepressionChange,
+    // Aliases for backward compatibility during refactoring
+    depresionData: depressionData,
+    depresionResult: depressionResult,
+    handleDepresionChange: handleDepressionChange
   };
 };
 export type { DepressionData };
-

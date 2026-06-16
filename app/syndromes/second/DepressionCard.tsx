@@ -1,24 +1,35 @@
 'use client';
 import { Badge, Card, Form, Radio, Typography } from 'antd';
 import { FrownOutlined, SmileOutlined } from '@ant-design/icons';
-import { DepressionData } from '@/app/utils/syndromes/useDepression';
+import { DepressionData } from '@/app/type';
 
 const { Text } = Typography;
 
 interface DepressionCardProps {
-  depresionResult: string | null;
+  depressionResult: string | null;
   score: number;
-  handleDepresionChange: (field: keyof DepressionData, value: string) => void;
+  handleDepressionChange: (field: keyof DepressionData, value: string) => void;
+  // Aliases for backward compatibility during refactoring
+  depresionResult?: string | null;
+  handleDepresionChange?: (field: keyof DepressionData, value: string) => void;
 }
 
+export const DepressionCard = ({ 
+  depressionResult, 
+  score, 
+  handleDepressionChange,
+  depresionResult: prevDepresionResult,
+  handleDepresionChange: prevHandleDepresionChange
+}: DepressionCardProps) => {
 
-export const DepressionCard = ({ depresionResult, score, handleDepresionChange }: DepressionCardProps) => {
+  const activeResult = depressionResult !== undefined ? depressionResult : prevDepresionResult;
+  const activeChangeHandler = handleDepressionChange || prevHandleDepresionChange;
 
   const questions: { key: keyof DepressionData; label: string; reverse?: boolean }[] = [
-    { key: 'vidaSatisfecha', label: '1. ¿Está satisfecho con su vida?', reverse: true },
-    { key: 'impotente', label: '2. ¿Se siente impotente o indefenso?' },
-    { key: 'problemasMemoria', label: '3. ¿Tiene problemas de memoria?' },
-    { key: 'aburrido', label: '4. ¿Se encuentra a menudo aburrido?' },
+    { key: 'satisfiedLife', label: '1. ¿Está satisfecho con su vida?', reverse: true },
+    { key: 'helpless', label: '2. ¿Se siente impotente o indefenso?' },
+    { key: 'memoryProblems', label: '3. ¿Tiene problemas de memoria?' },
+    { key: 'bored', label: '4. ¿Se encuentra a menudo aburrido?' },
   ];
 
   return (
@@ -34,7 +45,7 @@ export const DepressionCard = ({ depresionResult, score, handleDepresionChange }
                 {q.label}
               </Text>
               <Radio.Group
-                onChange={e => handleDepresionChange(q.key, e.target.value)}
+                onChange={e => activeChangeHandler && activeChangeHandler(q.key, e.target.value)}
                 optionType="button"
                 buttonStyle="solid"
                 className=" flex text-center"
@@ -46,14 +57,12 @@ export const DepressionCard = ({ depresionResult, score, handleDepresionChange }
                   No
                 </Radio.Button>
               </Radio.Group>
-
             </div>
           </Form.Item>
         ))}
       </Form>
 
-
-      {depresionResult && (
+      {activeResult && (
         <div
           className={`mt-4 p-3 rounded-lg border flex items-center justify-between gap-3 ${score >= 2
             ? 'bg-red-50 border-red-200 text-red-700'
@@ -66,7 +75,7 @@ export const DepressionCard = ({ depresionResult, score, handleDepresionChange }
               : <SmileOutlined className="text-xl" />
             }
             <Text strong className="text-inherit">
-              {depresionResult}
+              {activeResult}
             </Text>
           </div>
           <Badge
@@ -75,7 +84,6 @@ export const DepressionCard = ({ depresionResult, score, handleDepresionChange }
           />
         </div>
       )}
-
     </Card>
   );
 };

@@ -1,24 +1,24 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { InputNumber, Typography, Button, Tag, Statistic, Row, Col } from 'antd';
-import { ArrowLeftOutlined, ClockCircleOutlined, ThunderboltFilled, PlayCircleOutlined, PauseCircleOutlined } from '@ant-design/icons';
+import { InputNumber, Typography, Button, Tag, Statistic } from 'antd';
+import { ArrowLeftOutlined, ClockCircleOutlined, PlayCircleOutlined } from '@ant-design/icons';
 
 const { Text, Title } = Typography;
 
 interface Props {
-  cantidadAnimales: number | null;
-  setCantidadAnimales: React.Dispatch<React.SetStateAction<number | null>>;
-  tiempoFluencia: number;
-  setTiempoFluencia: React.Dispatch<React.SetStateAction<number>>;
+  animalCount: number | null;
+  setAnimalCount: React.Dispatch<React.SetStateAction<number | null>>;
+  fluencyTime: number;
+  setFluencyTime: React.Dispatch<React.SetStateAction<number>>;
   nextStep: () => void;
   prevStep: () => void;
 }
 
-export default function Parte4FluenciaVerbal({
-  cantidadAnimales,
-  setCantidadAnimales,
-  tiempoFluencia,
-  setTiempoFluencia,
+export default function Part4VerbalFluency({
+  animalCount,
+  setAnimalCount,
+  fluencyTime,
+  setFluencyTime,
   nextStep,
   prevStep
 }: Props) {
@@ -28,18 +28,18 @@ export default function Parte4FluenciaVerbal({
   useEffect(() => {
     if (!isRunning) return;
     
-    if (tiempoFluencia <= 0) {
+    if (fluencyTime <= 0) {
       setIsRunning(false);
       return;
     }
     
-    const interval = setInterval(() => setTiempoFluencia(prev => prev - 1), 1000);
+    const interval = setInterval(() => setFluencyTime(prev => prev - 1), 1000);
     return () => clearInterval(interval);
-  }, [tiempoFluencia, isRunning, setTiempoFluencia]);
+  }, [fluencyTime, isRunning, setFluencyTime]);
 
   // Manejador del botón "Iniciar"
   const handleStartTimer = () => {
-    if (tiempoFluencia > 0) {
+    if (fluencyTime > 0) {
       setIsRunning(true);
     }
   };
@@ -51,7 +51,7 @@ export default function Parte4FluenciaVerbal({
     return { text: "Alta probabilidad de deterioro cognitivo", color: "red" };
   };
 
-  const clasificacion = getClassification(cantidadAnimales);
+  const classification = getClassification(animalCount);
 
   return (
     <div className="animate-fadeIn">
@@ -68,18 +68,18 @@ export default function Parte4FluenciaVerbal({
             {/* Tarjeta del Cronómetro */}
             <div className={`
                 text-center p-6 rounded-2xl border-2 transition-colors duration-300 relative overflow-hidden
-                ${tiempoFluencia > 10 ? 'border-blue-100 bg-blue-50' : 'border-red-100 bg-red-50 animate-pulse'}
+                ${fluencyTime > 10 ? 'border-blue-100 bg-blue-50' : 'border-red-100 bg-red-50 animate-pulse'}
             `}>
                 <Statistic 
                     title={<span className="font-bold uppercase text-xs tracking-wider">Tiempo Restante</span>}
-                    value={tiempoFluencia} 
+                    value={fluencyTime} 
                     suffix="seg" 
-                    valueStyle={{ fontSize: '3rem', fontWeight: 'bold', color: tiempoFluencia > 10 ? '#1890ff' : '#cf1322' }}
+                    valueStyle={{ fontSize: '3rem', fontWeight: 'bold', color: fluencyTime > 10 ? '#1890ff' : '#cf1322' }}
                     prefix={<ClockCircleOutlined />}
                 />
                 
                 {/* Botón de Iniciar superpuesto o debajo */}
-                {!isRunning && tiempoFluencia > 0 && tiempoFluencia === 60 && (
+                {!isRunning && fluencyTime > 0 && fluencyTime === 60 && (
                     <div className="mt-4">
                         <Button 
                             type="primary" 
@@ -103,12 +103,12 @@ export default function Parte4FluenciaVerbal({
                         size="large"
                         min={0}
                         placeholder="Ej. 12"
-                        value={cantidadAnimales}
-                        onChange={(val) => setCantidadAnimales(val)}
+                        value={animalCount}
+                        onChange={(val) => setAnimalCount(val)}
                         className="rounded-lg w-full max-w-[200px]"
                     />
                 </div>
-                {!isRunning && tiempoFluencia === 0 && (
+                {!isRunning && fluencyTime === 0 && (
                      <Text type="danger" className="text-xs mt-2 block text-center">
                         Tiempo finalizado. Por favor, ingrese la cantidad.
                      </Text>
@@ -119,13 +119,13 @@ export default function Parte4FluenciaVerbal({
         {/* Panel Derecho: Clasificación */}
         <div className="w-full md:w-1/2 border border-gray-200 rounded-xl bg-gray-50 p-6 flex flex-col items-center justify-center min-h-[300px]">
             <Text strong className="text-gray-500 mb-2 uppercase text-xs tracking-wider">Clasificación Cognitiva (Fluencia)</Text>
-            {clasificacion ? (
+            {classification ? (
                 <div className="text-center animate-fadeIn">
-                    <div className="text-5xl font-bold mb-4" style={{ color: clasificacion.color }}>
-                        {cantidadAnimales}
+                    <div className="text-5xl font-bold mb-4" style={{ color: classification.color }}>
+                        {animalCount}
                     </div>
-                    <Tag color={clasificacion.color} className="text-base px-4 py-1">
-                        {clasificacion.text}
+                    <Tag color={classification.color} className="text-base px-4 py-1">
+                        {classification.text}
                     </Tag>
                 </div>
             ) : (

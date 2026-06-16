@@ -1,26 +1,27 @@
 "use client";
 import { Card, Typography, Select, Badge } from "antd";
 import { preguntas, opciones } from "../utils/funtional/constants";
+import { ResponsesType } from "../type";
 
 const { Text } = Typography;
 const { Option } = Select;
 
 interface AIVDFormProps {
-  respuestas: Record<string, number | null>;
-  setRespuestas: (respuestas: Record<string, number | any>) => void;
+  responses: ResponsesType;
+  setResponses: React.Dispatch<React.SetStateAction<ResponsesType>>;
   total: number;
-  interpretacion: string;
+  interpretation: string;
 }
 
 export default function AIVDForm({ 
-  respuestas, 
-  setRespuestas, 
+  responses, 
+  setResponses, 
   total, 
-  interpretacion 
+  interpretation 
 }: AIVDFormProps) {
   
   const handleChange = (key: string, valor: number | any) => {
-    setRespuestas((prev: any) => ({
+    setResponses((prev: any) => ({
       ...prev,
       [key]: valor,
     }));
@@ -42,7 +43,7 @@ export default function AIVDForm({
               className="w-full"
               placeholder="- Seleccione -"
               onChange={(value: number | null) => handleChange(pregunta.key, value)}
-              value={respuestas[pregunta.key] ?? null}
+              value={responses[pregunta.key] ?? null}
             >
               {opciones.map((opcion, index) => (
                 <Option key={`${pregunta.key}-${index}`} value={opcion.valor}>
@@ -61,7 +62,7 @@ export default function AIVDForm({
               Interpretación
             </Text>
             <Text strong className="text-blue-900 text-base">
-              {interpretacion || "Pendiente"}
+              {interpretation || "Pendiente"}
             </Text>
           </div>
 

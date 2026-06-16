@@ -1,12 +1,12 @@
 "use client";
 import React, { useEffect, useState, useRef } from 'react';
-import { ConfigProvider, Dropdown, Popconfirm, Modal, Form, Input, InputNumber, Select, Radio, DatePicker } from 'antd';
-import { Button, Table, notification, Space, Row, Col, Typography, Divider, Tag } from 'antd';
-import { ArrowRightOutlined, DeleteOutlined, DollarOutlined, EditOutlined, HomeOutlined, IdcardOutlined, ManOutlined, MoreOutlined, PlusOutlined, SearchOutlined, UserOutlined, WomanOutlined } from '@ant-design/icons';
+import { ConfigProvider, Dropdown, Popconfirm, Modal, Form, Input, Typography, Divider, Tag } from 'antd';
+import { Button, Table, notification, Space, Row, Col } from 'antd';
+import { ArrowRightOutlined, DeleteOutlined, EditOutlined, MoreOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { useGlobalContext } from '@/app/context/GlobalContext';
 import { NotificationPlacement } from 'antd/es/notification/interface';
 import Link from 'next/link';
-import { Paciente } from './interfaces';
+import { Patient } from './interfaces';
 import type { ColumnType } from 'antd/es/table/interface';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
 import Highlighter from 'react-highlight-words';
@@ -14,45 +14,45 @@ import axios from 'axios';
 import moment from 'moment';
 import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import { db } from './lib/firebaseConfig';
-import { crearRegistroResultados } from './lib/pacienteService';
+import { createResultsRecord } from './lib/pacienteService';
 import { useRouter } from 'next/navigation';
 
-
 const { Title, Text } = Typography;
-interface PacienteWithStatus extends Paciente {
+
+interface PatientWithStatus extends Patient {
   isNew?: boolean;
   requiresCompletion: boolean;
 }
 
 const Home = () => {
   const router = useRouter();
-  const [pacientes, setPacientes] = useState<PacienteWithStatus[]>([]);
+  const [patients, setPatients] = useState<PatientWithStatus[]>([]);
   const [api, contextHolder] = notification.useNotification();
   const [searchText, setSearchText] = useState<string>("");
-  const [searchedColumn, setSearchedColumn] = useState<keyof Paciente | "">("");
+  const [searchedColumn, setSearchedColumn] = useState<keyof Patient | "">("");
   const searchInput = useRef<any>(null);
   const [loading, setLoading] = useState(false);
   const { setCurrentPatient, currentPatient, setCurrentResultId } = useGlobalContext();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingPatient, setEditingPatient] = useState<Paciente | null>(null);
+  const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
   const [form] = Form.useForm();
   
   const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
   const [searchDni, setSearchDni] = useState('');
   const [searchResult, setSearchResult] = useState<'none' | 'found' | 'not_found'>('none');
-  const [foundPatient, setFoundPatient] = useState<Paciente | null>(null);
+  const [foundPatient, setFoundPatient] = useState<Patient | null>(null);
 
-  const fetchPacientes = async () => {
+  const fetchPatients = async () => {
     try {
       setLoading(true);
       const res = await axios.get("/api/pacientes");
-      const pacientesData = res.data.map((paciente: any) => ({
-        ...paciente,
-        requiresCompletion: !paciente.codigo || !paciente.nombre || !paciente.dni || !paciente.edad
+      const patientsData = res.data.map((patient: any) => ({
+        ...patient,
+        requiresCompletion: !patient.code && (!patient.name || !patient.dni || !patient.age)
       }));
-      setPacientes(pacientesData);
+      setPatients(patientsData);
     } catch (error) {
-      console.error("Error al obtener pacientes:", error);
+      console.error("Error fetching patients:", error);
       openNotification("error", "Error", "No se pudo obtener la lista de pacientes", "topRight");
     } finally {
       setLoading(false);
@@ -60,126 +60,70 @@ const Home = () => {
   };
 
   useEffect(() => {
-    fetchPacientes();
+    fetchPatients();
   }, []);
 
   const handleDelete = async (dni: string) => {
     try {
-      const response = await fetch(`/api/pacientes/${dni}`, {method: 'DELETE'});
+      const response = await fetch(`/api/pacientes/${dni}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Error en la respuesta del servidor');
       openNotification("success", "Éxito", "Paciente eliminado correctamente", "topRight");
-      fetchPacientes();
+      fetchPatients();
     } catch (error) {
-      console.error("Error completo:", error);
+      console.error("Error deleting patient:", error);
       openNotification("error", "Error", "No se pudo eliminar el paciente", "topRight");
     }
   };
 
-  const handleSelectPatient = async (paciente: Paciente) => {
-    console.log("Seleccionando paciente:", paciente);
+  const handleSelectPatient = async (patient: Patient) => {
+    console.log("Selecting patient:", patient);
     
     try {
-      setCurrentPatient(paciente);
-      const resultadosRef = collection(db, "pacientes", paciente.dni, "resultados");
-      const q = query(resultadosRef, orderBy("fecha", "desc"), limit(1));
-      const resultadosSnap = await getDocs(q);
-      if (!resultadosSnap.empty) {
-        const ultimoResultadoDoc = resultadosSnap.docs[0];
-        const ultimoResultado = { id: ultimoResultadoDoc.id, ...ultimoResultadoDoc.data() } as { id: string; completado: boolean };
-        if (ultimoResultado.completado === false) {
-          setCurrentResultId(ultimoResultado.id);
+      setCurrentPatient(patient);
+      const resultsRef = collection(db, "pacientes", patient.dni, "resultados");
+      const q = query(resultsRef, orderBy("fecha", "desc"), limit(1));
+      const resultsSnap = await getDocs(q);
+      if (!resultsSnap.empty) {
+        const lastResultDoc = resultsSnap.docs[0];
+        const lastResult = { id: lastResultDoc.id, completado: lastResultDoc.data().completado } as { id: string; completado: boolean };
+        if (lastResult.completado === false) {
+          setCurrentResultId(lastResult.id);
         }
       } else {
         console.log("No hay resultados para este paciente");
       }
       router.push('/family?isMember=false');
     } catch (error) {
-      console.error("Error al obtener último resultado:", error);
+      console.error("Error retrieving last result:", error);
     }
   };
 
-  const handleNewEvaluation = async (paciente: Paciente) => {
+  const handleNewEvaluation = async (patient: Patient) => {
     try {
-      setCurrentPatient(paciente);
-      const nuevoResultadoId = await crearRegistroResultados(paciente.dni, 0);
-      setCurrentResultId(nuevoResultadoId);
+      setCurrentPatient(patient);
+      const newResultId = await createResultsRecord(patient.dni, 0);
+      setCurrentResultId(newResultId);
       router.push('/syndromes/first/');
     } catch (error) {
-      console.error("Error al crear registro de resultados:", error);
+      console.error("Error creating results record:", error);
     }
   };
 
-  const showEditModal = (paciente: Paciente) => {
-    setCurrentPatient(paciente);
-    setEditingPatient(paciente);
-    const pacienteWithMoment = {
-      ...paciente,
-      fecha_nacimiento: paciente.fecha_nacimiento ? moment(paciente.fecha_nacimiento) : null
+  const showEditModal = (patient: Patient) => {
+    setCurrentPatient(patient);
+    setEditingPatient(patient);
+    const patientWithMoment = {
+      ...patient,
+      fecha_nacimiento: patient.birthDate ? moment(patient.birthDate) : null
     };
-    form.setFieldsValue(pacienteWithMoment);
+    form.setFieldsValue(patientWithMoment);
     router.push('/family?isMember=true');
-  };
-
-  const handleEditOk = async () => {
-    try {
-      const values = await form.validateFields();
-
-      if (!editingPatient?.dni) {
-        throw new Error('No se ha seleccionado un paciente válido para editar');
-      }
-
-      const fechaNacimiento = new Date(
-        parseInt(values.year),
-        parseInt(values.month) - 1,
-        parseInt(values.day)
-      );
-
-      const payload = {
-        ...values,
-        fecha_nacimiento: fechaNacimiento,
-        ingreso_economico: Number(values.ingreso_economico)
-      };
-
-      const response = await axios.put(`/api/pacientes/${editingPatient.dni}`, payload, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.status >= 200 && response.status < 300) {
-        openNotification("success", "Éxito", "Paciente actualizado correctamente", "topRight");
-        await fetchPacientes();
-        setIsModalVisible(false);
-        form.resetFields();
-      } else {
-        throw new Error(`Respuesta inesperada: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Error completo:", error);
-
-      let errorMessage = "No se pudo actualizar el paciente";
-      if (axios.isAxiosError(error)) {
-        errorMessage = error.response?.data?.error?.message ||
-          error.response?.data?.message ||
-          error.message;
-        console.error("Detalles del error:", error.response?.data);
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
-      openNotification("error", "Error", errorMessage, "topRight");
-    }
-  };
-
-  const handleEditCancel = () => {
-    setIsModalVisible(false);
-    form.resetFields();
   };
 
   const handleSearch = (
     selectedKeys: string[],
     confirm: FilterDropdownProps['confirm'],
-    dataIndex: keyof Paciente,
+    dataIndex: keyof Patient,
   ) => {
     confirm();
     setSearchText(selectedKeys[0]);
@@ -191,7 +135,7 @@ const Home = () => {
     setSearchText('');
   };
 
-  const getColumnSearchProps = (dataIndex: keyof Paciente) => ({
+  const getColumnSearchProps = (dataIndex: keyof Patient) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }: FilterDropdownProps) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
@@ -252,17 +196,17 @@ const Home = () => {
       ),
   });
 
-  const patientRecordRedirect = (patient: Paciente) => {
+  const patientRecordRedirect = (patient: Patient) => {
     setCurrentPatient(patient);
     router.push(`/record/${patient.dni}`)
   }
 
-  const columns: ColumnType<Paciente>[] = [
+  const columns: ColumnType<Patient>[] = [
     {
       title: 'Nombre',
-      dataIndex: 'nombre',
-      key: 'nombre',
-      ...getColumnSearchProps('nombre'),
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps('name'),
       render: (text: string) => <Text strong>{text}</Text>
     },
     {
@@ -274,16 +218,16 @@ const Home = () => {
     },
     {
       title: 'Edad',
-      dataIndex: 'edad',
-      key: 'edad',
+      dataIndex: 'age',
+      key: 'age',
       align: 'center' as const,
-      sorter: (a: Paciente, b: Paciente) => (a.edad || 0) - (b.edad || 0),
+      sorter: (a: Patient, b: Patient) => (a.age || 0) - (b.age || 0),
       sortDirections: ['descend', 'ascend'],
     },
     {
       title: 'Sexo',
-      dataIndex: 'sexo',
-      key: 'sexo',
+      dataIndex: 'gender',
+      key: 'gender',
       align: 'center' as const,
       render: (text: string) => (
         <Tag color={text === 'M' ? 'blue' : 'pink'}>
@@ -294,7 +238,7 @@ const Home = () => {
         { text: 'Masculino', value: 'M' },
         { text: 'Femenino', value: 'F' },
       ],
-      onFilter: (value: any, record: Paciente) => record.sexo === value,
+      onFilter: (value: any, record: Patient) => record.gender === value,
     },
     {
       title: 'Acciones',
@@ -380,7 +324,7 @@ const Home = () => {
     setIsSearchModalVisible(true);
   };
 
-  const currentPatientFromState = pacientes.find(p => p.dni === searchDni);
+  const currentPatientFromState = patients.find(p => p.dni === searchDni);
 
   const handleSearchDni = async () => {
     if (!searchDni) {
@@ -389,13 +333,11 @@ const Home = () => {
     }
     try {
       setLoading(true);
-      // First check local state
       if (currentPatientFromState) {
         setFoundPatient(currentPatientFromState);
         setSearchResult('found');
         return;
       }
-      // If not in state, check DB
       const res = await axios.get(`/api/pacientes/${searchDni}`);
       if (res.data && res.data.dni) {
         setFoundPatient(res.data);
@@ -445,7 +387,7 @@ const Home = () => {
           <Col>
             <Button
               icon={<SearchOutlined />}
-              onClick={fetchPacientes}
+              onClick={fetchPatients}
               loading={loading}
             >
               Actualizar lista
@@ -458,7 +400,7 @@ const Home = () => {
         </Divider>
 
         <Table
-          dataSource={pacientes}
+          dataSource={patients}
           columns={columns}
           rowKey="dni"
           bordered
@@ -523,7 +465,7 @@ const Home = () => {
               <div style={{ marginBottom: 16, padding: '12px', backgroundColor: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: '4px' }}>
                 <Text strong style={{ color: '#52c41a' }}>Paciente encontrado:</Text>
                 <br />
-                <Text>{foundPatient.nombre}</Text>
+                <Text>{foundPatient.name}</Text>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
                 <Button onClick={() => setIsSearchModalVisible(false)}>

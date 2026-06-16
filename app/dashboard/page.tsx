@@ -3,15 +3,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Layout, Card, Row, Col, Input, Table, Typography, Spin, Select, Space, Button, Statistic, Tag, Divider, ConfigProvider } from 'antd';
 import { SearchOutlined, UserOutlined, ClockCircleOutlined, MedicineBoxOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { Column, Pie, Bar, Scatter } from '@ant-design/charts';
-import { Paciente } from '../interfaces';
-import { obtenerPacientesConResultadosRecientes } from '../lib/pacienteService';
+import { Patient } from '../interfaces';
+import { getPatientsWithRecentResults } from '../lib/pacienteService';
 import { useRouter } from 'next/navigation';
 import Highlighter from 'react-highlight-words';
 import { FilterDropdownProps } from 'antd/es/table/interface';
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
-const { Option } = Select;
 
 type MetricOption = {
   value: string;
@@ -19,80 +18,80 @@ type MetricOption = {
 };
 
 const DashboardPacientes: React.FC = () => {
-  const [pacientes, setPacientes] = useState<Paciente[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [busqueda, setBusqueda] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedMetric, setSelectedMetric] = useState('abvdScore');
   const router = useRouter();
   const searchInput = useRef<any>(null);
   const [searchText, setSearchText] = useState<string>("");
-  const [searchedColumn, setSearchedColumn] = useState<keyof Paciente | "">("");
+  const [searchedColumn, setSearchedColumn] = useState<keyof Patient | "">("");
 
   const metricOptions: MetricOption[] = [
     { value: 'gijon', label: 'Gijón' },
     { value: 'abvdScore', label: 'ABVD Score' },
     { value: 'aivdScore', label: 'AIVD Score' },
     { value: 'sarcopenia', label: 'Sarcopenia' },
-    { value: 'caida', label: 'Caída' },
-    { value: 'deterioro', label: 'Deterioro' },
-    { value: 'incontinencia', label: 'Incontinencia' },
-    { value: 'depresion', label: 'Depresión' },
-    { value: 'sensorial', label: 'Sensorial' },
+    { value: 'falls', label: 'Caída' },
+    { value: 'deterioration', label: 'Deterioro' },
+    { value: 'incontinence', label: 'Incontinencia' },
+    { value: 'depression', label: 'Depresión' },
+    { value: 'sensory', label: 'Sensorial' },
     { value: 'bristol', label: 'Bristol' },
-    { value: 'adherencia', label: 'Adherencia' },
+    { value: 'adherence', label: 'Adherencia' },
     { value: 'dynamometry', label: 'Dynamometry' },
     { value: 'balance', label: 'Balance' },
-    { value: 'dimension_fisica', label: 'Dimensión Física' },
-    { value: 'dimension_mental', label: 'Dimensión Mental' },
-    { value: 'puntaje_total', label: 'Puntaje Total' },
-    { value: 'cognitivo_total', label: 'Cognitivo Total' },
+    { value: 'physicalDimension', label: 'Dimensión Física' },
+    { value: 'mentalDimension', label: 'Dimensión Mental' },
+    { value: 'totalScore', label: 'Puntaje Total' },
+    { value: 'totalCognitive', label: 'Cognitivo Total' },
     { value: 'mmse30', label: 'MMSE30' },
     { value: 'moca', label: 'MOCA' },
-    { value: 'afectiva', label: 'Afectiva' },
-    { value: 'nutricional', label: 'Nutricional' },
+    { value: 'affective', label: 'Afectiva' },
+    { value: 'nutritional', label: 'Nutricional' },
   ];
 
   useEffect(() => {
     const cargarPacientes = async () => {
       setLoading(true);
       try {
-        const datos = await obtenerPacientesConResultadosRecientes();
+        const datos = await getPatientsWithRecentResults();
 
         const datosFormateados = datos.map(item => {
-          const sexo = typeof item.sexo === 'string' ?
-            (item.sexo.trim().toUpperCase() === 'M' ? 'M' :
-              item.sexo.trim().toUpperCase() === 'F' ? 'F' : item.sexo) :
-            item.sexo;
+          const gender = typeof item.gender === 'string' ?
+            (item.gender.trim().toUpperCase() === 'M' ? 'M' :
+              item.gender.trim().toUpperCase() === 'F' ? 'F' : item.gender) :
+            item.gender;
           return {
             ...item,
-            edad: Number(item.edad) || 0,
-            sexo: sexo,
+            age: Number(item.age) || 0,
+            gender: gender,
             abvdScore: Number(item.abvdScore) || 0,
             gijon: Number(item.gijon) || 0,
             aivdScore: Number(item.aivdScore) || 0,
             sarcopenia: Number(item.sarcopenia) || 0,
-            caida: Number(item.caida) || 0,
-            deterioro: Number(item.deterioro) || 0,
-            incontinencia: Number(item.incontinencia) || 0,
-            depresion: Number(item.depresion) || 0,
-            sensorial: Number(item.sensorial) || 0,
+            falls: Number(item.falls) || 0,
+            deterioration: Number(item.deterioration) || 0,
+            incontinence: Number(item.incontinence) || 0,
+            depression: Number(item.depression) || 0,
+            sensory: Number(item.sensory) || 0,
             bristol: Number(item.bristol) || 0,
-            adherencia: Number(item.adherencia) || 0,
+            adherence: Number(item.adherence) || 0,
             dynamometry: Number(item.dynamometry) || 0,
             balance: Number(item.balance) || 0,
-            dimension_fisica: Number(item.dimension_fisica) || 0,
-            dimension_mental: Number(item.dimension_mental) || 0,
-            puntaje_total: Number(item.puntaje_total) || 0,
-            cognitivo_total: Number(item.cognitivo_total) || 0,
+            physicalDimension: Number(item.physicalDimension) || 0,
+            mentalDimension: Number(item.mentalDimension) || 0,
+            totalScore: Number(item.totalScore) || 0,
+            totalCognitive: Number(item.totalCognitive) || 0,
             mmse30: Number(item.mmse30) || 0,
             moca: Number(item.moca) || 0,
-            afectiva: Number(item.afectiva) || 0,
-          } as Paciente;
+            affective: Number(item.affective) || 0,
+          } as Patient;
         });
 
-        setPacientes(datosFormateados);
+        setPatients(datosFormateados);
       } catch (error) {
-        console.error('Error al cargar pacientes:', error);
+        console.error('Error loading patients:', error);
       } finally {
         setLoading(false);
       }
@@ -102,19 +101,19 @@ const DashboardPacientes: React.FC = () => {
   }, []);
 
   const pacientesFiltrados = busqueda
-    ? pacientes.filter(p =>
-      p.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
+    ? patients.filter(p =>
+      p.name?.toLowerCase().includes(busqueda.toLowerCase()) ||
       p.dni?.includes(busqueda)
     )
-    : pacientes;
+    : patients;
 
   // --- KPIs Calculations ---
-  const totalPacientes = pacientes.length;
-  const promedioEdad = pacientes.length > 0 
-    ? (pacientes.reduce((sum, p) => sum + (Number(p.edad) || 0), 0) / pacientes.length).toFixed(1) 
+  const totalPacientes = patients.length;
+  const promedioEdad = patients.length > 0 
+    ? (patients.reduce((sum, p) => sum + (Number(p.age) || 0), 0) / patients.length).toFixed(1) 
     : '0';
-  const totalMasculinos = pacientes.filter(p => p.sexo === 'M').length;
-  const totalFemeninos = pacientes.filter(p => p.sexo === 'F').length;
+  const totalMasculinos = patients.filter(p => p.gender === 'M').length;
+  const totalFemeninos = patients.filter(p => p.gender === 'F').length;
 
   // --- Chart Configurations ---
   const configSexoPie = {
@@ -153,18 +152,18 @@ const DashboardPacientes: React.FC = () => {
   };
 
   const configEdadRangos = {
-    data: pacientes.length > 0 ? [
+    data: patients.length > 0 ? [
       {
         rango: '60-69',
-        value: pacientes.filter(p => p.edad >= 60 && p.edad <= 69).length,
+        value: patients.filter(p => p.age >= 60 && p.age <= 69).length,
       },
       {
         rango: '70-79',
-        value: pacientes.filter(p => p.edad >= 70 && p.edad <= 79).length,
+        value: patients.filter(p => p.age >= 70 && p.age <= 79).length,
       },
       {
         rango: '80+',
-        value: pacientes.filter(p => p.edad >= 80).length,
+        value: patients.filter(p => p.age >= 80).length,
       },
     ] : [],
     xField: 'rango',
@@ -219,7 +218,7 @@ const DashboardPacientes: React.FC = () => {
       formatter: (value: number, item: any) => {
         if (!item || typeof value !== 'number') return '0\n(0%)';
 
-        const total = pacientes.length || 1;
+        const total = patients.length || 1;
         const porcentaje = (value / total) * 100;
         return `${value}\n(${porcentaje.toFixed(1)}%)`;
       },
@@ -245,20 +244,19 @@ const DashboardPacientes: React.FC = () => {
   const handleSearch = (
     selectedKeys: string[],
     confirm: FilterDropdownProps['confirm'],
-    dataIndex: keyof Paciente,
+    dataIndex: keyof Patient,
   ) => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
   };
 
-    const handleReset = (clearFilters: () => void) => {
+  const handleReset = (clearFilters: () => void) => {
     clearFilters();
     setSearchText('');
   };
 
-
-  const getColumnSearchProps = (dataIndex: keyof Paciente) => ({
+  const getColumnSearchProps = (dataIndex: keyof Patient) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }: FilterDropdownProps) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
@@ -320,12 +318,12 @@ const DashboardPacientes: React.FC = () => {
   });
 
   const configEdadPuntuacionScatter = {
-    data: pacientes
-      .filter(p => !isNaN(Number(p[selectedMetric as keyof Paciente])))
+    data: patients
+      .filter(p => !isNaN(Number(p[selectedMetric as keyof Patient])))
       .map(p => ({
-        edad: Number(p.edad) || 0,
-        puntuacion: Number(p[selectedMetric as keyof Paciente]) || 0,
-        nombre: p.nombre || 'Sin nombre',
+        edad: Number(p.age) || 0,
+        puntuacion: Number(p[selectedMetric as keyof Patient]) || 0,
+        nombre: p.name || 'Sin nombre',
       })),
     xField: 'edad',
     yField: 'puntuacion',
@@ -348,20 +346,20 @@ const DashboardPacientes: React.FC = () => {
   };
 
   const calcularPromedioPorSexo = () => {
-    const masculinos = pacientes.filter(p => p.sexo === 'M');
-    const femeninos = pacientes.filter(p => p.sexo === 'F');
+    const masculinos = patients.filter(p => p.gender === 'M');
+    const femeninos = patients.filter(p => p.gender === 'F');
 
     return [
       {
         sexo: 'Masculino',
         promedio: masculinos.length > 0 ?
-          masculinos.reduce((sum, p) => sum + (Number(p[selectedMetric as keyof Paciente]) || 0), 0) / masculinos.length : 0,
+          masculinos.reduce((sum, p) => sum + (Number(p[selectedMetric as keyof Patient]) || 0), 0) / masculinos.length : 0,
         count: masculinos.length,
       },
       {
         sexo: 'Femenino',
         promedio: femeninos.length > 0 ?
-          femeninos.reduce((sum, p) => sum + (Number(p[selectedMetric as keyof Paciente]) || 0), 0) / femeninos.length : 0,
+          femeninos.reduce((sum, p) => sum + (Number(p[selectedMetric as keyof Patient]) || 0), 0) / femeninos.length : 0,
         count: femeninos.length,
       },
     ];
@@ -399,7 +397,7 @@ const DashboardPacientes: React.FC = () => {
     );
   }
 
-  if (!pacientes || pacientes.length === 0) {
+  if (!patients || patients.length === 0) {
     return (
       <Layout style={{ minHeight: '100vh' }}>
         <Content style={{ margin: '24px 16px', padding: 24, background: '#fff', textAlign: 'center' }}>
@@ -410,8 +408,7 @@ const DashboardPacientes: React.FC = () => {
     );
   }
 
-  const patientRecordRedirect = (patient: Paciente) => {
-    // setCurrentPatient(patient);
+  const patientRecordRedirect = (patient: Patient) => {
     router.push(`/record/${patient.dni}`)
   }
 
@@ -608,8 +605,8 @@ const DashboardPacientes: React.FC = () => {
               columns={[
                 { 
                   title: 'Nombre Completo', 
-                  dataIndex: 'nombre', 
-                  key: 'nombre',
+                  dataIndex: 'name', 
+                  key: 'name',
                   render: (text: string) => <Text strong>{text || 'Desconocido'}</Text>
                 },
                 {
@@ -621,15 +618,15 @@ const DashboardPacientes: React.FC = () => {
                 },
                 { 
                   title: 'Edad', 
-                  dataIndex: 'edad', 
-                  key: 'edad',
+                  dataIndex: 'age', 
+                  key: 'age',
                   align: 'center',
-                  sorter: (a, b) => a.edad - b.edad
+                  sorter: (a, b) => a.age - b.age
                 },
                 {
                   title: 'Sexo',
-                  dataIndex: 'sexo',
-                  key: 'sexo',
+                  dataIndex: 'gender',
+                  key: 'gender',
                   align: 'center',
                   render: (sexo) => (
                     <Tag color={sexo === 'M' ? 'blue' : sexo === 'F' ? 'magenta' : 'default'} style={{ margin: 0 }}>

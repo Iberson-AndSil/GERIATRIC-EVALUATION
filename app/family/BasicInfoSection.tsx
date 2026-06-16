@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
-import { NivelEducativoOption } from "@/app/type"
+import { EducationLevelOption } from "@/app/type"
 import { Form, Input, InputNumber, Radio, Row, Col, Typography, Card, Select, Divider, Space, Cascader, Button } from "antd";
 import {
     UserOutlined,
@@ -16,15 +16,14 @@ import {
     PhoneOutlined,
     MailOutlined,
     EditOutlined,
-    CloseOutlined,
-    CheckOutlined
+    CloseOutlined
 } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const { Text } = Typography;
-const { Option } = Select
+const { Option } = Select;
 
 interface BasicInfoSectionProps {
     form: any;
@@ -39,52 +38,44 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
     const { currentPatient } = useGlobalContext();
     const [isEditing, setIsEditing] = useState(false);
     
-    const [departments, setDepartments] = useState<string[]>([])
-    const [provinces, setProvinces] = useState<string[]>([])
-    const [districts, setDistricts] = useState<string[]>([])
-    const [department, setDepartment] = useState<string | null>(currentPatient?.department || null)
-    const [province, setProvince] = useState<string | null>(currentPatient?.province || null)
+    const [departments, setDepartments] = useState<string[]>([]);
+    const [provinces, setProvinces] = useState<string[]>([]);
+    const [districts, setDistricts] = useState<string[]>([]);
+    const [department, setDepartment] = useState<string | null>(currentPatient?.department || null);
+    const [province, setProvince] = useState<string | null>(currentPatient?.province || null);
 
-    const [loadingDept, setLoadingDept] = useState(false)
-    const [loadingProv, setLoadingProv] = useState(false)
-    const [loadingDist, setLoadingDist] = useState(false)
+    const [loadingDept, setLoadingDept] = useState(false);
+    const [loadingProv, setLoadingProv] = useState(false);
+    const [loadingDist, setLoadingDist] = useState(false);
 
     useEffect(() => {
-        setLoadingDept(true)
-
+        setLoadingDept(true);
         fetch('/api/cities/departments')
             .then(res => res.json())
             .then(data => setDepartments(data))
             .catch(err => console.error('Error fetching departments:', err))
-            .finally(() => setLoadingDept(false))
-    }, [])
-
+            .finally(() => setLoadingDept(false));
+    }, []);
 
     useEffect(() => {
-        if (!department) return
-        
-        setProvince(null)
-        setDistricts([])
-        setLoadingProv(true)
-
+        if (!department) return;
+        setProvince(null);
+        setDistricts([]);
+        setLoadingProv(true);
         fetch(`/api/cities/provinces?department=${department}`)
             .then(res => res.json())
             .then(setProvinces)
-            .finally(() => setLoadingProv(false))
-    }, [department])
+            .finally(() => setLoadingProv(false));
+    }, [department]);
 
     useEffect(() => {
-        if (!department || !province) return
-
-        setLoadingDist(true)
-
-        fetch(
-            `/api/cities/districts?department=${department}&province=${province}`
-        )
+        if (!department || !province) return;
+        setLoadingDist(true);
+        fetch(`/api/cities/districts?department=${department}&province=${province}`)
             .then(res => res.json())
             .then(setDistricts)
-            .finally(() => setLoadingDist(false))
-    }, [province, department])
+            .finally(() => setLoadingDist(false));
+    }, [province, department]);
 
     const calculateAge = useCallback((day?: number, month?: string, year?: number) => {
         if (day && month && year) {
@@ -96,24 +87,24 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 calculatedAge--;
             }
             setAge(calculatedAge);
-            form.setFieldsValue({ edad: calculatedAge });
-            const fechaNacimiento = dayjs(birthDate).format('YYYY-MM-DD');
-            form.setFieldsValue({ fecha_nacimiento: fechaNacimiento });
+            form.setFieldsValue({ age: calculatedAge });
+            const formattedBirthDate = dayjs(birthDate).format('YYYY-MM-DD');
+            form.setFieldsValue({ birthDate: formattedBirthDate });
             return calculatedAge;
         }
         return null;
     }, [form]);
 
     const handleDateChange = useCallback(() => {
-        const day = form.getFieldValue('birth_day');
-        const month = form.getFieldValue('birth_month');
-        const year = form.getFieldValue('birth_year');
+        const day = form.getFieldValue('birthDay');
+        const month = form.getFieldValue('birthMonth');
+        const year = form.getFieldValue('birthYear');
 
         if (day && month && year) {
             calculateAge(day, month, year);
         } else {
             setAge(null);
-            form.setFieldsValue({ edad: undefined, fecha_nacimiento: '' });
+            form.setFieldsValue({ age: undefined, birthDate: '' });
         }
     }, [form, calculateAge]);
 
@@ -123,7 +114,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
             label: `${i + 1}°`
         }));
 
-    const nivelEducativoOptions: NivelEducativoOption[] = [
+    const educationLevelOptions: EducationLevelOption[] = [
         {
             value: 'sin_nivel',
             label: 'Sin nivel/Inicial',
@@ -158,44 +149,44 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
 
     useEffect(() => {
         if (currentPatient) {
-            console.log("el paciente existe");
+            console.log("Patient exists in state");
             let birthDay, birthMonth, birthYear;
-            if (currentPatient.fecha_nacimiento) {
-                const dateObject = new Date(currentPatient.fecha_nacimiento);
+            if (currentPatient.birthDate) {
+                const dateObject = new Date(currentPatient.birthDate);
                 birthDay = dateObject.getDate();
                 birthMonth = String(dateObject.getMonth() + 1).padStart(2, '0');
                 birthYear = dateObject.getFullYear();
             }
 
             const formData = {
-                nombre: currentPatient.nombre || '',
+                name: currentPatient.name || '',
                 dni: currentPatient.dni || '',
-                birth_day: currentPatient.birth_day || undefined,
-                birth_month: currentPatient.birth_month || undefined,
-                birth_year: currentPatient.birth_year || undefined,
-                edad: currentPatient.edad || '',
-                economic_activity: currentPatient.economic_activity || [],
-                sexo: currentPatient.sexo || '',
-                zona_residencia: currentPatient.zona_residencia || '',
-                fecha_nacimiento: currentPatient.fecha_nacimiento || '',
-                domicilio: currentPatient.domicilio || '',
+                birthDay: currentPatient.birthDay || undefined,
+                birthMonth: currentPatient.birthMonth || undefined,
+                birthYear: currentPatient.birthYear || undefined,
+                age: currentPatient.age || '',
+                economicActivity: currentPatient.economicActivity || [],
+                gender: currentPatient.gender || '',
+                residenceZone: currentPatient.residenceZone || '',
+                birthDate: currentPatient.birthDate || '',
+                address: currentPatient.address || '',
                 department: currentPatient.department || '',
                 province: currentPatient.province || '',
                 district: currentPatient.district || '',
-                con_quien_vive: Array.isArray(currentPatient.con_quien_vive)
-                    ? currentPatient.con_quien_vive
-                    : (currentPatient.con_quien_vive ? [currentPatient.con_quien_vive] : []),
-                ocupacion: currentPatient.ocupacion || '',
-                ingreso_economico: currentPatient.ingreso_economico || undefined,
-                nivel_educativo: currentPatient.nivel_educativo || [],
-                sistema_pension: currentPatient.sistema_pension || [],
+                livesWith: Array.isArray(currentPatient.livesWith)
+                    ? currentPatient.livesWith
+                    : (currentPatient.livesWith ? [currentPatient.livesWith] : []),
+                occupation: currentPatient.occupation || '',
+                economicIncome: currentPatient.economicIncome || undefined,
+                educationLevel: currentPatient.educationLevel || [],
+                pensionSystem: currentPatient.pensionSystem || [],
                 ipress: currentPatient.ipress || '',
-                telefono: currentPatient.phone || '',
+                phone: currentPatient.phone || '',
                 email: currentPatient.email || '',
                 numero_historia: currentPatient.numero_historia || '',
-                nameDoctor: currentPatient.nameDoctor || "",
-                nameLicensed: currentPatient.nameLicensed || "",
-                dateEvaluation: currentPatient.dateEvaluation || dayjs().format('DD/MM/YYYY')
+                doctorName: currentPatient.doctorName || "",
+                licensedName: currentPatient.licensedName || "",
+                evaluationDate: currentPatient.evaluationDate || dayjs().format('DD/MM/YYYY')
             };
             form.setFieldsValue(formData);
             if (birthDay && birthMonth && birthYear) calculateAge(birthDay, birthMonth, birthYear);
@@ -203,10 +194,10 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
             form.resetFields();
             setAge(null);
             form.setFieldsValue({
-                dateEvaluation: dayjs().format('DD/MM/YYYY'),
-                nameDoctor: "POVES REQUENA, LORENZO SEGUNDO",
-                zona_residencia: 'urbano',
-                con_quien_vive: []
+                evaluationDate: dayjs().format('DD/MM/YYYY'),
+                doctorName: "POVES REQUENA, LORENZO SEGUNDO",
+                residenceZone: 'urbano',
+                livesWith: []
             });
         }
     }, [currentPatient, form]);
@@ -226,12 +217,12 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
         { value: '12', label: 'Diciembre' },
     ];
 
-    const zonaResidenciaOptions = [
+    const residenceZoneOptions = [
         { value: 'rural', label: 'Rural' },
         { value: 'urbano', label: 'Urbano' }
     ];
 
-    const sistemaPensionOptions = [
+    const pensionSystemOptions = [
         { value: 'onp', label: 'ONP' },
         { value: 'afp', label: 'AFP' },
         { value: 'pension65', label: 'PENSION 65' },
@@ -240,14 +231,6 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
         { value: 'cpmp', label: 'CPMP (DL: 1133)' },
         { value: 'reja', label: 'REJA (LEY: 30425)' },
         { value: 'otros', label: 'Otros' }
-    ];
-
-    const relacionOptions = [
-        { value: 'soltero', label: 'Soltero(a)' },
-        { value: 'casado', label: 'Casado(a)' },
-        { value: 'divorciado', label: 'Divorciado(a)' },
-        { value: 'viudo', label: 'Viudo(a)' },
-        { value: 'conviviente', label: 'Conviviente' }
     ];
 
     const conQuienViveOptions = [
@@ -271,11 +254,11 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
 
     const editModal = () => {
         setIsEditing(true);
-    }
+    };
 
     const handleClose = () => {
         router.push('/');
-    }
+    };
 
     return (
         <Card className="!mb-4 !rounded-2xl !shadow-lg !h-full !border !border-gray-200 hover:!shadow-xl !transition-shadow !duration-300">
@@ -298,7 +281,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
             <Row gutter={[16, 16]} className="!m-0">
                 <Col xs={24} sm={12} md={8}>
                     <Form.Item
-                        name="nameDoctor"
+                        name="doctorName"
                         label={<Text strong translate="no">Médico Tratante</Text>}
                         rules={[{ required: true, message: 'Requerido' }]}
                         className="!mb-0 !pb-0 block"
@@ -313,7 +296,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 </Col>
                 <Col xs={24} sm={12} md={8}>
                     <Form.Item
-                        name="nameLicensed"
+                        name="licensedName"
                         label={<Text strong translate="no">Licenciado</Text>}
                     >
                         <Input
@@ -326,7 +309,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 </Col>
                 <Col xs={24} sm={24} md={8}>
                     <Form.Item
-                        name="dateEvaluation"
+                        name="evaluationDate"
                         label={<Text strong translate="no">Fecha de Evaluación</Text>}
                         rules={[{ required: true, message: 'Requerido' }]}
                     >
@@ -345,7 +328,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 <Col xs={24} sm={24} md={12} lg={8}>
                     <Form.Item
                         label={<Text strong translate="no">Apellidos y Nombres</Text>}
-                        name="nombre"
+                        name="name"
                         rules={[{ required: true, message: 'Por favor ingrese su nombre completo' }]}
                     >
                         <Input
@@ -380,7 +363,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                     >
                         <Space.Compact block>
                             <Form.Item
-                                name="birth_day"
+                                name="birthDay"
                                 rules={[
                                     { required: true, message: 'Requerido' },
                                     { type: 'number', min: 1, max: 31, message: 'Día inválido' },
@@ -400,7 +383,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                             </Form.Item>
 
                             <Form.Item
-                                name="birth_month"
+                                name="birthMonth"
                                 rules={[{ required: true, message: 'Requerido' }]}
                                 noStyle
                             >
@@ -416,7 +399,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                             </Form.Item>
 
                             <Form.Item
-                                name="birth_year"
+                                name="birthYear"
                                 rules={[
                                     { required: true, message: 'Requerido' },
                                     { type: 'number', min: 1900, max: new Date().getFullYear(), message: 'Año inválido' },
@@ -440,7 +423,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 <Col xs={12} sm={8} md={4} lg={2}>
                     <Form.Item
                         label={<Text strong translate="no">Edad</Text>}
-                        name="edad"
+                        name="age"
                     >
                         <InputNumber
                             style={{ width: "100%" }}
@@ -453,7 +436,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 <Col xs={12} sm={16} md={6} lg={4}>
                     <Form.Item
                         label={<Text strong translate="no">Sexo</Text>}
-                        name="sexo"
+                        name="gender"
                         rules={[{ required: true, message: 'Por favor seleccione su sexo' }]}
                     >
                         <Radio.Group
@@ -476,20 +459,20 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 <Text strong translate="no">Información Demográfica</Text>
             </Divider>
             <Row gutter={[16, 16]}>
-                <Form.Item name="fecha_nacimiento" hidden>
+                <Form.Item name="birthDate" hidden>
                     <Input />
                 </Form.Item>
                 <Col xs={24} sm={12} md={8} lg={6}>
                     <Form.Item
                         label={<Text strong translate="no">Zona Residencia</Text>}
-                        name="zona_residencia"
+                        name="residenceZone"
                         rules={[{ required: true, message: 'Por favor seleccione su zona de residencia' }]}
                     >
                         <Select
                             placeholder="Seleccione zona"
                             size="large"
                             disabled={!isEditing}
-                            options={zonaResidenciaOptions}
+                            options={residenceZoneOptions}
                             suffixIcon={<EnvironmentOutlined />}
                         />
                     </Form.Item>
@@ -497,7 +480,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 <Col xs={24} sm={12} md={8} lg={6}>
                     <Form.Item
                         label={<Text strong translate="no">Teléfono</Text>}
-                        name="telefono"
+                        name="phone"
                         rules={[{ pattern: /^\d{9}$/, message: 'Ingrese 9 dígitos' }]}
                     >
                         <Input
@@ -525,7 +508,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 <Col xs={24} sm={12} md={24} lg={6}>
                     <Form.Item
                         label={<Text strong translate="no">¿Con quién vive?</Text>}
-                        name="con_quien_vive"
+                        name="livesWith"
                         rules={[{ required: true, message: 'Por favor especifique con quién vive' }]}
                     >
                         <Select
@@ -626,7 +609,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 <Col xs={24} sm={24} md={16} lg={10} xl={9}>
                     <Form.Item
                         label={<Text strong translate="no">Domicilio</Text>}
-                        name="domicilio"
+                        name="address"
                         rules={[{ required: true, message: 'Por favor ingrese su domicilio' }]}
                     >
                         <Input
@@ -645,7 +628,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 <Col xs={24} sm={12} md={8}>
                     <Form.Item
                         label={<Text strong translate="no">Actividad Económica</Text>}
-                        name="economic_activity"
+                        name="economicActivity"
                         rules={[{ required: true, message: 'Por favor seleccione su sistema de pensión' }]}
                     >
                         <Select
@@ -661,7 +644,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 <Col xs={24} sm={12} md={8}>
                     <Form.Item
                         label={<Text strong translate="no">Ocupación Económica</Text>}
-                        name="ocupacion"
+                        name="occupation"
                         rules={[{ required: true, message: 'Por favor ingrese su ocupación' }]}
                     >
                         <Input
@@ -692,7 +675,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 <Col xs={24} sm={12} md={8}>
                     <Form.Item
                         label={<Text strong translate="no">Ingreso Económico (S/.)</Text>}
-                        name="ingreso_economico"
+                        name="economicIncome"
                         rules={[{ required: true, message: 'Por favor ingrese su ingreso económico' }]}
                     >
                         <InputNumber<number>
@@ -711,11 +694,11 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 <Col xs={24} sm={12} md={8}>
                     <Form.Item
                         label={<Text strong translate="no">Nivel Educativo</Text>}
-                        name="nivel_educativo"
+                        name="educationLevel"
                         rules={[{ required: true, message: 'Por favor seleccione nivel y grado' }]}
                     >
                         <Cascader
-                            options={nivelEducativoOptions}
+                            options={educationLevelOptions}
                             placeholder="Seleccione nivel y grado"
                             size="large"
                             disabled={!isEditing}
@@ -729,7 +712,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                 <Col xs={24} sm={24} md={8}>
                     <Form.Item
                         label={<Text strong translate="no">Sistema de Pensión</Text>}
-                        name="sistema_pension"
+                        name="pensionSystem"
                         rules={[{ required: true, message: 'Por favor seleccione su sistema de pensión' }]}
                     >
                         <Select
@@ -737,7 +720,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form, onValu
                             placeholder="Seleccione sistema de pensión"
                             size="large"
                             disabled={!isEditing}
-                            options={sistemaPensionOptions}
+                            options={pensionSystemOptions}
                             maxTagCount={2}
                         />
                     </Form.Item>

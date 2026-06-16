@@ -1,11 +1,11 @@
 "use client";
 import { useState } from "react";
-import { Row, Col, Typography, Button, notification, Space, Divider } from "antd";
+import { Row, Col, Typography, Button, notification, Divider } from "antd";
 import { ArrowLeftOutlined, SaveOutlined, MedicineBoxOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { useRouter } from 'next/navigation';
-import { actualizarResultado, crearRegistroResultados } from "@/app/lib/pacienteService";
+import { updateResult, createResultsRecord } from "@/app/lib/pacienteService";
 import { AllResponses } from "../../type";
 
 import SarcopeniaCard from "./SarcopeniaCard";
@@ -36,11 +36,11 @@ export default function SyndromesPage() {
     };
 
     const saveToFirebase = async () => {
-        if (!currentPatient?.dni) return api.error({ message: "Error", description: "No hay paciente seleccionado" });
+        if (!currentPatient?.dni) return api.error({ message: "Error", description: "No patient selected" });
 
         setLoading(true);
         try {
-            // Cálculos
+            // Calculations
             const sarcScore = Object.values(responses.sarcopenia).reduce((acc, curr) => acc + (curr || 0), 0);
 
             const fallsScore = (responses.falls.neededMedicalAssistance ? 1 : 0) +
@@ -60,28 +60,28 @@ export default function SyndromesPage() {
 
             let resId = currentResultId;
             if (!resId) {
-                resId = await crearRegistroResultados(currentPatient.dni, {
-                    sarcopenia: sarcScore.toString(),
-                    caida: fallsScore.toString(),
-                    deterioro: cognitiveScore.toString(),
-                    incontinencia: incontinenceScore.toString()
+                resId = await createResultsRecord(currentPatient.dni, {
+                    sarcopenia: sarcScore,
+                    falls: fallsScore,
+                    deterioration: cognitiveScore,
+                    incontinence: incontinenceScore
                 });
                 setCurrentResultId(resId);
             } else {
                 await Promise.all([
-                    actualizarResultado(currentPatient.dni, resId, 'sarcopenia', sarcScore.toString()),
-                    actualizarResultado(currentPatient.dni, resId, 'caida', fallsScore.toString()),
-                    actualizarResultado(currentPatient.dni, resId, 'deterioro', cognitiveScore.toString()),
-                    actualizarResultado(currentPatient.dni, resId, 'incontinencia', incontinenceScore.toString())
+                    updateResult(currentPatient.dni, resId, 'sarcopenia', sarcScore),
+                    updateResult(currentPatient.dni, resId, 'falls', fallsScore),
+                    updateResult(currentPatient.dni, resId, 'deterioration', cognitiveScore),
+                    updateResult(currentPatient.dni, resId, 'incontinence', incontinenceScore)
                 ]);
             }
 
-            api.success({ message: 'Guardado exitoso', description: 'Evaluación registrada correctamente.' });
+            api.success({ message: 'Success', description: 'Evaluation saved successfully.' });
             router.push('/syndromes/second');
 
         } catch (err: any) {
             console.error(err);
-            api.error({ message: 'Error', description: err.message || 'Intente nuevamente.' });
+            api.error({ message: 'Error', description: err.message || 'Please try again.' });
         } finally {
             setLoading(false);
         }

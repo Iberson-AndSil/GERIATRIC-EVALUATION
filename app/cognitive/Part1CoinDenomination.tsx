@@ -1,40 +1,42 @@
 'use client';
-import { Card, Input, Typography, Button, Row, Col } from 'antd';
+import { Input, Typography, Button, Row, Col } from 'antd';
 import { CheckCircleFilled, CloseCircleOutlined } from '@ant-design/icons';
-import { MonedasCorrectas, Intrusiones } from '../utils/cognitive/types';
+import { CorrectCoins, Intrusions } from '../utils/cognitive/types';
 
 const { Text, Title } = Typography;
 
 interface Props {
-  monedasCorrectas: MonedasCorrectas;
-  setMonedasCorrectas: React.Dispatch<React.SetStateAction<MonedasCorrectas>>;
-  intrusiones: Intrusiones;
-  handleIntrusionChange: (tipo: keyof Intrusiones, value: number) => void;
+  correctCoins: CorrectCoins;
+  setCorrectCoins: React.Dispatch<React.SetStateAction<CorrectCoins>>;
+  intrusions: Intrusions;
+  handleIntrusionChange: (type: keyof Intrusions, value: number) => void;
   nextStep: () => void;
 }
 
-export default function Parte1DenominacionMonedas({
-  monedasCorrectas,
-  setMonedasCorrectas,
-  intrusiones,
+export default function Part1CoinDenomination({
+  correctCoins,
+  setCorrectCoins,
+  intrusions,
   handleIntrusionChange,
   nextStep
 }: Props) {
 
-  const toggleMoneda = (key: keyof MonedasCorrectas) => {
-    setMonedasCorrectas((prev: any) => ({ ...prev, [key]: !prev[key] }));
+  const toggleMoneda = (key: keyof CorrectCoins) => {
+    setCorrectCoins((prev: any) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const monedas = [
-    { key: 'centimos10', label: '10 Céntimos' },
-    { key: 'centimos20', label: '20 Céntimos' },
-    { key: 'centimos50', label: '50 Céntimos' },
+    { key: 'cents10', label: '10 Céntimos' },
+    { key: 'cents20', label: '20 Céntimos' },
+    { key: 'cents50', label: '50 Céntimos' },
     { key: 'soles1', label: '1 Sol' },
     { key: 'soles2', label: '2 Soles' },
     { key: 'soles5', label: '5 Soles' },
   ];
 
-  const seleccionadas = Object.values(monedasCorrectas).filter(v => v === true).length;
+  const seleccionadas = Object.keys(correctCoins).filter(
+    (key) => key !== 'otherCoins' && correctCoins[key as keyof CorrectCoins] === true
+  ).length;
 
   return (
     <div className="animate-fadeIn">
@@ -47,11 +49,11 @@ export default function Parte1DenominacionMonedas({
       
       <Row gutter={[12, 12]}>
         {monedas.map((moneda) => {
-          const isSelected = (monedasCorrectas as any)[moneda.key];
+          const isSelected = (correctCoins as any)[moneda.key];
           return (
             <Col xs={12} sm={8} md={8} key={moneda.key}>
               <div 
-                onClick={() => toggleMoneda(moneda.key as keyof MonedasCorrectas)}
+                onClick={() => toggleMoneda(moneda.key as keyof CorrectCoins)}
                 className={`
                   cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 flex items-center justify-between
                   ${isSelected 
@@ -74,8 +76,8 @@ export default function Parte1DenominacionMonedas({
             <Text type="secondary" className="block mb-1 text-xs uppercase font-bold">Otras Monedas (si menciona antiguas)</Text>
             <Input 
                 placeholder="Ej: 5 céntimos, Inti..." 
-                value={monedasCorrectas.otrasMonedas}
-                onChange={(e) => setMonedasCorrectas((prev: any) => ({ ...prev, otrasMonedas: e.target.value }))}
+                value={correctCoins.otherCoins}
+                onChange={(e) => setCorrectCoins((prev: any) => ({ ...prev, otherCoins: e.target.value }))}
             />
         </div>
         <div className="bg-red-50 p-4 rounded-lg border border-red-100">
@@ -86,8 +88,8 @@ export default function Parte1DenominacionMonedas({
             <Input 
                 type="number" 
                 min={0}
-                value={intrusiones.monedas}
-                onChange={(e) => handleIntrusionChange('monedas', parseInt(e.target.value) || 0)}
+                value={intrusions.coins}
+                onChange={(e) => handleIntrusionChange('coins', parseInt(e.target.value) || 0)}
                 addonAfter="Errores"
                 className="w-full"
             />

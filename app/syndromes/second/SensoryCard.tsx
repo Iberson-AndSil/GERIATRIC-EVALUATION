@@ -1,7 +1,7 @@
 'use client';
 import { Badge, Card, Form, Radio, Typography } from 'antd';
 import { EyeOutlined, SmileOutlined, MehOutlined, FrownOutlined } from '@ant-design/icons';
-import { SensoryData } from '@/app/utils/syndromes/useSensory';
+import { SensoryData } from '@/app/type';
 
 const { Text } = Typography;
 
@@ -10,7 +10,6 @@ interface SensoryCardProps {
    score: number;
    handleSensoryChange: (field: keyof SensoryData, value: string) => void;
 }
-
 
 export const SensoryCard = ({ sensoryResult, score, handleSensoryChange }: SensoryCardProps) => {
    return (
@@ -32,7 +31,7 @@ export const SensoryCard = ({ sensoryResult, score, handleSensoryChange }: Senso
                   </Text>
 
                   <Radio.Group
-                     onChange={e => handleSensoryChange('dificultadVista', e.target.value)}
+                     onChange={e => handleSensoryChange('visionDifficulty', e.target.value)}
                      optionType="button"
                      buttonStyle="solid"
                      className="flex text-center"
@@ -50,7 +49,7 @@ export const SensoryCard = ({ sensoryResult, score, handleSensoryChange }: Senso
                   </Text>
 
                   <Radio.Group
-                     onChange={e => handleSensoryChange('usaAnteojos', e.target.value)}
+                     onChange={e => handleSensoryChange('wearsGlasses', e.target.value)}
                      optionType="button"
                      buttonStyle="solid"
                      className="flex text-center"
@@ -73,7 +72,7 @@ export const SensoryCard = ({ sensoryResult, score, handleSensoryChange }: Senso
                   </Text>
 
                   <Radio.Group
-                     onChange={e => handleSensoryChange('dificultadEscucha', e.target.value)}
+                     onChange={e => handleSensoryChange('hearingDifficulty', e.target.value)}
                      optionType="button"
                      buttonStyle="solid"
                      className="flex text-center"
@@ -91,7 +90,7 @@ export const SensoryCard = ({ sensoryResult, score, handleSensoryChange }: Senso
                   </Text>
 
                   <Radio.Group
-                     onChange={e => handleSensoryChange('usaAudifonos', e.target.value)}
+                     onChange={e => handleSensoryChange('wearsHearingAids', e.target.value)}
                      optionType="button"
                      buttonStyle="solid"
                      className="flex text-center"
@@ -101,7 +100,6 @@ export const SensoryCard = ({ sensoryResult, score, handleSensoryChange }: Senso
                   </Radio.Group>
                </div>
             </Form.Item>
-
          </Form>
 
          {sensoryResult && (
@@ -129,7 +127,6 @@ export const SensoryCard = ({ sensoryResult, score, handleSensoryChange }: Senso
                />
             </div>
          )}
-
       </Card>
    );
 };

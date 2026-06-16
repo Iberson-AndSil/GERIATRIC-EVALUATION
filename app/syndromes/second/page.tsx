@@ -1,5 +1,5 @@
 "use client";
-import { Row, Col, Typography, Layout, Divider } from 'antd';
+import { Row, Col, Typography, Divider } from 'antd';
 import { MedicineBoxOutlined } from '@ant-design/icons';
 import { useDepression } from '@/app/utils/syndromes/useDepression';
 import { useSensory } from '@/app/utils/syndromes/useSensory';
@@ -14,28 +14,27 @@ import { SaveButtons } from './SaveButtons';
 
 const { Title, Text } = Typography;
 
-
 export default function Home() {
-  const { depresionData, depresionResult, score, handleDepresionChange } = useDepression();
+  const { depressionData, depressionResult, score: depressionScore, handleDepressionChange } = useDepression();
   const { sensoryData, sensoryResult, score: sensoryScore, handleSensoryChange } = useSensory();
   const { bristolData, bristolResult, score: bristolScore, handleBristolChange } = useBristol();
-  const { adherenciaData, adherenciaResult, score: adherenciaScore, handleAdherenciaChange } = useAdherence();
+  const { adherenceData, adherenceResult, score: adherenceScore, handleAdherenceChange } = useAdherence();
 
   const { loading, guardarDatos } = useSaveData();
 
   const handleSave = async () => {
     try {
-      await guardarDatos(depresionData, sensoryData, bristolData, adherenciaData);
+      await guardarDatos(depressionData, sensoryData, bristolData, adherenceData);
     } catch (error) {
-      console.error("Error al guardar:", error);
+      console.error("Error saving syndromes second part:", error);
     }
   };
 
   const allResultsReady =
-    depresionResult !== null &&
+    depressionResult !== null &&
     sensoryResult !== null &&
     bristolResult !== null &&
-    adherenciaResult !== null;
+    adherenceResult !== null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -52,17 +51,17 @@ export default function Home() {
         <Row gutter={[24, 24]}>
           <Col xs={24} lg={12}>
             <DepressionCard
-              depresionResult={depresionResult}
-              score={score}
-              handleDepresionChange={handleDepresionChange}
+              depressionResult={depressionResult}
+              score={depressionScore}
+              handleDepressionChange={handleDepressionChange}
             />
           </Col>
           <Col xs={24} lg={12}>
             <AdherenceCard
-              adherenciaData={adherenciaData}
-              adherenciaResult={adherenciaResult}
-              score={adherenciaScore}
-              handleAdherenciaChange={handleAdherenciaChange}
+              adherenceData={adherenceData}
+              adherenceResult={adherenceResult}
+              score={adherenceScore}
+              handleAdherenceChange={handleAdherenceChange}
             />
           </Col>
           <Col xs={24} lg={12}>

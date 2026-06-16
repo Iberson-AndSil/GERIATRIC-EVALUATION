@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
-import { eliminarPaciente, obtenerPacientePorId, actualizarPaciente } from '@/app/lib/pacienteService';
+import { deletePatient, getPatientById, updatePatient } from '@/app/lib/pacienteService';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request, context: { params: Promise<{ dni: string }> }) {
   const { dni } = await context.params;
   try {
-    const paciente = await obtenerPacientePorId(dni);
-    return NextResponse.json(paciente);
+    const patient = await getPatientById(dni);
+    return NextResponse.json(patient);
   } catch (error) {
-    console.error("Error en GET:", error);
+    console.error("Error in GET:", error);
     return NextResponse.json({ status: 500 });
   }
 }
@@ -18,10 +18,10 @@ export async function PUT(request: Request, context: { params: Promise<{ dni: st
     const { dni } = await context.params;
     const body = await request.json();
 
-    await actualizarPaciente(dni, body);
-    return NextResponse.json({ message: 'Paciente actualizado' });
+    await updatePatient(dni, body);
+    return NextResponse.json({ message: 'Patient updated' });
   } catch (error) {
-    console.error("Error en PUT:", error);
+    console.error("Error in PUT:", error);
     return NextResponse.json({ status: 500 });
   }
 }
@@ -29,12 +29,12 @@ export async function PUT(request: Request, context: { params: Promise<{ dni: st
 export async function DELETE(request: Request, context: { params: Promise<{ dni: string }> }) {
   const { dni } = await context.params;
   try {
-    await eliminarPaciente(dni);
-    return NextResponse.json({ message: "Paciente eliminado" });
+    await deletePatient(dni);
+    return NextResponse.json({ message: "Patient deleted" });
   } catch (error) {
-    console.error("Error en DELETE:", error);
+    console.error("Error in DELETE:", error);
     return NextResponse.json(
-      { error: "Error eliminando paciente" },
+      { error: "Error deleting patient" },
       { status: 500 }
     );
   }

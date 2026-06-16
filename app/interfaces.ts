@@ -1,105 +1,60 @@
-export interface Paciente {
-  [x: string]: any;
+export interface Patient {
+  [key: string]: any;
   id: string;
-  nombre: string;
+  name: string;
   dni: string;
-  edad: number;
-  fecha_nacimiento: Date;
-  sexo: 'M' | 'F';
-  zona_residencia: string;
-  domicilio: string;
-  nivel_educativo: string
-  ocupacion: string;
-  sistema_pension: string;
-  ingreso_economico: number;
-  con_quien_vive: string;
-  relacion: string;
-  // gijon: number;
-// abvdScore: number;
-// aivdScore: number;
-// sarcopenia: number;
-// caida: number;
-// deterioro: number;
-// incontinencia: number;
-// depresion: number;
-// sensorial: number;
-// bristol: number;
-// adherencia: number;
-// dynamometry: number;
-// balance: number;
-// dimension_fisica: number;
-// dimension_mental: number;
-// puntaje_total: number;
-// cognitivo_total: number;
-// mmse30: number;
-// moca:number;
-// afectiva:number;
-// nutricional:number;
+  age: number;
+  birthDate: Date;
+  gender: 'M' | 'F';
+  residenceZone: string;
+  address: string;
+  educationLevel: string;
+  occupation: string;
+  pensionSystem: string;
+  economicIncome: number;
+  livesWith: string;
+  relationship: string;
+  phone?: string;
+  email?: string;
+  evaluationDate?: any;
+  ipress?: string;
+  doctorName?: string;
+  licensedName?: string;
+  economicActivity?: string;
+  birthDay?: string;
+  birthMonth?: string;
+  birthYear?: string;
+  department?: string;
+  province?: string;
+  district?: string;
 }
 
-// id:formData.dni,
-// nombre: formData.nombre,
-// dni: formData.dni,
-// fecha_nacimiento: fechaNacimiento,
-// sexo: formData.sexo,
-// edad: formData.edad,
-// zona_residencia: formData.zona_residencia,
-// domicilio: formData.domicilio,
-// nivel_educativo: formData.nivel_educativo,
-// ocupacion: formData.ocupacion,
-// sistema_pension: formData.sistema_pension,
-// ingreso_economico: formData.ingreso_economico,
-// con_quien_vive: formData.con_quien_vive,
-// relacion: formData.relacion,
-
-// gijon: number;
-// abvdScore: number;
-// aivdScore: number;
-// sarcopenia: number;
-// caida: number;
-// deterioro: number;
-// incontinencia: number;
-// depresion: number;
-// sensorial: number;
-// bristol: number;
-// adherencia: number;
-// dynamometry: number;
-// balance: number;
-// dimension_fisica: number;
-// dimension_mental: number;
-// puntaje_total: number;
-// cognitivo_total: number;
-// mmse30: number;
-// moca:number;
-// afectiva:number;
-// nutricional:number;
-
-export interface Resultado {
-  id: string
-  fecha: any
-  gijon?: number
-  completado?: boolean
-  abvdScore?: number
-  aivdScore?: number
-  sarcopenia?: number
-  caida?: number
-  deterioro?: number
-  incontinencia?: number
-  depresion?: number
-  sensorial?: number
-  bristol?: number
-  adherencia?: number
-  dynamometry?: number
-  balance?: number
-  dimension_fisica?: number
-  dimension_mental?: number
-  puntaje_total?: number
-  cognitivo_total?: number
-  mmse30?: number
-  moca?: number
-  afectiva?: number
-  nutricional?: number
-  [key: string]: any
+export interface Result {
+  id: string;
+  date: any;
+  gijon?: number;
+  completed?: boolean;
+  abvdScore?: number;
+  aivdScore?: number;
+  sarcopenia?: number;
+  falls?: number;
+  deterioration?: number;
+  incontinence?: number;
+  depression?: number;
+  sensory?: number;
+  bristol?: number;
+  adherence?: number;
+  dynamometry?: number;
+  balance?: number;
+  physicalDimension?: number;
+  mentalDimension?: number;
+  totalScore?: number;
+  totalCognitive?: number;
+  mmse30?: number;
+  moca?: number;
+  affective?: number;
+  nutritional?: number;
+  [key: string]: any;
 }
 
 export interface GijonCategory {
@@ -109,11 +64,11 @@ export interface GijonCategory {
 }
 
 export interface GijonScores {
-  familiar: number;
-  economica: number;
-  vivienda: number;
-  sociales: number;
-  apoyo: number;
+  family: number;
+  economic: number;
+  housing: number;
+  social: number;
+  support: number;
 }
 
 export interface FormValues {

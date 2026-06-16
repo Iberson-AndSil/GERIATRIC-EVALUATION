@@ -166,7 +166,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <h1 className="!ml-6" style={{ color: "white", margin: 0 }}>Test Geriatric</h1>
             </div>
             <h1 style={{ color: "white", margin: 0 }}>
-              {currentPatient?.nombre ?? "Sin paciente"}
+              {currentPatient?.name ?? "Sin paciente"}
             </h1>
           </Header>
 

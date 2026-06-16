@@ -1,33 +1,33 @@
 'use client';
 import { Input, Typography, Button, Row, Col } from 'antd';
 import { CheckCircleFilled, CloseCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import { BilletesCorrectos, Intrusiones } from '../utils/cognitive/types';
+import { CorrectBills, Intrusions } from '../utils/cognitive/types';
 
 const { Text, Title } = Typography;
 
 interface Props {
-  billetesCorrectos: BilletesCorrectos;
-  setBilletesCorrectos: React.Dispatch<React.SetStateAction<BilletesCorrectos>>;
-  intrusiones: Intrusiones;
-  handleIntrusionChange: (tipo: keyof Intrusiones, value: number) => void;
+  correctBills: CorrectBills;
+  setCorrectBills: React.Dispatch<React.SetStateAction<CorrectBills>>;
+  intrusions: Intrusions;
+  handleIntrusionChange: (type: keyof Intrusions, value: number) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
 
-export default function Parte2DenominacionBilletes({
-  billetesCorrectos,
-  setBilletesCorrectos,
-  intrusiones,
+export default function Part2BillDenomination({
+  correctBills,
+  setCorrectBills,
+  intrusions,
   handleIntrusionChange,
   nextStep,
   prevStep
 }: Props) {
 
-  const toggleBillete = (key: keyof BilletesCorrectos) => {
-    setBilletesCorrectos((prev: any) => ({ ...prev, [key]: !prev[key] }));
+  const toggleBillete = (key: keyof CorrectBills) => {
+    setCorrectBills((prev: any) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const billetes = [
+  const bills = [
     { key: 'soles10', label: '10 Soles' },
     { key: 'soles20', label: '20 Soles' },
     { key: 'soles50', label: '50 Soles' },
@@ -43,12 +43,12 @@ export default function Parte2DenominacionBilletes({
       </div>
 
       <Row gutter={[12, 12]}>
-        {billetes.map((billete) => {
-          const isSelected = (billetesCorrectos as any)[billete.key];
+        {bills.map((bill) => {
+          const isSelected = (correctBills as any)[bill.key];
           return (
-            <Col xs={12} sm={8} md={4} key={billete.key}>
+            <Col xs={12} sm={8} md={4} key={bill.key}>
               <div 
-                onClick={() => toggleBillete(billete.key as keyof BilletesCorrectos)}
+                onClick={() => toggleBillete(bill.key as keyof CorrectBills)}
                 className={`
                   cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center h-24
                   ${isSelected 
@@ -57,7 +57,7 @@ export default function Parte2DenominacionBilletes({
                 `}
               >
                 <span translate="no" className={`font-bold mb-1 notranslate ${isSelected ? 'text-blue-700' : 'text-gray-600'}`}>
-                    {billete.label}
+                    {bill.label}
                 </span>
                 {isSelected && <CheckCircleFilled className="text-blue-500" />}
               </div>
@@ -70,8 +70,8 @@ export default function Parte2DenominacionBilletes({
         <div>
             <Text type="secondary" className="block mb-1 text-xs uppercase font-bold">Otros Billetes</Text>
             <Input 
-                value={billetesCorrectos.otrosBilletes}
-                onChange={(e) => setBilletesCorrectos(prev => ({ ...prev, otrosBilletes: e.target.value }))}
+                value={correctBills.otherBills}
+                onChange={(e) => setCorrectBills(prev => ({ ...prev, otherBills: e.target.value }))}
             />
         </div>
         <div className="bg-red-50 p-4 rounded-lg border border-red-100">
@@ -81,8 +81,8 @@ export default function Parte2DenominacionBilletes({
             </div>
             <Input 
                 type="number" min={0}
-                value={intrusiones.billetes}
-                onChange={(e) => handleIntrusionChange('billetes', parseInt(e.target.value) || 0)}
+                value={intrusions.bills}
+                onChange={(e) => handleIntrusionChange('bills', parseInt(e.target.value) || 0)}
                 addonAfter="Errores"
             />
         </div>

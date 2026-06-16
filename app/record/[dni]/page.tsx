@@ -1,9 +1,9 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { Card, Spin, Empty, Popconfirm, Button, Col, Row, message, Progress, Tag, Collapse, Divider } from 'antd'
-import { eliminarResultado, obtenerResultadosPaciente } from '@/app/lib/pacienteService'
+import { deleteResult, getPatientResults } from '@/app/lib/pacienteService'
 import { DeleteOutlined, CaretRightOutlined } from "@ant-design/icons"
-import { Resultado } from '@/app/interfaces'
+import { Result } from '@/app/interfaces'
 
 const { Panel } = Collapse
 
@@ -12,22 +12,22 @@ const MAX_VALUES: Record<string, number> = {
   abvdScore: 100,
   aivdScore: 21,
   sarcopenia: 10,
-  caida: 3,
-  deterioro: 3,
-  incontinencia: 25,
-  depresion: 4,
-  sensorial: 4,
+  falls: 3,
+  deterioration: 3,
+  incontinence: 25,
+  depression: 4,
+  sensory: 4,
   bristol: 6,
-  adherencia: 4,
+  adherence: 4,
   balance: 12,
-  dimension_fisica: 20,
-  dimension_mental: 27,
-  puntaje_total: 47,
-  cognitivo_total: 31,
+  physicalDimension: 20,
+  mentalDimension: 27,
+  totalScore: 47,
+  totalCognitive: 31,
   mmse30: 30,
   moca: 30,
-  afectiva: 15,
-  nutricional: 30
+  affective: 15,
+  nutritional: 30
 }
 
 const getScoreColor = (key: string, value: number) => {
@@ -38,27 +38,27 @@ const getScoreColor = (key: string, value: number) => {
     case 'gijon':
     case 'abvdScore':
     case 'aivdScore':
-    case 'caida':
-    case 'deterioro':
-    case 'incontinencia':
-    case 'depresion':
-    case 'sensorial':
+    case 'falls':
+    case 'deterioration':
+    case 'incontinence':
+    case 'depression':
+    case 'sensory':
     case 'bristol':
       if (percentage <= 33) return '#52c41a'
       if (percentage <= 66) return '#faad14'
       return '#f5222d'
     
-    case 'adherencia':
+    case 'adherence':
     case 'dynamometry':
     case 'balance':
-    case 'dimension_fisica':
-    case 'dimension_mental':
-    case 'puntaje_total':
-    case 'cognitivo_total':
+    case 'physicalDimension':
+    case 'mentalDimension':
+    case 'totalScore':
+    case 'totalCognitive':
     case 'mmse30':
     case 'moca':
-    case 'afectiva':
-    case 'nutricional':
+    case 'affective':
+    case 'nutritional':
       if (percentage <= 33) return '#f5222d'
       if (percentage <= 66) return '#faad14'
       return '#52c41a'
@@ -81,23 +81,23 @@ const formatLabel = (key: string) => {
     abvdScore: 'ABVD',
     aivdScore: 'AIVD',
     sarcopenia: 'Sarcopenia',
-    caida: 'Caídas',
-    deterioro: 'Deterioro cognitivo',
-    incontinencia: 'Incontinencia urinaria',
-    depresion: 'Depresión',
-    sensorial: 'Deterioro sensorial',
+    falls: 'Caídas',
+    deterioration: 'Deterioro cognitivo',
+    incontinence: 'Incontinencia urinaria',
+    depression: 'Depresión',
+    sensory: 'Deterioro sensorial',
     bristol: 'Escala Bristol',
-    adherencia: 'Adherencia tratamiento',
+    adherence: 'Adherencia tratamiento',
     dynamometry: 'Dinamometría',
     balance: 'Balance',
-    dimension_fisica: 'Dimensión física',
-    dimension_mental: 'Dimensión mental',
-    puntaje_total: 'Calidad de vida total',
-    cognitivo_total: 'Cognitivo total',
+    physicalDimension: 'Dimensión física',
+    mentalDimension: 'Dimensión mental',
+    totalScore: 'Calidad de vida total',
+    totalCognitive: 'Cognitivo total',
     mmse30: 'MMSE',
     moca: 'MoCA',
-    afectiva: 'Afectiva',
-    nutricional: 'Valoración nutricional'
+    affective: 'Afectiva',
+    nutritional: 'Valoración nutricional'
   }
   
   return labels[key] || key
@@ -158,7 +158,7 @@ const SyndromeScoreDisplay = ({ value, metricKey }: {
 }
 
 const ResultCard = ({ resultado, onEliminar }: { 
-  resultado: Resultado, 
+  resultado: Result, 
   onEliminar: (id: string) => void 
 }) => {
   const [activePanels, setActivePanels] = useState<string | string[]>(['gijon'])
@@ -169,7 +169,7 @@ const ResultCard = ({ resultado, onEliminar }: {
 
   return (
     <Card
-      title={`Evaluación: ${new Date(resultado.fecha?.toDate?.()).toLocaleDateString() || "Fecha no disponible"}`}
+      title={`Evaluación: ${new Date(resultado.date?.toDate?.() || resultado.date).toLocaleDateString() || "Fecha no disponible"}`}
       extra={
         <Popconfirm
           title="¿Estás seguro de eliminar este resultado?"
@@ -184,8 +184,8 @@ const ResultCard = ({ resultado, onEliminar }: {
       bodyStyle={{ padding: '16px' }}
     >
       <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
-        <Tag color={resultado.completado ? 'green' : 'orange'}>
-          {resultado.completado ? 'COMPLETADO' : 'PENDIENTE'}
+        <Tag color={resultado.completed ? 'green' : 'orange'}>
+          {resultado.completed ? 'COMPLETADO' : 'PENDIENTE'}
         </Tag>
         <Tag color="blue">ID: {resultado.id.substring(0, 8)}...</Tag>
       </div>
@@ -212,19 +212,19 @@ const ResultCard = ({ resultado, onEliminar }: {
         <Panel header="Síndromes Geriátricos" key="sindromes">
           <SyndromeScoreDisplay value={resultado.sarcopenia} metricKey="sarcopenia" />
           <Divider style={{ margin: '8px 0' }} />
-          <SyndromeScoreDisplay value={resultado.caida} metricKey="caida" />
+          <SyndromeScoreDisplay value={resultado.falls} metricKey="falls" />
           <Divider style={{ margin: '8px 0' }} />
-          <SyndromeScoreDisplay value={resultado.deterioro} metricKey="deterioro" />
+          <SyndromeScoreDisplay value={resultado.deterioration} metricKey="deterioration" />
           <Divider style={{ margin: '8px 0' }} />
-          <SyndromeScoreDisplay value={resultado.incontinencia} metricKey="incontinencia" />
+          <SyndromeScoreDisplay value={resultado.incontinence} metricKey="incontinence" />
           <Divider style={{ margin: '8px 0' }} />
-          <SyndromeScoreDisplay value={resultado.depresion} metricKey="depresion" />
+          <SyndromeScoreDisplay value={resultado.depression} metricKey="depression" />
           <Divider style={{ margin: '8px 0' }} />
-          <SyndromeScoreDisplay value={resultado.sensorial} metricKey="sensorial" />
+          <SyndromeScoreDisplay value={resultado.sensory} metricKey="sensory" />
           <Divider style={{ margin: '8px 0' }} />
           <SyndromeScoreDisplay value={resultado.bristol} metricKey="bristol" />
           <Divider style={{ margin: '8px 0' }} />
-          <ScoreDisplay value={resultado.adherencia} metricKey="adherencia" />
+          <ScoreDisplay value={resultado.adherence} metricKey="adherence" />
         </Panel>
         
         <Panel header="Valoración Física" key="fisica">
@@ -245,15 +245,15 @@ const ResultCard = ({ resultado, onEliminar }: {
         </Panel>
         
         <Panel header="Valoración Mental y Calidad de Vida" key="mental">
-          <ScoreDisplay value={resultado.dimension_fisica} metricKey="dimension_fisica" />
+          <ScoreDisplay value={resultado.physicalDimension} metricKey="physicalDimension" />
           <Divider style={{ margin: '8px 0' }} />
-          <ScoreDisplay value={resultado.dimension_mental} metricKey="dimension_mental" />
+          <ScoreDisplay value={resultado.mentalDimension} metricKey="mentalDimension" />
           <Divider style={{ margin: '8px 0' }} />
-          <ScoreDisplay value={resultado.puntaje_total} metricKey="puntaje_total" />
+          <ScoreDisplay value={resultado.totalScore} metricKey="totalScore" />
         </Panel>
         
         <Panel header="Evaluación Cognitiva" key="cognitivo">
-          <ScoreDisplay value={resultado.cognitivo_total} metricKey="cognitivo_total" />
+          <ScoreDisplay value={resultado.totalCognitive} metricKey="totalCognitive" />
           <Divider style={{ margin: '8px 0' }} />
           <ScoreDisplay value={resultado.mmse30} metricKey="mmse30" />
           <Divider style={{ margin: '8px 0' }} />
@@ -261,11 +261,11 @@ const ResultCard = ({ resultado, onEliminar }: {
         </Panel>
         
         <Panel header="Evaluación Afectiva" key="afectiva">
-          <ScoreDisplay value={resultado.afectiva} metricKey="afectiva" />
+          <ScoreDisplay value={resultado.affective} metricKey="affective" />
         </Panel>
         
         <Panel header="Valoración Nutricional" key="nutricional">
-          <ScoreDisplay value={resultado.nutricional} metricKey="nutricional" />
+          <ScoreDisplay value={resultado.nutritional} metricKey="nutritional" />
         </Panel>
       </Collapse>
     </Card>
@@ -274,16 +274,16 @@ const ResultCard = ({ resultado, onEliminar }: {
 
 const RecordPage = ({ params }: { params: Promise<{ dni: string }> }) => {
   const [resolvedParams, setResolvedParams] = useState<{ dni: string } | null>(null)
-  const [resultados, setResultados] = useState<Resultado[]>([])
+  const [results, setResults] = useState<Result[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchResultados = useCallback(async (dni: string) => {
     setLoading(true)
     try {
-      const data = await obtenerResultadosPaciente(dni)
-      setResultados(data as Resultado[])
+      const data = await getPatientResults(dni)
+      setResults(data)
     } catch (error) {
-      console.error('Error al obtener resultados:', error)
+      console.error('Error getting results:', error)
       message.error("No se pudieron cargar los resultados")
     } finally {
       setLoading(false)
@@ -304,11 +304,11 @@ const RecordPage = ({ params }: { params: Promise<{ dni: string }> }) => {
   async function handleEliminar(id: string): Promise<void> {
     if (!resolvedParams?.dni) return
     try {
-      await eliminarResultado(resolvedParams.dni, id)
+      await deleteResult(resolvedParams.dni, id)
       message.success("Resultado eliminado correctamente")
       await fetchResultados(resolvedParams.dni)
     } catch (error) {
-      console.error("Error eliminando resultado:", error)
+      console.error("Error deleting result:", error)
       message.error("No se pudo eliminar el resultado")
     }
   }
@@ -329,11 +329,11 @@ const RecordPage = ({ params }: { params: Promise<{ dni: string }> }) => {
         <div className='w-full h-full flex items-center justify-center'>
           <Spin size="large" />
         </div>
-      ) : resultados.length === 0 ? (
+      ) : results.length === 0 ? (
         <Empty description="No hay resultados" />
       ) : (
         <Row gutter={[16, 16]}>
-          {resultados.map((resultado) => (
+          {results.map((resultado) => (
             <Col key={resultado.id} xs={24} sm={24} md={12} lg={8} xl={8}>
               <ResultCard resultado={resultado} onEliminar={handleEliminar} />
             </Col>

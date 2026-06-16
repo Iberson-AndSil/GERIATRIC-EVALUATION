@@ -1,30 +1,30 @@
 'use client';
 import { Typography, Button, Radio, Tag } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { CalculoItems, RespuestaItem } from '../utils/cognitive/types';
+import { CalculationItems, ResponseItem } from '../utils/cognitive/types';
 
 const { Text, Title } = Typography;
 
 interface Props {
-  calculos: Record<CalculoItems, RespuestaItem>;
-  setCalculos: React.Dispatch<React.SetStateAction<Record<CalculoItems, RespuestaItem>>>;
+  calculations: Record<CalculationItems, ResponseItem>;
+  setCalculations: React.Dispatch<React.SetStateAction<Record<CalculationItems, ResponseItem>>>;
   nextStep: () => void;
   prevStep: () => void;
 }
 
-export default function Parte3CalculoMonedas({ calculos, setCalculos, nextStep, prevStep }: Props) {
+export default function Part3CoinCalculation({ calculations, setCalculations, nextStep, prevStep }: Props) {
 
-  const handleChange = (item: CalculoItems, value: string) => {
-    setCalculos(prev => ({
+  const handleChange = (item: CalculationItems, value: string) => {
+    setCalculations(prev => ({
       ...prev,
       [item]: {
-        estado: value as 'correcto' | 'correcto_segundo' | 'incorrecto',
-        intentos: value === 'incorrecto' ? 2 : 1
+        status: value as 'correcto' | 'correcto_segundo' | 'incorrecto',
+        attempts: value === 'incorrecto' ? 2 : 1
       }
     }));
   };
 
-  const renderItem = (key: CalculoItems, title: string, subtitle: string, correctAnswer: string) => (
+  const renderItem = (key: CalculationItems, title: string, subtitle: string, correctAnswer: string) => (
     <div className="bg-white p-4 rounded-xl border border-gray-200 mb-4 hover:shadow-sm transition-shadow">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex-1">
@@ -38,7 +38,7 @@ export default function Parte3CalculoMonedas({ calculos, setCalculos, nextStep, 
         
         <div className="flex-shrink-0">
           <Radio.Group 
-            value={calculos[key].estado} 
+            value={calculations[key].status} 
             onChange={(e) => handleChange(key, e.target.value)}
             buttonStyle="solid"
             size="middle"
@@ -63,7 +63,7 @@ export default function Parte3CalculoMonedas({ calculos, setCalculos, nextStep, 
        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-6">
         <Title level={5} className="!mb-1 !text-blue-800">3. Manipulación de Monedas</Title>
         <Text strong>Material:</Text> <Text>3 monedas de S/2.00, 1 de S/1.00, 2 de S/0.50, 5 de S/0.20</Text>
-      </div>
+       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {renderItem('item3', 'Conteo Total', '“¿Cuántas monedas hay aquí?”', '11 monedas')}

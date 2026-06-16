@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button, Col, Divider, Row, Typography } from "antd";
+import { Button, Col, Row, Typography } from "antd";
 import { ArrowLeftOutlined, MedicineBoxOutlined, SaveOutlined } from "@ant-design/icons";
 import { GijonScaleSection } from "./GijonScaleSection";
 import { usePatientForm } from "@/app/utils/family/usePatientForm";
-import { crearRegistroResultados, actualizarResultado } from "@/app/lib/pacienteService";
+import { createResultsRecord, updateResult } from "@/app/lib/pacienteService";
 import { useGlobalContext } from "@/app/context/GlobalContext";
 import { useState } from "react";
 
@@ -15,25 +15,30 @@ const { Title, Text } = Typography;
 export default function SocialPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const { puntajes, handleScoreChange, obtenerPuntajeTotal, gijonCategories } = usePatientForm();
-
-    const { currentResultId, setCurrentResultId, setCurrentPatient, currentPatient, } = useGlobalContext();
+    const { scores, handleScoreChange, getTotalScore, gijonCategories } = usePatientForm();
+    const { currentResultId, setCurrentResultId, setCurrentPatient, currentPatient } = useGlobalContext();
 
     const savePatientToFirebase = async () => {
         setLoading(true);
-        const score = obtenerPuntajeTotal();
-        let resultadoId = currentResultId;
+        try {
+            const score = getTotalScore();
+            let resultadoId = currentResultId;
 
-        if (!resultadoId) {
-            if (!currentPatient) return;
-            setCurrentPatient(currentPatient);
-            resultadoId = await crearRegistroResultados(currentPatient.dni, { gijon: score });
-            setCurrentResultId(resultadoId);
-            router.push("/funtional/");
-        } else {
-            if (!currentPatient) return;
-            await actualizarResultado(currentPatient.dni, resultadoId, "gijon", score);
-            router.push("/funtional/");
+            if (!resultadoId) {
+                if (!currentPatient) return;
+                setCurrentPatient(currentPatient);
+                resultadoId = await createResultsRecord(currentPatient.dni, { gijon: score });
+                setCurrentResultId(resultadoId);
+                router.push("/funtional/");
+            } else {
+                if (!currentPatient) return;
+                await updateResult(currentPatient.dni, resultadoId, "gijon", score);
+                router.push("/funtional/");
+            }
+        } catch (error) {
+            console.error("Error saving social assessment:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -49,8 +54,8 @@ export default function SocialPage() {
             <GijonScaleSection
                 categories={gijonCategories}
                 handleChange={handleScoreChange}
-                puntajes={puntajes}
-                obtenerPuntajeTotal={obtenerPuntajeTotal}
+                scores={scores}
+                getTotalScore={getTotalScore}
             />
 
             <Row className="flex justify-center mt-12 gap-4">

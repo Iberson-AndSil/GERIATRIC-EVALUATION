@@ -1,4 +1,4 @@
-export type NivelEducativoOption = {
+export type EducationLevelOption = {
     value: string;
     label: string;
     children: {
@@ -7,54 +7,59 @@ export type NivelEducativoOption = {
     }[];
 };
 
-export type PuntajesType = {
-  comer: number | null;
-  trasladarse: number | null;
-  aseo: number | null;
-  retrete: number | null;
-  banarse: number | null;
-  desplazarse: number | null;
-  escaleras: number | null;
-  vestirse: number | null;
-  heces: number | null;
-  orina: number | null;
+export type ScoresType = {
+  eat: number | null;
+  transfer: number | null;
+  grooming: number | null;
+  toilet: number | null;
+  bathing: number | null;
+  walking: number | null;
+  stairs: number | null;
+  dressing: number | null;
+  bowels: number | null;
+  bladder: number | null;
 };
 
-export type RespuestasType = {
+// Deprecated alias for backward compatibility during refactoring if needed
+export type PuntajesType = ScoresType;
+
+export type ResponsesType = {
   [key: string]: number | null;
 };
 
-export type OpcionType = {
+export type RespuestasType = ResponsesType;
+
+export type OptionType = {
   label: string;
-  valor: number;
+  value: number;
 };
 
-export type ActividadType = {
-  nombre: string;
+export type ActivityType = {
+  name: string;
   key: string;
-  opciones: {
-    descripcion: string;
-    valor: number;
+  options: {
+    description: string;
+    value: number;
   }[];
 };
 
-export type PreguntaType = {
+export type QuestionType = {
   key: string;
-  texto: string;
+  text: string;
 };
 
 export type DepressionData = {
-  vidaSatisfecha: string | null;
-  impotente: string | null;
-  problemasMemoria: string | null;
-  aburrido: string | null;
+  satisfiedLife: string | null;
+  helpless: string | null;
+  memoryProblems: string | null;
+  bored: string | null;
 };
 
 export type SensoryData = {
-  dificultadVista: string | null;
-  usaAnteojos: string | null;
-  dificultadEscucha: string | null;
-  usaAudifonos: string | null;
+  visionDifficulty: string | null;
+  wearsGlasses: string | null;
+  hearingDifficulty: string | null;
+  wearsHearingAids: string | null;
 };
 
 export type BristolData = {
@@ -68,11 +73,11 @@ export type BristolData = {
 };
 
 export type AdherenceData = {
-  tomaMedicamentoPregunta?: string | null;
-  olvido: string | null;
-  tomarMedicamento: string | null;
-  dejarMedicacion: string | null;
-  sientaMal: string | null;
+  takeMedicationQuestion?: string | null;
+  forgot: string | null;
+  takeMedication: string | null;
+  stopMedication: string | null;
+  feelsBad: string | null;
 };
 
 export type SarcopeniaResponses = {
@@ -116,11 +121,6 @@ export type SarcopeniaQuestion = {
   key: keyof SarcopeniaResponses;
   text: string;
   options: { label: string; value: number }[];
-};
-
-export type OptionType = {
-  label: string;
-  value: number;
 };
 
 export type DimensionKey = 'PHYSICAL' | 'MENTAL';

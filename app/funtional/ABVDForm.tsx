@@ -2,27 +2,27 @@
 
 import { Card, Typography, Select, Badge } from "antd";
 import { actividades } from "../utils/funtional/constants";
-import { PuntajesType } from "../type";
+import { ScoresType } from "../type";
 
 const { Text } = Typography;
 const { Option } = Select;
 
 interface ABVDFormProps {
-  puntajes: PuntajesType;
-  setPuntajes: React.Dispatch<React.SetStateAction<PuntajesType>>;
+  scores: ScoresType;
+  setScores: React.Dispatch<React.SetStateAction<ScoresType>>;
   total: number;
-  interpretacion: string;
+  interpretation: string;
 }
 
 export default function ABVDForm({ 
-  puntajes, 
-  setPuntajes, 
+  scores, 
+  setScores, 
   total, 
-  interpretacion 
+  interpretation 
 }: ABVDFormProps) {
   
   const handleChangeABVD = (categoria: string, valor: number | null) => {
-    setPuntajes((prev: any) => ({
+    setScores((prev: any) => ({
       ...prev,
       [categoria]: valor,
     }));
@@ -44,8 +44,7 @@ export default function ABVDForm({
               className="w-full"
               placeholder="- Seleccione -"
               onChange={(value) => handleChangeABVD(actividad.key, value)}
-              value={puntajes[actividad.key]}
-              status={puntajes[actividad.key] !== undefined && puntajes[actividad.key] !== null ? "" : ""}
+              value={scores[actividad.key]}
             >
               {actividad.opciones.map((opcion, index) => (
                 <Option key={`${actividad.key}-${index}`} value={opcion.valor}>
@@ -64,7 +63,7 @@ export default function ABVDForm({
               Interpretación
             </Text>
             <Text strong className="text-blue-900 text-base">
-              {interpretacion || "Pendiente"}
+              {interpretation || "Pendiente"}
             </Text>
           </div>
 

@@ -10,16 +10,56 @@ interface Props {
   onResponseChange: (key: string, value: any) => void;
 }
 
+// export const sarcopeniaQuestions: SarcopeniaQuestion[] = [
+//       {
+//           key: "liftingWeight",
+//           text: "¿Qué dificultad encuentra en levantar 4.5 kg?",
+//           options: [
+//               { label: "Ninguna", value: 0 },
+//               { label: "Alguna", value: 1 },
+//               { label: "Mucha o Incapaz", value: 2 }
+//           ]
+//       },
+//     ]
+
 const IncontinenceCard: React.FC<Props> = ({ responses, onResponseChange }) => {
 
   const totalScore = (responses.frequency || 0) + (responses.amount || 0) + (responses.impact || 0);
   const { text, color } = interpretICIQ(totalScore);
+
+  const incontinence = [
+    {
+          key: "frequency",
+          text: "¿Con qué frecuencia pierdo orina?",
+          options: [
+              { label: "Ninguna", value: 0 },
+              { label: "Alguna", value: 1 },
+              { label: "Mucha o Incapaz", value: 2 }
+          ]
+      },
+  ]
+  
 
   return (
     <Card
       title={<span className="text-blue-600 font-bold">4. INCONTINENCIA (ICIQ-SF)</span>}
       className="shadow-md rounded-xl border-t-4 border-t-blue-500"
     >
+{/* 
+
+<Form layout="vertical">
+        {sarcopeniaQuestions.map((q) => (
+          <Form.Item key={q.key} label={<Text strong>{q.text}</Text>} className="mb-3">
+            <Select
+              placeholder="Seleccione..."
+              onChange={(val) => onResponseChange(q.key, val)}
+              value={responses[q.key]}
+              options={q.options.map(opt => ({ label: `${opt.label} (${opt.value} pts)`, value: opt.value }))}
+            />
+          </Form.Item>
+        ))}
+      </Form> */}
+
       <Form layout="vertical">
         <Form.Item label="¿Con qué frecuencia pierdo orina?">
           <Select

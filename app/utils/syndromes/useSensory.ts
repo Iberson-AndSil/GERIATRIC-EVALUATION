@@ -3,10 +3,10 @@ import { SensoryData } from '../../type';
 
 export const useSensory = () => {
   const [sensoryData, setSensoryData] = useState<SensoryData>({
-    dificultadVista: null,
-    usaAnteojos: null,
-    dificultadEscucha: null,
-    usaAudifonos: null,
+    visionDifficulty: null,
+    wearsGlasses: null,
+    hearingDifficulty: null,
+    wearsHearingAids: null,
   });
 
   const [sensoryResult, setSensoryResult] = useState<string[] | null>(null);
@@ -30,8 +30,8 @@ export const useSensory = () => {
 
     const resultado: string[] = [];
 
-    if (data.dificultadVista === 'si') {
-      if (data.usaAnteojos === 'si') {
+    if (data.visionDifficulty === 'si') {
+      if (data.wearsGlasses === 'si') {
         resultado.push('Deterioro visual evaluado');
       } else {
         resultado.push('Deterioro visual no evaluado');
@@ -40,8 +40,8 @@ export const useSensory = () => {
       resultado.push('Sin deterioro visual');
     }
 
-    if (data.dificultadEscucha === 'si') {
-      if (data.usaAudifonos === 'si') {
+    if (data.hearingDifficulty === 'si') {
+      if (data.wearsHearingAids === 'si') {
         resultado.push('Deterioro auditivo evaluado');
       } else {
         resultado.push('Deterioro auditivo no evaluado');
@@ -61,4 +61,3 @@ export const useSensory = () => {
   };
 };
 export type { SensoryData };
-

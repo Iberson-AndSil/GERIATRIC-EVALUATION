@@ -10,20 +10,20 @@ import {
   FileDoneOutlined 
 } from '@ant-design/icons';
 
-import Parte1DenominacionMonedas from './Parte1DenominacionMonedas';
-import Parte2DenominacionBilletes from './Parte2DenominacionBilletes';
-import Parte3CalculoMonedas from './Parte3CalculoMonedas';
-import Parte4FluenciaVerbal from './Parte4FluenciaVerbal';
-import Parte5Recuerdo from './Parte5Recuerdo';
-import ResultadosEvaluacion from './ResultadosEvaluacion';
+import Part1CoinDenomination from './Part1CoinDenomination';
+import Part2BillDenomination from './Part2BillDenomination';
+import Part3CoinCalculation from './Part3CoinCalculation';
+import Part4VerbalFluency from './Part4VerbalFluency';
+import Part5Recall from './Part5Recall';
+import EvaluationResults from './EvaluationResults';
 
 import { 
-  MonedasCorrectas, 
-  BilletesCorrectos, 
-  CalculoItems, 
-  RespuestaItem,
-  Intrusiones,
-  Recuerdo
+  CorrectCoins, 
+  CorrectBills, 
+  CalculationItems, 
+  ResponseItem,
+  Intrusions,
+  Recall
 } from '../utils/cognitive/types';
 
 const { Title, Text } = Typography;
@@ -31,51 +31,51 @@ const { Step } = Steps;
 
 export default function EvaluacionMonetaria() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [tiempoFluencia, setTiempoFluencia] = useState(60);
+  const [fluencyTime, setFluencyTime] = useState(60);
   const { currentPatient } = useGlobalContext();
 
-  const [monedasCorrectas, setMonedasCorrectas] = useState<MonedasCorrectas>({
-    centimos10: false, centimos20: false, centimos50: false,
-    soles1: false, soles2: false, soles5: false, otrasMonedas: '',
+  const [correctCoins, setCorrectCoins] = useState<CorrectCoins>({
+    cents10: false, cents20: false, cents50: false,
+    soles1: false, soles2: false, soles5: false, otherCoins: '',
   });
 
-  const [billetesCorrectos, setBilletesCorrectos] = useState<BilletesCorrectos>({
+  const [correctBills, setCorrectBills] = useState<CorrectBills>({
     soles10: false, soles20: false, soles50: false,
-    soles100: false, soles200: false, otrosBilletes: '',
+    soles100: false, soles200: false, otherBills: '',
   });
 
-  const [calculos, setCalculos] = useState<Record<CalculoItems, RespuestaItem>>({
-    item3: { estado: null, intentos: 0 }, item4: { estado: null, intentos: 0 },
-    item5: { estado: null, intentos: 0 }, item6: { estado: null, intentos: 0 },
-    item7: { estado: null, intentos: 0 },
+  const [calculations, setCalculations] = useState<Record<CalculationItems, ResponseItem>>({
+    item3: { status: null, attempts: 0 }, item4: { status: null, attempts: 0 },
+    item5: { status: null, attempts: 0 }, item6: { status: null, attempts: 0 },
+    item7: { status: null, attempts: 0 },
   });
 
-  const [cantidadAnimales, setCantidadAnimales] = useState<number | null>(null);
+  const [animalCount, setAnimalCount] = useState<number | null>(null);
   
-  const [intrusiones, setIntrusiones] = useState<Intrusiones>({
-    monedas: 0, billetes: 0, recuerdo: 0,
+  const [intrusions, setIntrusions] = useState<Intrusions>({
+    coins: 0, bills: 0, recall: 0,
   });
 
-  const [recuerdo, setRecuerdo] = useState<Recuerdo>({
-    cantidadMonedas: '', totalDinero: '',
-    monedasRecordadas: { centimos20: [], centimos50: [], sol1: [], soles2: [] },
+  const [recall, setRecall] = useState<Recall>({
+    coinQuantity: '', totalMoney: '',
+    recalledCoins: { cents20: [], cents50: [], sol1: [], soles2: [] },
   });
 
   const nextStep = () => setCurrentStep(prev => prev + 1);
   const prevStep = () => setCurrentStep(prev => prev - 1);
 
-  const handleIntrusionChange = (tipo: keyof Intrusiones, value: number) => {
-    setIntrusiones(prev => ({ ...prev, [tipo]: value }));
+  const handleIntrusionChange = (type: keyof Intrusions, value: number) => {
+    setIntrusions(prev => ({ ...prev, [type]: value }));
   };
 
   const renderStep = () => {
     switch (currentStep) {
-      case 1: return <Parte1DenominacionMonedas monedasCorrectas={monedasCorrectas} setMonedasCorrectas={setMonedasCorrectas} intrusiones={intrusiones} handleIntrusionChange={handleIntrusionChange} nextStep={nextStep} />;
-      case 2: return <Parte2DenominacionBilletes billetesCorrectos={billetesCorrectos} setBilletesCorrectos={setBilletesCorrectos} intrusiones={intrusiones} handleIntrusionChange={handleIntrusionChange} nextStep={nextStep} prevStep={prevStep} />;
-      case 3: return <Parte3CalculoMonedas calculos={calculos} setCalculos={setCalculos} nextStep={nextStep} prevStep={prevStep} />;
-      case 4: return <Parte4FluenciaVerbal cantidadAnimales={cantidadAnimales} setCantidadAnimales={setCantidadAnimales} tiempoFluencia={tiempoFluencia} setTiempoFluencia={setTiempoFluencia} nextStep={nextStep} prevStep={prevStep} />;
-      case 5: return <Parte5Recuerdo recuerdo={recuerdo} setRecuerdo={setRecuerdo} intrusiones={intrusiones} handleIntrusionChange={handleIntrusionChange} nextStep={nextStep} prevStep={prevStep} />;
-      case 6: return <ResultadosEvaluacion monedasCorrectas={monedasCorrectas} billetesCorrectos={billetesCorrectos} calculos={calculos} cantidadAnimales={cantidadAnimales} intrusiones={intrusiones} recuerdo={recuerdo} fileHandle={currentPatient} resetEvaluation={() => setCurrentStep(1)} />;
+      case 1: return <Part1CoinDenomination correctCoins={correctCoins} setCorrectCoins={setCorrectCoins} intrusions={intrusions} handleIntrusionChange={handleIntrusionChange} nextStep={nextStep} />;
+      case 2: return <Part2BillDenomination correctBills={correctBills} setCorrectBills={setCorrectBills} intrusions={intrusions} handleIntrusionChange={handleIntrusionChange} nextStep={nextStep} prevStep={prevStep} />;
+      case 3: return <Part3CoinCalculation calculations={calculations} setCalculations={setCalculations} nextStep={nextStep} prevStep={prevStep} />;
+      case 4: return <Part4VerbalFluency animalCount={animalCount} setAnimalCount={setAnimalCount} fluencyTime={fluencyTime} setFluencyTime={setFluencyTime} nextStep={nextStep} prevStep={prevStep} />;
+      case 5: return <Part5Recall recall={recall} setRecall={setRecall} intrusions={intrusions} handleIntrusionChange={handleIntrusionChange} nextStep={nextStep} prevStep={prevStep} />;
+      case 6: return <EvaluationResults correctCoins={correctCoins} correctBills={correctBills} calculations={calculations} animalCount={animalCount} intrusions={intrusions} recall={recall} fileHandle={currentPatient} resetEvaluation={() => setCurrentStep(1)} />;
       default: return null;
     }
   };

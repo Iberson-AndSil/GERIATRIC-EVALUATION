@@ -6,35 +6,33 @@ import { GijonCategory } from "../interfaces";
 const { Option } = Select;
 const { Text } = Typography;
 
-type InterpretacionTipo = 'success' | 'warning' | 'error' | 'info';
-
 interface GijonScaleSectionProps {
   categories: GijonCategory[];
   handleChange: (categoria: any, valor: number) => void;
-  puntajes: Record<string, any>;
-  obtenerPuntajeTotal: () => number;
+  scores: Record<string, any>;
+  getTotalScore: () => number;
 }
 
 export const GijonScaleSection: React.FC<GijonScaleSectionProps> = ({
   categories,
   handleChange,
-  puntajes,
-  obtenerPuntajeTotal,
+  scores,
+  getTotalScore,
 }) => {
-  const puntajeTotal = obtenerPuntajeTotal();
+  const totalScore = getTotalScore();
   
-  const getInterpretacion = (): { mensaje: string; color: string } | null => {
-    if (puntajeTotal >= 5 && puntajeTotal <= 9) {
+  const getInterpretation = (): { mensaje: string; color: string } | null => {
+    if (totalScore >= 5 && totalScore <= 9) {
       return { mensaje: 'Buena/Aceptable', color: 'green' };
-    } else if (puntajeTotal >= 10 && puntajeTotal <= 14) {
+    } else if (totalScore >= 10 && totalScore <= 14) {
       return { mensaje: 'Riesgo Social', color: 'gold' };
-    } else if (puntajeTotal >= 15) {
+    } else if (totalScore >= 15) {
       return { mensaje: 'Problema Social', color: 'red' };
     }
     return { mensaje: 'Evaluando...', color: 'blue' };
   };
 
-  const interpretacion = getInterpretacion();
+  const interpretation = getInterpretation();
 
   return (
     <Card 
@@ -52,7 +50,7 @@ export const GijonScaleSection: React.FC<GijonScaleSectionProps> = ({
               className="w-full"
               placeholder="Seleccione..."
               onChange={(value) => handleChange(category.key, parseInt(value))}
-              value={puntajes[category.key] ? puntajes[category.key].toString() : undefined}
+              value={scores[category.key] ? scores[category.key].toString() : undefined}
             >
               {category.options.map((option, index) => (
                 <Option key={`${category.key}-${index}`} value={(index + 1).toString()}>
@@ -70,17 +68,17 @@ export const GijonScaleSection: React.FC<GijonScaleSectionProps> = ({
               <Text type="secondary" className="text-xs uppercase font-bold mb-1">
                 Diagnóstico Social
               </Text>
-              <Text strong style={{ color: interpretacion?.color === 'gold' ? '#faad14' : interpretacion?.color }}>
-                 {interpretacion?.mensaje}
+              <Text strong style={{ color: interpretation?.color === 'gold' ? '#faad14' : interpretation?.color }}>
+                 {interpretation?.mensaje}
               </Text>
            </div>
 
            <div className="flex flex-col items-end">
               <Text strong className="mb-1 text-xs text-gray-500">Puntaje Total</Text>
               <Badge 
-                count={puntajeTotal} 
+                count={totalScore} 
                 showZero 
-                color={interpretacion?.color}
+                color={interpretation?.color}
                 style={{boxShadow: '0 0 0 1px #d9d9d9 inset'}} // Sutil borde para contraste
               />
            </div>

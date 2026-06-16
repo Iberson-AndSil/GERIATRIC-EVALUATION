@@ -1,32 +1,32 @@
 'use client';
-import { Card, Input, Typography, Button, Space, Row, Col, Divider, Form, Radio, Checkbox } from 'antd';
-import { Recuerdo, Intrusiones } from '../utils/cognitive/types';
+import { Card, Input, Typography, Button, Space, Row, Col, Divider, Radio, Checkbox } from 'antd';
+import { Recall, Intrusions } from '../utils/cognitive/types';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
-interface Parte5RecuerdoProps {
-  recuerdo: Recuerdo;
-  setRecuerdo: React.Dispatch<React.SetStateAction<Recuerdo>>;
-  intrusiones: Intrusiones;
-  handleIntrusionChange: (tipo: keyof Intrusiones, value: number) => void;
+interface Part5RecallProps {
+  recall: Recall;
+  setRecall: React.Dispatch<React.SetStateAction<Recall>>;
+  intrusions: Intrusions;
+  handleIntrusionChange: (type: keyof Intrusions, value: number) => void;
   nextStep: () => void;
   prevStep: () => void;
 }
 
-export default function Parte5Recuerdo({
-  recuerdo,
-  setRecuerdo,
-  intrusiones,
+export default function Part5Recall({
+  recall,
+  setRecall,
+  intrusions,
   handleIntrusionChange,
   nextStep,
   prevStep
-}: Parte5RecuerdoProps) {
+}: Part5RecallProps) {
   
-  const handleMonedaRecordadaChange = (key: keyof Recuerdo['monedasRecordadas'], checkedValues: string[]) => {
-    setRecuerdo(prev => ({
+  const handleMonedaRecordadaChange = (key: keyof Recall['recalledCoins'], checkedValues: string[]) => {
+    setRecall(prev => ({
       ...prev,
-      monedasRecordadas: {
-        ...prev.monedasRecordadas,
+      recalledCoins: {
+        ...prev.recalledCoins,
         [key]: checkedValues
       }
     }));
@@ -45,8 +45,8 @@ export default function Parte5Recuerdo({
               1. “¿Cuántas monedas le enseñé antes?”
             </Text>
             <Radio.Group 
-              value={recuerdo.cantidadMonedas} 
-              onChange={(e) => setRecuerdo(prev => ({ ...prev, cantidadMonedas: e.target.value }))}
+              value={recall.coinQuantity} 
+              onChange={(e) => setRecall(prev => ({ ...prev, coinQuantity: e.target.value }))}
             >
               <Radio value="correcto">Correcto</Radio>
               <Radio value="incorrecto">Incorrecto</Radio>
@@ -58,8 +58,8 @@ export default function Parte5Recuerdo({
               2. “¿Cuánto dinero había en total?”
             </Text>
             <Radio.Group 
-              value={recuerdo.totalDinero} 
-              onChange={(e) => setRecuerdo(prev => ({ ...prev, totalDinero: e.target.value }))}
+              value={recall.totalMoney} 
+              onChange={(e) => setRecall(prev => ({ ...prev, totalMoney: e.target.value }))}
             >
               <Radio value="correcto">Correcto</Radio>
               <Radio value="incorrecto">Incorrecto</Radio>
@@ -79,48 +79,48 @@ export default function Parte5Recuerdo({
         <Col span={6} xs={12}>
           <Card size="small" type="inner" title={<span translate="no" className="notranslate">20 céntimos</span>}>
             <Checkbox.Group 
-              value={recuerdo.monedasRecordadas.centimos20}
-              onChange={(checked) => handleMonedaRecordadaChange('centimos20', checked as string[])}
+              value={recall.recalledCoins.cents20}
+              onChange={(checked) => handleMonedaRecordadaChange('cents20', checked as string[])}
               style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
             >
               <Checkbox value="tipo">Recuerda moneda</Checkbox>
-              <Checkbox value="cantidad" disabled={!recuerdo.monedasRecordadas.centimos20?.includes('tipo')}>Recuerda cantidad (5)</Checkbox>
+              <Checkbox value="cantidad" disabled={!recall.recalledCoins.cents20?.includes('tipo')}>Recuerda cantidad (5)</Checkbox>
             </Checkbox.Group>
           </Card>
         </Col>
         <Col span={6} xs={12}>
           <Card size="small" type="inner" title={<span translate="no" className="notranslate">50 céntimos</span>}>
             <Checkbox.Group 
-              value={recuerdo.monedasRecordadas.centimos50}
-              onChange={(checked) => handleMonedaRecordadaChange('centimos50', checked as string[])}
+              value={recall.recalledCoins.cents50}
+              onChange={(checked) => handleMonedaRecordadaChange('cents50', checked as string[])}
               style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
             >
               <Checkbox value="tipo">Recuerda moneda</Checkbox>
-              <Checkbox value="cantidad" disabled={!recuerdo.monedasRecordadas.centimos50?.includes('tipo')}>Recuerda cantidad (2)</Checkbox>
+              <Checkbox value="cantidad" disabled={!recall.recalledCoins.cents50?.includes('tipo')}>Recuerda cantidad (2)</Checkbox>
             </Checkbox.Group>
           </Card>
         </Col>
         <Col span={6} xs={12}>
           <Card size="small" type="inner" title={<span translate="no" className="notranslate">1 Sol</span>}>
             <Checkbox.Group 
-              value={recuerdo.monedasRecordadas.sol1}
+              value={recall.recalledCoins.sol1}
               onChange={(checked) => handleMonedaRecordadaChange('sol1', checked as string[])}
               style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
             >
               <Checkbox value="tipo">Recuerda moneda</Checkbox>
-              <Checkbox value="cantidad" disabled={!recuerdo.monedasRecordadas.sol1?.includes('tipo')}>Recuerda cantidad (1)</Checkbox>
+              <Checkbox value="cantidad" disabled={!recall.recalledCoins.sol1?.includes('tipo')}>Recuerda cantidad (1)</Checkbox>
             </Checkbox.Group>
           </Card>
         </Col>
         <Col span={6} xs={12}>
           <Card size="small" type="inner" title={<span translate="no" className="notranslate">2 Soles</span>}>
             <Checkbox.Group 
-              value={recuerdo.monedasRecordadas.soles2}
+              value={recall.recalledCoins.soles2}
               onChange={(checked) => handleMonedaRecordadaChange('soles2', checked as string[])}
               style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
             >
               <Checkbox value="tipo">Recuerda moneda</Checkbox>
-              <Checkbox value="cantidad" disabled={!recuerdo.monedasRecordadas.soles2?.includes('tipo')}>Recuerda cantidad (3)</Checkbox>
+              <Checkbox value="cantidad" disabled={!recall.recalledCoins.soles2?.includes('tipo')}>Recuerda cantidad (3)</Checkbox>
             </Checkbox.Group>
           </Card>
         </Col>
@@ -133,8 +133,8 @@ export default function Parte5Recuerdo({
             type="number" 
             min={0}
             style={{ width: '80px' }}
-            value={intrusiones.recuerdo}
-            onChange={(e) => handleIntrusionChange('recuerdo', parseInt(e.target.value) || 0)}
+            value={intrusions.recall}
+            onChange={(e) => handleIntrusionChange('recall', parseInt(e.target.value) || 0)}
           />
         </Space>
       </div>

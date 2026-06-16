@@ -2,64 +2,64 @@ import { useState } from 'react';
 import { AdherenceData } from '../../type';
 
 export const useAdherence = () => {
-  const [adherenciaData, setAdherenciaData] = useState<AdherenceData>({
-    tomaMedicamentoPregunta: null,
-    olvido: null,
-    tomarMedicamento: null,
-    dejarMedicacion: null,
-    sientaMal: null,
+  const [adherenceData, setAdherenceData] = useState<AdherenceData>({
+    takeMedicationQuestion: null,
+    forgot: null,
+    takeMedication: null,
+    stopMedication: null,
+    feelsBad: null,
   });
 
-  const [adherenciaResult, setAdherenciaResult] = useState<string | null>(null);
+  const [adherenceResult, setAdherenceResult] = useState<string | null>(null);
   const [score, setScore] = useState<number>(0);
 
-  const handleAdherenciaChange = (field: keyof AdherenceData, value: string) => {
-    let newData = { ...adherenciaData, [field]: value };
+  const handleAdherenceChange = (field: keyof AdherenceData, value: string) => {
+    let newData = { ...adherenceData, [field]: value };
     
     // Clear sub-questions if user changes answer to "no"
-    if (field === 'tomaMedicamentoPregunta' && value === 'no') {
+    if (field === 'takeMedicationQuestion' && value === 'no') {
       newData = {
         ...newData,
-        olvido: null,
-        tomarMedicamento: null,
-        dejarMedicacion: null,
-        sientaMal: null,
+        forgot: null,
+        takeMedication: null,
+        stopMedication: null,
+        feelsBad: null,
       };
     }
 
-    setAdherenciaData(newData);
-    evaluateAdherencia(newData);
+    setAdherenceData(newData);
+    evaluateAdherence(newData);
   };
 
-  const evaluateAdherencia = (data: AdherenceData) => {
-    if (!data.tomaMedicamentoPregunta) {
-      setAdherenciaResult(null);
+  const evaluateAdherence = (data: AdherenceData) => {
+    if (!data.takeMedicationQuestion) {
+      setAdherenceResult(null);
       setScore(0);
       return;
     }
 
-    if (data.tomaMedicamentoPregunta === 'no') {
-      setAdherenciaResult('No aplica (No toma medicamentos)');
+    if (data.takeMedicationQuestion === 'no') {
+      setAdherenceResult('No aplica (No toma medicamentos)');
       setScore(0);
       return;
     }
 
     if (
-      data.olvido === null ||
-      data.tomarMedicamento === null ||
-      data.dejarMedicacion === null ||
-      data.sientaMal === null
+      data.forgot === null ||
+      data.takeMedication === null ||
+      data.stopMedication === null ||
+      data.feelsBad === null
     ) {
-      setAdherenciaResult(null);
+      setAdherenceResult(null);
       setScore(0);
       return;
     }
 
     let puntuacion = 0;
-    if (data.olvido === 'no') puntuacion++;
-    if (data.tomarMedicamento === 'si') puntuacion++;
-    if (data.dejarMedicacion === 'no') puntuacion++;
-    if (data.sientaMal === 'no') puntuacion++;
+    if (data.forgot === 'no') puntuacion++;
+    if (data.takeMedication === 'si') puntuacion++;
+    if (data.stopMedication === 'no') puntuacion++;
+    if (data.feelsBad === 'no') puntuacion++;
 
     setScore(puntuacion);
 
@@ -72,13 +72,17 @@ export const useAdherence = () => {
       resultado = 'Deficiente adherencia (Incumplimiento de tratamiento farmacológico)';
     }
 
-    setAdherenciaResult(resultado);
+    setAdherenceResult(resultado);
   };
 
   return {
-    adherenciaData,
-    adherenciaResult,
+    adherenceData,
+    adherenceResult,
     score,
-    handleAdherenciaChange
+    handleAdherenceChange,
+    // Aliases for backward compatibility during refactoring
+    adherenciaData: adherenceData,
+    adherenciaResult: adherenceResult,
+    handleAdherenciaChange: handleAdherenceChange
   };
 };

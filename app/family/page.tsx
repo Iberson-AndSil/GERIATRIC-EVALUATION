@@ -8,6 +8,7 @@ import { BasicInfoSection } from "./BasicInfoSection";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useGlobalContext } from "@/app/context/GlobalContext";
+import { Patient } from "../interfaces";
 
 const { Title } = Typography;
 
@@ -32,47 +33,48 @@ const PatientFormContent = () => {
     try {
       setLoading(true);
       const formData = await form.validateFields();
-      const fechaNacimiento = new Date(
-        parseInt(formData.year),
-        parseInt(formData.month) - 1,
-        parseInt(formData.day)
+      const birthDate = new Date(
+        parseInt(formData.birthYear),
+        parseInt(formData.birthMonth) - 1,
+        parseInt(formData.birthDay)
       );
 
-      const patientData = {
+      const patientData: Patient = {
         id: formData.dni,
-        birth_day: formData.birth_day,
-        birth_month: formData.birth_month,
-        birth_year: formData.birth_year,
-        dateEvaluation: formData.dateEvaluation,
-        economic_activity: formData.economic_activity,
+        birthDay: formData.birthDay,
+        birthMonth: formData.birthMonth,
+        birthYear: formData.birthYear,
+        evaluationDate: formData.evaluationDate,
+        economicActivity: formData.economicActivity,
         email: formData.email,
         ipress: formData.ipress,
-        nameDoctor: formData.nameDoctor,
-        nameLicensed: formData.nameLicensed,
-        phone: formData.telefono,
-        nombre: formData.nombre,
+        doctorName: formData.doctorName,
+        licensedName: formData.licensedName,
+        phone: formData.phone,
+        name: formData.name,
         dni: formData.dni,
-        fecha_nacimiento: fechaNacimiento,
-        sexo: formData.sexo,
-        edad: formData.edad,
-        zona_residencia: formData.zona_residencia,
-        domicilio: formData.domicilio,
+        birthDate: birthDate,
+        gender: formData.gender,
+        age: formData.age,
+        residenceZone: formData.residenceZone,
+        address: formData.address,
         department: formData.department,
         province: formData.province,
         district: formData.district,
-        nivel_educativo: formData.nivel_educativo,
-        ocupacion: formData.ocupacion,
-        sistema_pension: formData.sistema_pension,
-        ingreso_economico: formData.ingreso_economico,
-        con_quien_vive: formData.con_quien_vive,
+        educationLevel: formData.educationLevel,
+        occupation: formData.occupation,
+        pensionSystem: formData.pensionSystem,
+        economicIncome: formData.economicIncome,
+        livesWith: formData.livesWith,
+        relationship: formData.relationship || '',
       };
       
       await axios.post("/api/pacientes", patientData);
-      setCurrentPatient(patientData as any);
+      setCurrentPatient(patientData);
       openNotification("success", "Éxito", "Datos del paciente y resultados guardados correctamente", "topRight");
       router.push('/syndromes/first');
     } catch (err: unknown) {
-      console.error("Error al guardar:", err);
+      console.error("Error saving patient:", err);
       openNotification(
         "error",
         "Error",

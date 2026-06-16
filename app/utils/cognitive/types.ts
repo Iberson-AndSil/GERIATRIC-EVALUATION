@@ -1,49 +1,49 @@
-export type CalculoItems = 'item3' | 'item4' | 'item5' | 'item6' | 'item7';
+export type CalculationItems = 'item3' | 'item4' | 'item5' | 'item6' | 'item7';
 
-export type RespuestaItem = {
-  estado: 'correcto' | 'correcto_segundo' | 'incorrecto' | null;
-  intentos: number;
+export type ResponseItem = {
+  status: 'correcto' | 'correcto_segundo' | 'incorrecto' | null;
+  attempts: number;
 };
 
-export type MonedasCorrectas = {
-  centimos10: boolean;
-  centimos20: boolean;
-  centimos50: boolean;
+export type CorrectCoins = {
+  cents10: boolean;
+  cents20: boolean;
+  cents50: boolean;
   soles1: boolean;
   soles2: boolean;
   soles5: boolean;
-  otrasMonedas: string;
+  otherCoins: string;
 };
 
-export type BilletesCorrectos = {
+export type CorrectBills = {
   soles10: boolean;
   soles20: boolean;
   soles50: boolean;
   soles100: boolean;
   soles200: boolean;
-  otrosBilletes: string;
+  otherBills: string;
 };
 
-export type Intrusiones = {
-  monedas: number;
-  billetes: number;
-  recuerdo: number;
+export type Intrusions = {
+  coins: number;
+  bills: number;
+  recall: number;
 };
 
-export type Recuerdo = {
-  cantidadMonedas: string;
-  totalDinero: string;
-  monedasRecordadas: {
-    centimos20: string[];
-    centimos50: string[];
+export type Recall = {
+  coinQuantity: string;
+  totalMoney: string;
+  recalledCoins: {
+    cents20: string[];
+    cents50: string[];
     sol1: string[];
     soles2: string[];
   };
 };
 
-export type InterpretacionResultado = {
-  diagnostico: string;
+export type ResultInterpretation = {
+  diagnosis: string;
   color: string;
-  descripcion: string;
-  recomendacion: string;
+  description: string;
+  recommendation: string;
 };

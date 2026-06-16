@@ -1,64 +1,57 @@
-import { CalculoItems, RespuestaItem, MonedasCorrectas, BilletesCorrectos, Intrusiones, Recuerdo, InterpretacionResultado } from './types';
+import { CalculationItems, ResponseItem, CorrectCoins, CorrectBills, Intrusions, Recall, ResultInterpretation } from './types';
 
-export const calcularPuntajeParte1 = (monedas: MonedasCorrectas, billetes: BilletesCorrectos, intrusiones: Intrusiones) => {
-  const totalMonedasCorrectas = Math.max(0,
-    Object.values(monedas)
-      .filter(val => val === true).length - intrusiones.monedas);
+export const calculatePart1Score = (coins: CorrectCoins, bills: CorrectBills, intrusions: Intrusions) => {
+  const coinsCount = Object.keys(coins).filter(key => key !== 'otherCoins' && coins[key as keyof CorrectCoins] === true).length;
+  const billsCount = Object.keys(bills).filter(key => key !== 'otherBills' && bills[key as keyof CorrectBills] === true).length;
 
-  const totalBilletesCorrectos = Math.max(0,
-    Object.values(billetes)
-      .filter(val => val === true).length - intrusiones.billetes);
+  const totalCorrectCoins = Math.max(0, coinsCount - intrusions.coins);
+  const totalCorrectBills = Math.max(0, billsCount - intrusions.bills);
 
-  return totalMonedasCorrectas + totalBilletesCorrectos;
+  return totalCorrectCoins + totalCorrectBills;
 };
 
-export const calcularPuntajeParte2 = (calculos: Record<CalculoItems, RespuestaItem>) => {
-  return Object.values(calculos).reduce((total, item) => {
-    if (item.estado === 'correcto') return total + 2;
-    if (item.estado === 'correcto_segundo') return total + 1;
+export const calculatePart2Score = (calculations: Record<CalculationItems, ResponseItem>) => {
+  return Object.values(calculations).reduce((total, item) => {
+    if (item.status === 'correcto') return total + 2;
+    if (item.status === 'correcto_segundo') return total + 1;
     return total;
   }, 0);
 };
 
-export const calcularPuntajeParte3 = (recuerdo: Recuerdo, intrusiones: Intrusiones) => {
-  let puntaje = 0;
+export const calculatePart3Score = (recall: Recall, intrusions: Intrusions) => {
+  let score = 0;
+  if (recall.coinQuantity === 'correcto') score += 1;
+  if (recall.totalMoney === 'correcto') score += 1;
+  
+  if (recall.recalledCoins.cents20?.includes('tipo')) score += 1;
+  if (recall.recalledCoins.cents20?.includes('cantidad')) score += 1;
+  
+  if (recall.recalledCoins.cents50?.includes('tipo')) score += 1;
+  if (recall.recalledCoins.cents50?.includes('cantidad')) score += 1;
+  
+  if (recall.recalledCoins.sol1?.includes('tipo')) score += 1;
+  if (recall.recalledCoins.sol1?.includes('cantidad')) score += 1;
+  
+  if (recall.recalledCoins.soles2?.includes('tipo')) score += 1;
+  if (recall.recalledCoins.soles2?.includes('cantidad')) score += 1;
 
-  if (recuerdo.cantidadMonedas === '11') puntaje += 1;
-  if (recuerdo.totalDinero === '9') puntaje += 1;
-
-  const centimos20 = Number(recuerdo.monedasRecordadas.centimos20) || 0;
-  if (centimos20 === 5) puntaje += 2;
-  else if (centimos20 > 0) puntaje += 1;
-
-  const centimos50 = Number(recuerdo.monedasRecordadas.centimos50) || 0;
-  if (centimos50 === 2) puntaje += 2;
-  else if (centimos50 > 0) puntaje += 1;
-
-  const sol1 = Number(recuerdo.monedasRecordadas.sol1) || 0;
-  if (sol1 === 1) puntaje += 2;
-  else if (sol1 > 0) puntaje += 1;
-
-  const soles2 = Number(recuerdo.monedasRecordadas.soles2) || 0;
-  if (soles2 === 3) puntaje += 2;
-  else if (soles2 > 0) puntaje += 1;
-
-  return Math.max(0, puntaje - intrusiones.recuerdo);
+  return Math.max(0, score - intrusions.recall);
 };
 
-export const interpretarResultado = (puntajeTotal: number): InterpretacionResultado => {
-  if (puntajeTotal <= 24) {
+export const interpretResult = (totalScore: number): ResultInterpretation => {
+  if (totalScore <= 24) {
     return {
-      diagnostico: "Posible trastorno cognitivo",
+      diagnosis: "Posible trastorno cognitivo",
       color: "red",
-      descripcion: "El puntaje sugiere la presencia de deterioro cognitivo (sensibilidad del 90.5%). Se recomienda una evaluación más completa.",
-      recomendacion: "Derivar a evaluación neuropsicológica completa y valoración geriátrica integral."
+      description: "El puntaje sugiere la presencia de deterioro cognitivo (sensibilidad del 90.5%). Se recomienda una evaluación más completa.",
+      recommendation: "Derivar a evaluación neuropsicológica completa y valoración geriátrica integral."
     };
   } else {
     return {
-      diagnostico: "Función cognitiva probablemente preservada",
+      diagnosis: "Función cognitiva probablemente preservada",
       color: "green",
-      descripcion: "El puntaje sugiere que no hay evidencia de deterioro cognitivo significativo (especificidad del 83.3%).",
-      recomendacion: "Continuar con seguimiento según protocolo de evaluación geriátrica."
+      description: "El puntaje sugiere que no hay evidencia de deterioro cognitivo significativo (especificidad del 83.3%).",
+      recommendation: "Continuar con seguimiento según protocolo de evaluación geriátrica."
     };
   }
 };

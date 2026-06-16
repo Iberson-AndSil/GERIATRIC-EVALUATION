@@ -3,29 +3,29 @@ import dayjs from "dayjs";
 import { GijonScores, GijonCategory } from "../../interfaces";
 
 export const usePatientForm = () => {
-  const [puntajes, setPuntajes] = useState<GijonScores>({
-    familiar: 0,
-    economica: 0,
-    vivienda: 0,
-    sociales: 0,
-    apoyo: 0,
+  const [scores, setScores] = useState<GijonScores>({
+    family: 0,
+    economic: 0,
+    housing: 0,
+    social: 0,
+    support: 0,
   });
 
-  const handleScoreChange = (categoria: keyof GijonScores, valor: number) => {
-    setPuntajes((prev:any) => ({
+  const handleScoreChange = (category: keyof GijonScores, value: number) => {
+    setScores((prev: any) => ({
       ...prev,
-      [categoria]: valor,
+      [category]: value,
     }));
   };
 
-  const obtenerPuntajeTotal = (): number => {
-    return Object.values(puntajes).reduce((acc, curr) => acc + curr, 0);
+  const getTotalScore = (): number => {
+    return Object.values(scores).reduce((acc, curr) => acc + curr, 0);
   };
 
   const updateBirthDate = (form: any) => {
-    const day = form.getFieldValue('birth_day');
-    const month = form.getFieldValue('birth_month');
-    const year = form.getFieldValue('birth_year');
+    const day = form.getFieldValue('birthDay');
+    const month = form.getFieldValue('birthMonth');
+    const year = form.getFieldValue('birthYear');
 
     if (day && month && year) {
       try {
@@ -34,18 +34,18 @@ export const usePatientForm = () => {
         const today = dayjs();
         const calculatedAge = today.diff(birthDate, 'year');
         form.setFieldsValue({
-          fecha_nacimiento: formattedDate,
-          edad: calculatedAge
+          birthDate: formattedDate,
+          age: calculatedAge
         });
       } catch (error) {
-        console.error("Fecha inválida", error);
+        console.error("Invalid birth date:", error);
       }
     }
   };
 
   const gijonCategories: GijonCategory[] = [
     {
-      key: "familiar",
+      key: "family",
       title: "Situación Familiar",
       options: [
         "1 - Vive con familia, sin conflicto familiar",
@@ -56,7 +56,7 @@ export const usePatientForm = () => {
       ],
     },
     {
-      key: "economica",
+      key: "economic",
       title: "Situación Económica",
       options: [
         "1 - Dos veces el salario mínimo vital",
@@ -67,7 +67,7 @@ export const usePatientForm = () => {
       ],
     },
     {
-      key: "vivienda",
+      key: "housing",
       title: "Vivienda",
       options: [
         "1 - Adecuada a necesidades",
@@ -78,7 +78,7 @@ export const usePatientForm = () => {
       ],
     },
     {
-      key: "sociales",
+      key: "social",
       title: "Relaciones Sociales",
       options: [
         "1 - Buenas relaciones sociales",
@@ -89,7 +89,7 @@ export const usePatientForm = () => {
       ],
     },
     {
-      key: "apoyo",
+      key: "support",
       title: "Apoyo a la Red Social",
       options: [
         "1 - No necesita apoyo",
@@ -102,10 +102,13 @@ export const usePatientForm = () => {
   ];
 
   return {
-    puntajes,
+    scores,
     handleScoreChange,
-    obtenerPuntajeTotal,
+    getTotalScore,
     updateBirthDate,
     gijonCategories,
+    // Aliases for backward compatibility during refactoring
+    puntajes: scores,
+    obtenerPuntajeTotal: getTotalScore,
   };
 };

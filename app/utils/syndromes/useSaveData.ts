@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGlobalContext } from '@/app/context/GlobalContext';
 import { DepressionData, SensoryData, BristolData, AdherenceData } from '../../type';
-import { actualizarResultado, crearRegistroResultados } from '@/app/lib/pacienteService';
+import { updateResult, createResultsRecord } from '@/app/lib/pacienteService';
 import { notification } from 'antd';
 
 export const useSaveData = () => {
@@ -11,21 +11,25 @@ export const useSaveData = () => {
   const [api] = notification.useNotification();
   const [loading, setLoading] = useState(false);
 
-  const guardarDatos = async (depresionData: DepressionData, sensoryData: SensoryData, bristolData: BristolData, adherenciaData: AdherenceData
+  const guardarDatos = async (
+    depressionData: DepressionData, 
+    sensoryData: SensoryData, 
+    bristolData: BristolData, 
+    adherenceData: AdherenceData
   ) => {
     try {
       setLoading(true);
 
       if (!currentPatient?.dni) {
-        throw new Error("No se ha seleccionado un paciente");
+        throw new Error("No patient selected");
       }
 
-      const puntajeDepresion = Object.values(depresionData).filter(v => v === 'si').length;
+      const puntajeDepresion = Object.values(depressionData).filter(v => v === 'si').length;
       const puntajeSensorial = [
-        sensoryData.dificultadVista === 'si' ? 1 : 0,
-        sensoryData.dificultadEscucha === 'si' ? 1 : 0,
-        sensoryData.usaAnteojos === 'si' ? 1 : 0,
-        sensoryData.usaAudifonos === 'si' ? 1 : 0
+        sensoryData.visionDifficulty === 'si' ? 1 : 0,
+        sensoryData.hearingDifficulty === 'si' ? 1 : 0,
+        sensoryData.wearsGlasses === 'si' ? 1 : 0,
+        sensoryData.wearsHearingAids === 'si' ? 1 : 0
       ].reduce((a, b) => a + b, 0);
 
       const puntajeBristol = [
@@ -39,48 +43,42 @@ export const useSaveData = () => {
       ].reduce((a, b) => a + b, 0);
 
       const puntajeMoriski = () => {
-        if (adherenciaData.tomaMedicamentoPregunta === 'no') return 0;
+        if (adherenceData.takeMedicationQuestion === 'no') return 0;
         let puntuacion = 0;
-        if (adherenciaData.olvido === 'no') puntuacion++;
-        if (adherenciaData.tomarMedicamento === 'si') puntuacion++;
-        if (adherenciaData.dejarMedicacion === 'no') puntuacion++;
-        if (adherenciaData.sientaMal === 'no') puntuacion++;
+        if (adherenceData.forgot === 'no') puntuacion++;
+        if (adherenceData.takeMedication === 'si') puntuacion++;
+        if (adherenceData.stopMedication === 'no') puntuacion++;
+        if (adherenceData.feelsBad === 'no') puntuacion++;
         return puntuacion;
       };
 
-      const depresion = puntajeDepresion.toString();
-      const sensorial = puntajeSensorial.toString();
-      const bristol = puntajeBristol.toString();
-      const adherencia = puntajeMoriski().toString();
+      const depression = puntajeDepresion;
+      const sensory = puntajeSensorial;
+      const bristol = puntajeBristol;
+      const adherence = puntajeMoriski();
 
       let resId = currentResultId;
       if (!resId) {
-        resId = await crearRegistroResultados(currentPatient.dni, {
-          depresion: depresion,
-          sensorial: sensorial,
+        resId = await createResultsRecord(currentPatient.dni, {
+          depression: depression,
+          sensory: sensory,
           bristol: bristol,
-          adherencia: adherencia
+          adherence: adherence
         });
         setCurrentResultId(resId);
       } else {
         await Promise.all([
-          actualizarResultado(currentPatient.dni, resId, 'depresion', depresion),
-          actualizarResultado(currentPatient.dni, resId, 'sensorial', sensorial),
-          actualizarResultado(currentPatient.dni, resId, 'bristol', bristol),
-          actualizarResultado(currentPatient.dni, resId, 'adherencia', adherencia)
+          updateResult(currentPatient.dni, resId, 'depression', depression),
+          updateResult(currentPatient.dni, resId, 'sensory', sensory),
+          updateResult(currentPatient.dni, resId, 'bristol', bristol),
+          updateResult(currentPatient.dni, resId, 'adherence', adherence)
         ]);
       }
-
-      api.success({
-        message: 'Éxito',
-        description: 'Resultados de ABVD y AIVD guardados correctamente',
-        placement: 'topRight'
-      });
 
       router.push('/social');
 
     } catch (error) {
-      console.error("Error al guardar datos:", error);
+      console.error("Error saving data:", error);
       throw error;
     } finally {
       setLoading(false);
